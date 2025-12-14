@@ -1,9 +1,9 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { codingProjects } from "@/data/codingProjects";
 
-type Params = { params: { slug: string } };
+type Params = { params: Promise<{ slug: string }> };
 
 // 事前ビルド用（SSG）
 export function generateStaticParams() {
@@ -11,12 +11,27 @@ export function generateStaticParams() {
 }
 
 // SEOメタ
-export function generateMetadata({ params }: Params): Metadata {
-  const p = codingProjects.find((x) => x.slug === params.slug);
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const { slug } = await params;
+
+  const p = codingProjects.find((x) => x.slug === slug);
   if (!p) return {};
+
   const title = `${p.title} | Coding Projects`;
   const description = p.summary ?? p.title;
-  const images = p.hero ? [{ url: p.hero.src, width: p.hero.width, height: p.hero.height, alt: p.hero.alt }] : [];
+
+  // 可能なら絶対URL推奨（OG/TwitterはフルURLが安全）
+  const images = p.hero
+    ? [
+        {
+          url: p.hero.src, // 例: https://your-domain.com/images/...
+          width: p.hero.width,
+          height: p.hero.height,
+          alt: p.hero.alt,
+        },
+      ]
+    : [];
+
   return {
     title,
     description,
@@ -25,8 +40,10 @@ export function generateMetadata({ params }: Params): Metadata {
   };
 }
 
-export default function CodingProjectPage({ params }: Params) {
-  const project = codingProjects.find((p) => p.slug === params.slug);
+export default async function CodingProjectPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params; // ← ここが重要！
+
+  const project = codingProjects.find((p) => p.slug === slug);
   if (!project) return notFound();
 
   return (
