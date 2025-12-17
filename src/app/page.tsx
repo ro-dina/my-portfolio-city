@@ -25,26 +25,34 @@ export default function Home() {
   }, [])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-900">
+    <div className="min-h-screen bg-white dark:bg-slate-900 overflow-x-hidden">
       <div className="w-full max-w-7xl mx-auto py-10 px-6">
         {/* === 背景（HTML/CSS）：SVGの<image>埋め込みで黒くなる問題を回避 === */}
         {/* モバイルでは 1200px の地図を縮小して表示（ピンチズーム不要・ヘッダは縮小しない） */}
         <div
-          className="mx-auto"
+          className="relative mx-auto"
           style={{
             width: '100%',
             height: MAP_H * scale,
           }}
         >
+          {/* transform はレイアウト幅(1200px)を縮めないので、absolute + translate で中央寄せして余白ズレを防ぐ */}
           <div
-            className="relative rounded-xl shadow mx-auto overflow-hidden bg-white dark:bg-slate-950"
+            className="absolute left-1/2 top-0"
             style={{
               width: MAP_W,
               height: MAP_H,
-              transform: `scale(${scale})`,
+              transform: `translateX(-50%) scale(${scale})`,
               transformOrigin: 'top center',
             }}
           >
+            <div
+              className="relative rounded-xl shadow overflow-hidden bg-white dark:bg-slate-950"
+              style={{
+                width: MAP_W,
+                height: MAP_H,
+              }}
+            >
           {/* 石畳 */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -322,7 +330,8 @@ export default function Home() {
           <StreetLight left={-85} top={680}  />
           <StreetLight left={200} top={680} z={30} />
           <StreetLight left={560} top={680}  />
-        </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
