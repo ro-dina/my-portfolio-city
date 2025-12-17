@@ -1,15 +1,50 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import StreetLight from '@/components/props/StreetLight'
 
 export default function Home() {
   const router = useRouter()
+  const MAP_W = 1200
+  const MAP_H = 4200
+
+  const [scale, setScale] = useState(1)
+
+  useEffect(() => {
+    const update = () => {
+      // 画面幅に合わせて地図(1200px)を縮小。ヘッダは固定なのでスケールしない。
+      const padding = 24 * 2 // px-6 想定の左右余白ぶん
+      const avail = Math.max(320, window.innerWidth - padding)
+      setScale(Math.min(1, avail / MAP_W))
+    }
+
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-900">
-      <div className="w-full max-w-7xl mx-auto py-10">
+      <div className="w-full max-w-7xl mx-auto py-10 px-6">
         {/* === 背景（HTML/CSS）：SVGの<image>埋め込みで黒くなる問題を回避 === */}
-        <div className="relative w-[1200px] h-[4200px] rounded-xl shadow mx-auto overflow-hidden bg-white dark:bg-slate-950">
+        {/* モバイルでは 1200px の地図を縮小して表示（ピンチズーム不要・ヘッダは縮小しない） */}
+        <div
+          className="mx-auto"
+          style={{
+            width: '100%',
+            height: MAP_H * scale,
+          }}
+        >
+          <div
+            className="relative rounded-xl shadow mx-auto overflow-hidden bg-white dark:bg-slate-950"
+            style={{
+              width: MAP_W,
+              height: MAP_H,
+              transform: `scale(${scale})`,
+              transformOrigin: 'top center',
+            }}
+          >
           {/* 石畳 */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -288,9 +323,10 @@ export default function Home() {
           <StreetLight left={200} top={680} z={30} />
           <StreetLight left={560} top={680}  />
         </div>
+        </div>
       </div>
     </div>
-  ) 
+  )
 }
 
 

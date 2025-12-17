@@ -42,7 +42,8 @@ export const projects: Project[] = [
             "Unity WebGL × Web フロント連携。ホテル内を移動して比較できるビューア。",
         tags: ["Unity", "WebGL", "Next.js"],
         status: "done",
-        visibility: "public"
+        visibility: "hidden",
+        detailPolicy: "page"
     },
     {
         slug: "raspberrypi-sensor-hub",
@@ -58,6 +59,15 @@ export const projects: Project[] = [
         summary: "自分のやったことなどの記録サイト。(このサイト)",
         tags: ["TypeScript", "Next.js", "React", "Tailwind CSS"]
     },
+    {
+        slug: "",
+        title: "",
+        summary: "",
+        tags: [],
+        status: "done",
+        visibility: "public",
+        
+    }
 ];
 export const getProjectBySlug = (slug: string) =>
     projects.find((p) => p.slug === slug);
