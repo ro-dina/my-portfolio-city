@@ -10,12 +10,12 @@ export const codingProjects: Project[] = [
     summary: "ソート／探索を可視化して学べるブラウザアプリ。",
     tags: ["Next.js", "TypeScript", "D3.js"],
     updatedAt: "2025-12-13",
-    hero: {
-      src: "/images/projects/Union-Find.png",
-      alt: "アルゴリズム可視化のスクリーンショット",
-      width: 1200,
-      height: 630,
-    },
+    //hero: {
+    //  src: "/images/projects/Union-Find.png",
+    //  alt: "アルゴリズム可視化のスクリーンショット",
+    //  width: 1200,
+    //  height: 630,
+    //},
     links: [{ label: "GitHub", href: "https://example.com" }],
     body: () => (
       <>

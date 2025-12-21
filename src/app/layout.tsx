@@ -1,13 +1,15 @@
 import Header from '@/components/common/Header'
 import './globals.css'
+import { LanguageProvider } from '@/components/common/LanguageProvider';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const isDark = true;
   return (
-    <html lang="ja" className = {isDark ? "dark" : ""}>
+    <html lang="ja" suppressHydrationWarning>
       <body>
-        <Header />
-        <main className="pt-16">{children}</main>
+        <LanguageProvider>
+          <Header />
+          <main className="pt-16">{children}</main>
+        </LanguageProvider>
       </body>
     </html>
   )

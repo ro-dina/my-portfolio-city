@@ -1,4 +1,4 @@
-// src/components/Header.tsx
+// src/components/common/Header.tsx
 'use client'
 
 import { useRouter, usePathname } from 'next/navigation'
@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Menu, MenuButton, MenuItems, MenuItem, Transition } from '@headlessui/react'
 import { Bars3Icon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
+import { useI18n } from './LanguageProvider'
 
 type Theme = "light" | "dark";
 
@@ -14,6 +15,7 @@ export default function Header() {
     const pathname = usePathname()
     const [canGoBack, setCanGoBack] = useState(false)
     const [theme, setTheme] = useState<Theme>("light");
+    const { locale, setLocale, t } = useI18n();
 
   useEffect(() => {
     // Show back button only if there is history AND we are not on root.
@@ -47,17 +49,17 @@ export default function Header() {
           <button
             onClick={() => router.back()}
             className="inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-sky-700 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/50 transition"
-            aria-label="前のページに戻る"
+            aria-label={t("common.back")}
           >
-            ← 戻る
+            ← {t("common.back")}
           </button>
         )}
         <Link
           href="/"
           className="inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-semibold text-sky-700 hover:bg-sky-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/50 transition"
-          aria-label="トップページへ"
+          aria-label={t("common.top")}
         >
-          ⌂ トップ
+          ⌂ {t("common.top")}
         </Link>
       </div>
 
@@ -65,7 +67,7 @@ export default function Header() {
       <Menu as="div" className="relative ml-auto">
         <MenuButton
           className="inline-flex items-center justify-center rounded-lg p-2 text-gray-700 hover:text-sky-700 hover:bg-gray-100 ring-1 ring-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/50 transition"
-          aria-label="メニューを開く"
+          aria-label={t("common.menu")}
         >
           <Bars3Icon className="w-6 h-6" />
         </MenuButton>
@@ -78,45 +80,45 @@ export default function Header() {
           leaveFrom="opacity-100 translate-y-0"
           leaveTo="opacity-0 translate-y-1"
         >
-          <MenuItems className="absolute right-0 mt-2 w-72 origin-top-right bg-white/90 dark:bg-slate-800/90 text-gray-800 dark:text-gray-100 backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-xl shadow-xl overflow-hidden focus:outline-none">
+          <MenuItems className="absolute right-0 mt-2 w-72 origin-top-right bg-white/90 dark:bg-slate-900/90 text-gray-800 dark:text-gray-100 backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-xl shadow-xl overflow-hidden focus:outline-none">
             {/* 言語切り替え */}
-            <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
-              言語
+            <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
+              {t("common.language")}
             </div>
             <div className="py-1">
               <MenuItem>
-                {({ active }) => (
-                  <button
-                    className={`block w-full text-left px-4 py-2 text-sm ${active ? 'bg-sky-50 text-sky-700' : 'text-gray-700'}`}
-                  >
-                    日本語
-                  </button>
-                )}
+                <button
+                  onClick={() => setLocale("ja")}
+                  className="group flex w-full items-center justify-between px-4 py-2 text-sm text-gray-700 dark:text-gray-100 data-[focus]:bg-sky-50 data-[focus]:text-sky-700 dark:data-[focus]:bg-slate-700/60 dark:data-[focus]:text-sky-200"
+                  aria-label={t("common.japanese")}
+                >
+                  <span>{t("common.japanese")}</span>
+                  {locale === "ja" && <span aria-hidden>✓</span>}
+                </button>
               </MenuItem>
               <MenuItem>
-                {({ active }) => (
-                  <button
-                    className={`block w-full text-left px-4 py-2 text-sm ${active ? 'bg-sky-50 text-sky-700' : 'text-gray-700'}`}
-                  >
-                    English
-                  </button>
-                )}
+                <button
+                  onClick={() => setLocale("en")}
+                  className="group flex w-full items-center justify-between px-4 py-2 text-sm text-gray-700 dark:text-gray-100 data-[focus]:bg-sky-50 data-[focus]:text-sky-700 dark:data-[focus]:bg-slate-700/60 dark:data-[focus]:text-sky-200"
+                  aria-label={t("common.english")}
+                >
+                  <span>{t("common.english")}</span>
+                  {locale === "en" && <span aria-hidden>✓</span>}
+                </button>
               </MenuItem>
             </div>
 
             {/* 設定 */}
-            <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
-              設定
+            <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
+              {t("common.settings")}
             </div>
             <div className="py-1">
               <MenuItem>
-                {({ active }) => (
-                  <button
-                    className={`block w-full text-left px-4 py-2 text-sm ${active ? 'bg-sky-50 text-sky-700' : 'text-gray-700'}`}
-                  >
-                    設定ページ
-                  </button>
-                )}
+                <button
+                  className="group flex w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-100 data-[focus]:bg-sky-50 data-[focus]:text-sky-700"
+                >
+                  {t("common.settingsPage")}
+                </button>
               </MenuItem>
             </div>
 
@@ -124,25 +126,23 @@ export default function Header() {
             <button
               onClick={toggle}
               className="block w-full text-left rounded-lg px-4 py-2 text-sm font-medium bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-white/10 dark:hover:bg-white/15 dark:text-gray-100"
-              aria-label="テーマ切り替え"
+              aria-label={t("common.themeToggle")}
             >
-              {theme === "dark" ? "🌙 ダーク" : "☀️ ライト"}
+              {theme === "dark" ? t("common.themeDark") : t("common.themeLight")}
             </button>
 
             {/* 商業施設 */}
-            <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
-              商業施設
+            <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
+              {t("common.commercial")}
             </div>
             <div className="py-1">
               <MenuItem>
-                {({ active }) => (
-                  <Link
-                    href="/books"
-                    className={`block px-4 py-2 text-sm ${active ? 'bg-sky-50 text-sky-700' : 'text-gray-700'}`}
-                  >
-                    本屋
-                  </Link>
-                )}
+                <Link
+                  href="/books"
+                  className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-100 data-[focus]:bg-sky-50 data-[focus]:text-sky-700 dark:data-[focus]:bg-slate-700/60 dark:data-[focus]:text-sky-200"
+                >
+                  {t("common.bookstore")}
+                </Link>
               </MenuItem>
             </div>
           </MenuItems>
