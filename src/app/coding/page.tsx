@@ -1,5 +1,5 @@
 import ProjectCard from "./components/coding/ProjectCard";
-import { projects } from "@/data/project"
+import { projects } from "@/data/project";
 
 export const metadata = {
   title: "Programming – My City",
@@ -7,10 +7,10 @@ export const metadata = {
 };
 
 export default function CodingPage() {
-    // ① 一覧に出すかを visibility でフィルタ
+  // ① 一覧に出すかを visibility でフィルタ
   const visible = projects.filter((p) => {
-    const v = p.visibility ?? "public";     // 未設定は public 扱い
-    return v === "public";                  // ← unlisted/hidden を除外
+    const v = p.visibility ?? "public"; // 未設定は public 扱い
+    return v === "public"; // ← unlisted/hidden を除外
     // もし「hidden だけ除外」なら → return v !== "hidden";
   });
 

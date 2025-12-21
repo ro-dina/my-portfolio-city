@@ -11,10 +11,7 @@ type Ctx = {
 
 const LanguageContext = createContext<Ctx | null>(null);
 
-function getByPath(
-  obj: Record<string, unknown>,
-  path: string
-): string | undefined {
+function getByPath(obj: Record<string, unknown>, path: string): string | undefined {
   return path.split(".").reduce<unknown>((acc, key) => {
     if (typeof acc === "object" && acc !== null && key in acc) {
       return (acc as Record<string, unknown>)[key];
