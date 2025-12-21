@@ -48,7 +48,7 @@ export default function Header() {
         {canGoBack && (
           <button
             onClick={() => router.back()}
-            className="inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-sky-700 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/50 transition"
+            className="inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-sky-700 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/50 transition dark:text-slate-100 dark:hover:text-white dark:hover:bg-white/10"
             aria-label={t("common.back")}
           >
             ← {t("common.back")}
@@ -56,7 +56,7 @@ export default function Header() {
         )}
         <Link
           href="/"
-          className="inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-semibold text-sky-700 hover:bg-sky-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/50 transition"
+          className="inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-semibold text-sky-700 hover:bg-sky-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/50 transition dark:text-sky-200 dark:hover:bg-white/10"
           aria-label={t("common.top")}
         >
           ⌂ {t("common.top")}
@@ -66,7 +66,7 @@ export default function Header() {
       {/* 右側: ハンバーガーメニュー */}
       <Menu as="div" className="relative ml-auto">
         <MenuButton
-          className="inline-flex items-center justify-center rounded-lg p-2 text-gray-700 hover:text-sky-700 hover:bg-gray-100 ring-1 ring-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/50 transition"
+          className="inline-flex items-center justify-center rounded-lg p-2 text-gray-700 hover:text-sky-700 hover:bg-gray-100 ring-1 ring-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/50 transition dark:text-slate-100 dark:hover:text-white dark:hover:bg-white/10 dark:ring-white/20"
           aria-label={t("common.menu")}
         >
           <Bars3Icon className="w-6 h-6" />

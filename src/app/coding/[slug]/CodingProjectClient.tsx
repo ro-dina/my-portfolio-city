@@ -15,16 +15,18 @@ export default function CodingProjectClient({
   const { locale } = useI18n();
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10">
-      <article className="space-y-6">
-        <h1 className="text-3xl font-bold tracking-tight">
-          {project.title[locale] ?? project.title.ja}
-        </h1>
+    <div className="min-h-screen bg-white dark:bg-slate-950">
+      <div className="mx-auto max-w-5xl px-6 py-10">
+        <article className="space-y-6">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+            {project.title[locale] ?? project.title.ja}
+          </h1>
 
-        <div className="space-y-6">
-          {locale === "en" && body.en ? body.en : body.ja}
-        </div>
-      </article>
+          <div className="space-y-6">
+            {locale === "en" && body.en ? body.en : body.ja}
+          </div>
+        </article>
+      </div>
     </div>
   );
 }

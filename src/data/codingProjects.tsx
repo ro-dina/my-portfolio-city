@@ -2,6 +2,7 @@ import type { Project } from "@/types/project";
 import Section from "@/components/article/Section";
 import FeatureList from "@/components/article/FeatureList";
 import ProductionBackground from "@/components/article/ProductionBackground";
+import CodeBlock  from "@/components/article/CodeBlock";
 
 export const codingProjects: Project[] = [
   {
@@ -32,6 +33,12 @@ export const codingProjects: Project[] = [
               （ここに制作動機・背景を書いていく想定です）
             </p>
           </ProductionBackground>
+
+          <CodeBlock
+            filename="main.py"
+            lang="python"
+            code={`print("hello world")`}
+          />
 
           <Section title="技術スタック">
             <FeatureList>
