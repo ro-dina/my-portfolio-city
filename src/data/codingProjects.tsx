@@ -37,7 +37,16 @@ export const codingProjects: Project[] = [
           <CodeBlock
             filename="main.py"
             lang="python"
-            code={`print("hello world")`}
+            code={`
+Text = "Hello"
+print(Text)`}
+          />
+
+          <CodeBlock
+            files={[
+              { lang: "python", filename: "main.py", code: `print("hello")` },
+              { lang: "ts", filename: "utils.ts", code: `export const x = 1;` },
+            ]}
           />
 
           <Section title="技術スタック">
@@ -128,4 +137,26 @@ export const codingProjects: Project[] = [
       </>
     ) },
   },
+  {
+    slug: "vtk-Viewer",
+    title: { ja: "医療用画像のビューワー", en: "medi"},
+    summary: { ja: "医療用画像(DICOM)を2D,3Dで見ることのできるアプリ"},
+    tags: ["Python"],
+    updatedAt: "2025-12-13",
+    links: [{ label: {ja: "GitHub" }, href: "https://github.com/ro-dina/viewer"}],
+    body: { ja: () => (
+      <>
+        <Section title="概要">
+          <p></p>
+        </Section>
+
+        <Section title="技術スタック">
+          <FeatureList>
+            <li>PySide6（Qt）</li>
+            <li>VTK</li>
+          </FeatureList>
+        </Section>
+      </>
+    )}
+  }
 ];

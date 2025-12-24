@@ -68,6 +68,15 @@ export const projects: Project[] = [
     summary: { ja: "自分のやったことなどの記録サイト。(このサイト)", en: "A site to record what I do (this site)." },
     tags: ["TypeScript", "Next.js", "React", "Tailwind CSS"],
   },
+  {
+    slug: "vtk-Viewer",
+    title: { ja: "医療用画像のビューワー", en: "viewer of medi" },
+    summary: { ja: "", en: ""},
+    tags: ["Python"],
+    status: "done",
+    visibility: "public",
+    detailPolicy: "page",
+  },
 ];
 
 export const getProjectBySlug = (slug: string) => projects.find((p) => p.slug === slug);
