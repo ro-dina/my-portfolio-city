@@ -106,6 +106,16 @@ export default function Header() {
                   {locale === "en" && <span aria-hidden>✓</span>}
                 </button>
               </MenuItem>
+              <MenuItem>
+                <button
+                  onClick={() => setLocale("ru")}
+                  className="group flex w-full items-center justify-between px-4 py-2 text-sm text-gray-700 dark:text-gray-100 data-[focus]:bg-sky-50 data-[focus]:text-sky-700 dark:data-[focus]:bg-slate-700/60 dark:data-[focus]:text-sky-200"
+                  aria-label={t("common.russian")}
+                >
+                  <span>{t("common.russian")}</span>
+                  {locale === "ru" && <span aria-hidden>✓</span>}
+                </button>
+              </MenuItem>
             </div>
 
             {/* 設定 */}

@@ -1,17 +1,16 @@
-import FacilityGate from "@/components/facilities/FacilityGate"
+import { schoolArticles } from "@/data/schoolArticles";
+import SchoolIndexClient from "./SchoolIndexClient";
+
+export const metadata = {
+  title: "School – My City",
+  description: "学習ノート・プロジェクト解説のまとめ",
+};
 
 export default function SchoolPage() {
-  return (
-    <FacilityGate facility="school">
-      <div className="p-8">
-        <h1 className="text-2xl font-bold mb-4">✒️ 学習メモ</h1>
-        <ul className="space-y-2">
-          <li></li>
-          <li>
-          </li>
-          {/* Markdownで管理したいなら後述のCMS導入を検討 */}
-        </ul>
-      </div>
-    </FacilityGate>
-  )
+  // Serverで並び替えだけして、描画はClientへ
+  const sorted = [...schoolArticles].sort(
+    (a, b) => +new Date(b.updatedAt) - +new Date(a.updatedAt)
+  );
+
+  return <SchoolIndexClient articles={sorted} />;
 }

@@ -26,7 +26,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   // 初期化（localStorage → なければブラウザ言語）
   useEffect(() => {
     const saved = window.localStorage.getItem("locale") as Locale | null;
-    if (saved === "ja" || saved === "en") {
+    if (saved === "ja" || saved === "en" || saved === "ru") {
       setLocaleState(saved);
       return;
     }

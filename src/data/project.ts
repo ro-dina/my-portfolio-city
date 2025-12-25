@@ -1,4 +1,4 @@
-export type LocalizedString = string | { ja: string; en?: string };
+export type LocalizedString = string | { ja: string; en?: string; ru?: string };
 
 export type Project = {
   slug: string;

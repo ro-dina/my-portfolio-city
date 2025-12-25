@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
-export type Locale = "ja" | "en";
-export type Localized<T> = {ja: T; en?: T};
+export type Locale = "ja" | "en" | "ru";
+export type Localized<T> = {ja: T; en?: T; ru?: T;};
 
 export type Link = {
   // Link label can be localized, but plain string is also acceptable.

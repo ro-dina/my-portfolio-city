@@ -10,7 +10,7 @@ import { formatDate } from "@/data/utils/date";
 import type { LocalizedString, Project } from "@/data/project";
 import { useI18n } from "@/components/common/LanguageProvider";
 
-function pick(locale: "ja" | "en", v: LocalizedString | undefined): string {
+function pick(locale: "ja" | "en" | "ru", v: LocalizedString | undefined): string {
   if (!v) return "";
   if (typeof v === "string") return v;
   if (locale === "en") return v.en ?? v.ja;
