@@ -1,29 +1,31 @@
-import type { Localized } from "@/types/project";
+// School 記事用：en/ru は任意（無ければ ja にフォールバック）
+export type Lang = "ja" | "en" | "ru";
+export type I18nText = string | { ja: string; en?: string; ru?: string };
 
-/** Localized<string> または string を受けて、言語に応じて取り出す */
-export function pickText(v: Localized<string> | string, lang: "ja" | "en" | "ru") {
+/** I18nText または string を受けて、言語に応じて取り出す（無ければ ja にフォールバック） */
+export function pickText(v: I18nText, lang: Lang) {
   if (typeof v === "string") return v;
-  return v[lang] ?? v.ja; // en が無ければ ja にフォールバック
+  return v[lang] ?? v.ja;
 }
 
 export type SchoolBlock =
   | {
       type: "lead";
-      text: Localized<string> | string;
+      text: I18nText;
     }
   | {
       type: "section";
-      title: Localized<string> | string;
-      body: Localized<string> | string;
+      title: I18nText;
+      body: I18nText;
     }
   | {
       type: "list";
-      title: Localized<string> | string;
-      items: Array<Localized<string> | string>;
+      title: I18nText;
+      items: I18nText[];
     }
   | {
       type: "code";
-      title?: Localized<string> | string;
+      title?: I18nText;
       lang?: string;
       filename?: string;
       code: string;
@@ -31,8 +33,8 @@ export type SchoolBlock =
 
 export type SchoolArticle = {
   slug: string;
-  title: Localized<string> | string;
-  summary: Localized<string> | string;
+  title: I18nText;
+  summary: I18nText;
   tags: string[];
   updatedAt: string; // とりあえず string に固定（Date 混在事故を防ぐ）
   blocks: SchoolBlock[];
@@ -144,4 +146,24 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
       },
     ],
   },
+  {
+    slug: "exchange_rate_forecast",
+    title: { ja: "為替レートの予測", en: "Exchange rate forecasting" },
+    summary: {
+      ja: "旅行が好きなので、為替レートを予測するAIを作るメモ。",
+      en: "Notes on building an AI model to forecast exchange rates for travel planning.",
+    },
+    tags: ["AI", "Python"],
+    updatedAt: "2025-12-26",
+    blocks: [
+      {
+        type: "section",
+        title: { ja: "概要", en: "Overview" },
+        body: {
+          ja: "（ここに目的・データ・モデルの概要を追記）",
+          en: "(Add motivation, data sources, and model overview here)",
+        },
+      },
+    ],
+  }
 ];
