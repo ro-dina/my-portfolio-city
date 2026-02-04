@@ -1,4 +1,4 @@
-import { schoolArticles } from "@/data/schoolArticles";
+import { schoolArticleCards } from "@/data/schoolArticleCards";
 import SchoolIndexClient from "./SchoolIndexClient";
 
 export const metadata = {
@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function SchoolPage() {
   // Serverで並び替えだけして、描画はClientへ
-  const sorted = [...schoolArticles].sort(
+  const sorted = [...schoolArticleCards].sort(
     (a, b) => +new Date(b.updatedAt) - +new Date(a.updatedAt)
   );
 

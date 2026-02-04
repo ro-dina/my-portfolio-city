@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useI18n } from "@/components/common/LanguageProvider";
-import type { SchoolArticle } from "@/data/schoolArticles";
-import { pickText } from "@/data/schoolArticles";
+import type { SchoolArticleCard } from "@/data/schoolTypes";
+import { pickText } from "@/data/schoolTypes";
 
-export default function SchoolIndexClient({ articles }: { articles: SchoolArticle[] }) {
+export default function SchoolIndexClient({ articles }: { articles: SchoolArticleCard[] }) {
   const { locale } = useI18n(); // "ja" | "en" を想定
   const [q, setQ] = useState("");
 
