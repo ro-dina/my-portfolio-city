@@ -259,6 +259,16 @@ FROM generate_series(1, 1000000);`,
           },
         ],
       },
+      {
+  type: "image",
+  title: { ja: "構成図", en: "Diagram" }, // 任意
+  src: "/images/school/diagram.png",
+  alt: { ja: "構成の図", en: "System diagram" }, // 任意
+  caption: { ja: "図1: 全体構成", en: "Fig.1 Overview" }, // 任意
+  width: 1200, // 任意
+  height: 700,  // 任意
+}
+
 
 
     ],

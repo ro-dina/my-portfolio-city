@@ -35,6 +35,15 @@ export type SchoolBlock =
       anchor?: string;
     }
   | {
+      type: "image";
+      src: string;
+      title?: I18nText;
+      alt?: I18nText;
+      caption?: I18nText;
+      width?: number;
+      height?: number;
+    }
+  | {
       type: "code";
       title?: I18nText;
       lang?: string;

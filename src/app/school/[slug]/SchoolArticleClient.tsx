@@ -120,6 +120,30 @@ function BlockRenderer({ block, lang }: { block: SchoolBlock; lang: "ja" | "en" 
     return content;
   }
 
+  if (block.type === "image") {
+    const figure = (
+      <figure className="space-y-2">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={block.src}
+          alt={block.alt ? pickText(block.alt, lang) : ""}
+          width={block.width}
+          height={block.height}
+          className="w-full rounded-xl border border-slate-200/70 dark:border-slate-800/80"
+        />
+        {block.caption && (
+          <figcaption className="text-sm text-slate-600 dark:text-slate-300">
+            {pickText(block.caption, lang)}
+          </figcaption>
+        )}
+      </figure>
+    );
+    if (block.title) {
+      return <Section title={pickText(block.title, lang)}>{figure}</Section>;
+    }
+    return figure;
+  }
+
   // code
   return (
     <div>
