@@ -175,6 +175,44 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
         },
       },
       {
+        type: "image",
+        title: { ja: "各実行計画の視覚的理解図", en: "Visual understanding of each execution plan" },
+        files:[
+          {
+            tabLabel: { ja: "Seq Scan", en: "Seq Scan" },
+            src: "/images/script/Database/seq_scan.gif",
+            alt: { ja: "Seq Scanの図", en: "Diagram of Seq Scan" },
+            caption: { ja: "図1: Seq Scanのイメージ", en: "Fig.1 Image of Seq Scan" },
+            width: 600,
+            height: 400,
+          },
+          {
+            tabLabel: { ja: "Index Scan", en: "Index Scan" },
+            src: "/images/script/Database/index_scan.gif",
+            alt: { ja: "Index Scanの図", en: "Diagram of Index Scan" },
+            caption: { ja: "図2: Index Scanのイメージ", en: "Fig.2 Image of Index Scan" },
+            width: 600,
+            height: 400,
+          },
+          {
+            tabLabel: { ja: "Bitmap Heap Scan", en: "Bitmap Heap Scan" },
+            src: "/images/script/Database/bitmap_heap_scan.gif",
+            alt: { ja: "Bitmap Heap Scanの図", en: "Diagram of Bitmap Heap Scan" },
+            caption: { ja: "図3: Bitmap Heap Scanのイメージ", en: "Fig.3 Image of Bitmap Heap Scan" },
+            width: 600,
+            height: 400,
+          },
+          {
+            tabLabel: { ja: "Index only Scan", en: "Index Only Scan" },
+            src: "/images/script/Database/index_only_scan.gif",
+            alt: { ja: "Index only Scanの図", en: "Diagram of Index Only Scan" },
+            caption: { ja: "図4: Index only Scanのイメージ", en: "Fig.4 Image of Index Only Scan" },
+            width: 600,
+            height: 400,
+          }
+        ]
+      },
+      {
         type: "paragraph",
         title: { ja: "前準備: テーブルの作成", en: "Preparation: Creating tables" },
         anchor: "preparation-tables",
@@ -324,21 +362,33 @@ SELECT *
 FROM orders
 WHERE status = 'paid';`
       },
-      {type: "image",
-      title: { ja: "実験1結果", en: "Experiment 1 Results" }, 
-      src: "/images/script/Database/postgresql_execution_plan_experiment1.png",
-      alt: { ja: "実験1の結果", en: "Experiment 1 results" },
-      caption: { ja: "図2: 実験1の実行計画", en: "Fig.2 Execution plan of Experiment 1" },
-      width: 800, 
-      height: 600,  
+      {
+        type: "table",
+        title: { ja: "実験1結果", en: "Experiment 1 Results" },
+        headers: ["QUERY PLAN"],
+        rows: [
+          ["Bitmap Heap Scan on orders  (cost=3741.71..16264.87 rows=335133 width=35) (actual time=10.412..41.591 rows=333946 loops=1)"],
+          ["　Recheck Cond: (status = 'paid'::text)"],
+          ["　Heap Blocks: exact=8334"],
+          ["　Buffers: shared hit=8618"],
+          ["　->　Bitmap Index Scan on idx_orders_status  (cost=0.00..3657.92 rows=335133 width=0) (actual time=9.325..9.325 rows=333946 loops=1)"],
+          ["　　　Index Cond: (status = 'paid'::text)"],
+          ["　　　Buffers: shared hit=284"],
+          ["Planning:"],
+          ["　Buffers: shared hit=284"],
+          ["Planning Time: 0.263 ms"],
+          ["Excution Time: 51.405 ms"],
+        ],
+        showRowNumbers: true,
+        rowNumberStart: 1,
       },
       {
         type: "paragraph",
         title: { ja: "考察", en: "Discussion" },
         body: {
-          ja: `実験1において、低カーディナリティ列statusに対する検索で、PostgreSQLはSeq ScanやIndex Scanではなく,Bitmap Heap Scanを選択した。
-          \nstatusは4種類しか値を持たないため、1つの値に対して多数の行が一致する。この場合は、Index Scanのように個々の行を参照すると非効率であり、Seq Scanも全行を読むためコストが高い。
-          \n\nPostgreSQLはまずインデックスから一致行の位置をビットマップとして収集し、その後テーブルをまとめて読み込むBitmap Heap Scanを採用することで、検索効率とI/O効率の両立を図っている。`,
+          ja: `実験1において、低カーディナリティ列statusに対する検索で、PostgreSQLはSeq ScanやIndex Scanではなく,Bitmap Heap Scanを選択しました。
+          \nstatusは4種類しか値を持たないため、1つの値に対して多数の行が一致します。この場合は、Index Scanのように個々の行を参照すると非効率であり、Seq Scanも全行を読むためコストが高いです。
+          \n\nPostgreSQLはまずインデックスから一致行の位置をビットマップとして収集し、その後テーブルをまとめて読み込むBitmap Heap Scanを採用することで、検索効率とI/O効率の両立を図っています。`,
           en: `In Experiment 1, for searches on the low-cardinality column 'status', PostgreSQL chose Bitmap Heap Scan instead of Seq Scan or Index Scan.
           \nSince 'status' has only four possible values, many rows match a single value. In this case, using Index Scan to reference individual rows is inefficient, and Seq Scan is costly as it reads all rows.
           \n\nPostgreSQL first collects the positions of matching rows from the index as a bitmap, and then reads the table in bulk using Bitmap Heap Scan, balancing search efficiency and I/O efficiency`,
@@ -386,10 +436,10 @@ WHERE created_at > now() - interval '1 day';`
         type: "paragraph",
         title: { ja: "考察A", en: "DiscussionA" },
         body: {
-          ja: `実験2では created_at に対する範囲検索で(30日、7日、1日)の3つのケースを試した。しかし、いずれのケースでもPostgreSQLはBitmap Heap Scanを選択した。
-          \nこれは、一致行雨がまだ一定数存在する場合や、対象行がテーブル上に散在している場合、対象ブロックをまとめて読むBitmap Heap Scanが効率的であると判断されたためだと考えられる。
-          \n実際、Heap Blocksが8334→7549→2273と減少し、Execution Timeも25.777ms→9.115ms→1.714mmsと改善している。
-          \nIndex Scanに切り替わる境界をある程度絞りたいので1時間・10分・1分も試してみる。`,
+          ja: `実験2では created_at に対する範囲検索で(30日、7日、1日)の3つのケースを試しました。しかし、いずれのケースでもPostgreSQLはBitmap Heap Scanを選択しました。
+          \nこれは、一致行雨がまだ一定数存在する場合や、対象行がテーブル上に散在している場合、対象ブロックをまとめて読むBitmap Heap Scanが効率的であると判断されたためだと考えられます。
+          \n実際、Heap Blocksが8334→7549→2273と減少し、Execution Timeも25.777ms→9.115ms→1.714mmsと改善しています。
+          \nIndex Scanに切り替わる境界をある程度絞りたいので1時間・10分・1分も試してみます。`,
           en: `In Experiment 2, we tested three cases of range searches on created_at (30 days, 7 days, 1 day). However, in all cases, PostgreSQL chose Bitmap Heap Scan.
           \nThis is likely because when there are still a certain number of matching rows or when the target rows are scattered across the table, Bitmap Heap Scan, which reads the target blocks in bulk, is considered efficient.
           \nIn fact, the number of Heap Blocks decreased from 8334 to 7549 to 2273, and the Execution Time improved from 25.777ms to 9.115ms to 1.714ms.
@@ -430,10 +480,10 @@ WHERE created_at > now() - interval '1 minute';`
         type: "paragraph",
         title: { ja: "考察B", en: "DiscussionB" },
         body: {
-          ja: `追加の実験2ではcreated_atに対する範囲検索で(1時間、10分、1分)の3つのケースを試した。PostgreSQLは、すべてのケースでIndex Scanを選択した。
-          \nこれは、ヒット件数（選択率）が高い場合には Index Scan で1行ずつヒープへアクセスするとランダムアクセスが増え、I/O効率が悪化するためである。
+          ja: `追加の実験2ではcreated_atに対する範囲検索で(1時間、10分、1分)の3つのケースを試した。PostgreSQLは、すべてのケースでIndex Scanを選択しています。
+          \nこれは、ヒット件数（選択率）が高い場合には Index Scan で1行ずつヒープへアクセスするとランダムアクセスが増え、I/O効率が悪化するためです。
           Bitmap Heap Scan は、インデックスから対象行の位置情報をまとめて収集してからヒープブロックをまとめて読み込むため、ヒット件数が多い領域で有利になりやすい。
-一方で、1時間以下のようにヒット件数が十分少ない場合は、インデックスを辿って必要な行だけを取得する Index Scan の方が総コストが低くなる。その結果、実行計画が Bitmap 系から Index Scan に切り替わったと考えられる。`,
+一方で、1時間以下のようにヒット件数が十分少ない場合は、インデックスを辿って必要な行だけを取得する Index Scan の方が総コストが低くなります。その結果、実行計画が Bitmap 系から Index Scan に切り替わったと考えられます。`,
           en: `In the additional Experiment 2, we tested three cases of range searches on created_at (1 hour, 10 minutes, 1 minute). PostgreSQL chose Index Scan in all cases.
           \nThis is because when the number of hits (selectivity) is high, accessing the heap row by row with Index Scan increases random access, worsening I/O efficiency.
           Bitmap Heap Scan collects the position information of target rows from the index in bulk and then reads the heap blocks in bulk, making it advantageous in areas with many hits.
@@ -470,7 +520,64 @@ ORDER BY total_amount DESC;`
         width: 800, 
         height: 600,
       },
-      
+      {
+        type: "paragraph",
+        title: { ja: "考察", en: "Discussion" },
+        body: {
+          ja: `本クエリでは、WHERE条件がなく、oders(100万行)の大部分を読み取る必要があります。そのため
+          、インデックスを使っても読み取り量はほとんどへらないため、PostgreSQLはSeq Scanを選択したと考えられます。
+          \n\n結合はusers(10万行)をハッシュ表として構築し、oders側を走査しながら参照するHash Joinが選択されています。これは、
+          小さい表をハッシュかし、大きい表を走査する典型的な戦略であると言えます。
+          \n\nまた、GROUP BYはワーカーごとに部分集約を行い、Gether Mergeにより統合した後、Finalize GroupAggregateによって最終結果を確定しています。
+          これにより、並列化によるスループット向上が図られています。
+          \n\n最後の ORDER BY は出力が5行のみであり、ソートは quicksort でメモリ 25kB 程度と小さいことがわかります。
+          以上より、本実行計画は「大量データ走査＋小テーブルハッシュ結合＋並列集約」という、読み取り主体の集計クエリに適したプランであると考えられます。`,
+        }
+      },
+      {
+        type: "section",
+        title: { ja: "実験3+α", en: "Experiment 3+α" },
+        body: {
+          ja: `orderを１時間以内に絞るとどうなるか？`,
+          en: `What happens if you narrow down orders to within one hour?`,
+        }
+      },
+      {
+        type: "code",
+        title: { ja: "実験3+α: JOIN + GROUP BY + WHERE", en: "Experiment 3+α: JOIN + GROUP BY + WHERE" },
+        lang: "sql",
+        filename: "experiment3_plus_join_groupby_where.sql",
+        code: `
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT u.prefecture, SUM(o.amount) AS total_amount
+FROM users u
+JOIN orders o ON o.user_id = u.id
+WHERE o.created_at > now() - interval '1 hour'
+GROUP BY u.prefecture
+ORDER BY total_amount DESC;`
+      },
+      {
+        type: "table",
+        title: { ja: "実験3+α結果", en: "Experiment 3+α Results" },
+        headers: ["QUERY PLAN"],
+        rows: []
+      },
+      {
+        type: "paragraph",
+        title: { ja: "考察", en: "Discussion" },
+        body: {
+          ja: `WHERE 条件を追加して orders の候補行数を大きく減らすと、実行計画は Parallel Seq Scan + Hash Join から、Index Scan + Nested Loop に切り替わりました。
+          \n\nWHERE句がない場合、ordersをほぼ全件読み取る必要があるため、並列全走査ろHash Joinによってスループットを稼ぐ戦略が有効でした。一方で、created_atの範囲条件により、
+          候補が極端に少なくなると、Index Scanで必要行を直接取得し、Nested Loopで結合する方が効率的になります。
+          \n\n今回の実行では、1時間以内のデータが0件であったため、users側の参照は実行されませんでした。しかし、一般には候補行数が少ないほどNested Loopは有効であり、
+          条件の選択率がオプティマイザの結合戦略に大きく影響することがわかります。`,
+          en: `By adding a WHERE condition to significantly reduce the number of candidate rows in orders, the execution plan switched from Parallel Seq Scan + Hash Join to Index Scan + Nested Loop.
+          \n\nWhen there is no WHERE clause, it is necessary to read almost all records in orders, making a strategy that leverages throughput through parallel full scans and Hash Join effective. On the other hand, when the range condition on created_at drastically reduces candidates,
+          it becomes more efficient to directly retrieve the necessary rows with Index Scan and join them using Nested Loop.
+          \n\nIn this execution, there were zero records within one hour, so the reference on the users side was not executed. However, in general, the fewer candidate rows there are, the more effective Nested Loop becomes,
+          indicating that the selectivity of conditions significantly influences the optimizer's join strategy.`,
+        },
+      }
 
 
 

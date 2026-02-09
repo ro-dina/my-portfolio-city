@@ -1,5 +1,21 @@
 export type Lang = "ja" | "en" | "ru";
 export type I18nText = string | { ja: string; en?: string; ru?: string };
+export type SchoolImageFile = {
+  src: string;
+  alt?: I18nText;
+  caption?: I18nText;
+  width?: number;
+  height?: number;
+  tabLabel?: I18nText;
+};
+export type SchoolTableFile = {
+  headers: I18nText[];
+  rows: I18nText[][];
+  caption?: I18nText;
+  tabLabel?: I18nText;
+  showRowNumbers?: boolean;
+  rowNumberStart?: number;
+};
 
 /** I18nText または string を受けて、言語に応じて取り出す（無ければ ja にフォールバック） */
 export function pickText(v: I18nText, lang: Lang) {
@@ -36,12 +52,43 @@ export type SchoolBlock =
     }
   | {
       type: "image";
-      src: string;
       title?: I18nText;
+      src: string;
       alt?: I18nText;
       caption?: I18nText;
       width?: number;
       height?: number;
+      files?: SchoolImageFile[];
+    }
+  | {
+      type: "image";
+      title?: I18nText;
+      files: SchoolImageFile[];
+      src?: string;
+      alt?: I18nText;
+      caption?: I18nText;
+      width?: number;
+      height?: number;
+    }
+  | {
+      type: "table";
+      title?: I18nText;
+      headers: I18nText[];
+      rows: I18nText[][];
+      caption?: I18nText;
+      showRowNumbers?: boolean;
+      rowNumberStart?: number;
+      files?: SchoolTableFile[];
+    }
+  | {
+      type: "table";
+      title?: I18nText;
+      files: SchoolTableFile[];
+      headers?: I18nText[];
+      rows?: I18nText[][];
+      caption?: I18nText;
+      showRowNumbers?: boolean;
+      rowNumberStart?: number;
     }
   | {
       type: "code";
