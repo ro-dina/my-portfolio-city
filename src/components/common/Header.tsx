@@ -7,6 +7,7 @@ import { Menu, MenuButton, MenuItems, MenuItem, Transition } from '@headlessui/r
 import { Bars3Icon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 import { useI18n } from './LanguageProvider'
+import { useHomeMode } from './HomeModeProvider'
 
 type Theme = "light" | "dark";
 
@@ -16,6 +17,7 @@ export default function Header() {
     const [canGoBack, setCanGoBack] = useState(false)
     const [theme, setTheme] = useState<Theme>("light");
     const { locale, setLocale, t } = useI18n();
+    const { mode, toggleMode } = useHomeMode()
 
   useEffect(() => {
     // Show back button only if there is history AND we are not on root.
@@ -125,9 +127,28 @@ export default function Header() {
             <div className="py-1">
               <MenuItem>
                 <button
-                  className="group flex w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-100 data-[focus]:bg-sky-50 data-[focus]:text-sky-700"
+                  onClick={toggleMode}
+                  className="group flex w-full items-center justify-between px-4 py-2 text-sm text-gray-700 dark:text-gray-100 data-[focus]:bg-sky-50 data-[focus]:text-sky-700 dark:data-[focus]:bg-slate-700/60 dark:data-[focus]:text-sky-200"
+                  aria-label={t("common.homeMode")}
                 >
-                  {t("common.settingsPage")}
+                  <span>{t("common.homeMode")}</span>
+                  <span className="inline-flex items-center gap-2 text-xs">
+                    <span className="hidden sm:inline">
+                      {mode === "city" ? t("common.homeModeCity") : t("common.homeModeStandard")}
+                    </span>
+                    <span
+                      className={`relative inline-flex h-5 w-10 items-center rounded-full transition ${
+                        mode === "city" ? "bg-sky-500" : "bg-gray-300 dark:bg-slate-600"
+                      }`}
+                      aria-hidden
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                          mode === "city" ? "translate-x-5" : "translate-x-1"
+                        }`}
+                      />
+                    </span>
+                  </span>
                 </button>
               </MenuItem>
             </div>
