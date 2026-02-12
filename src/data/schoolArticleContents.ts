@@ -586,10 +586,10 @@ Execution Time: 0.011 ms`,
       },
       {
         type: "section",
-        title: { ja: "JOIN + GROUP BY", en: "JOIN + GROUP BY" },
+        title: { ja: "実験3 JOIN + GROUP BY", en: "Experiment 3 JOIN + GROUP BY" },
         anchor: "experiment-3",
         body: {
-          ja: ``,
+          ja: `本クエリは、usersとordersを結合して、都道府県ごとの合計金額を求める集計処理をしています。具体的なコードは以下に示される通りです。`,
           en: ``,
         },
       },
