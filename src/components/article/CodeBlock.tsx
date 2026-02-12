@@ -173,7 +173,7 @@ export default function CodeBlock({
           </div>
 
           {/* Code */}
-          <pre className="m-0 p-4 text-[13px] leading-relaxed bg-transparent">
+          <pre className="select-text inline-block m-0 p-4 text-[13px] leading-relaxed bg-transparent">
             <code className="font-mono text-slate-900 dark:text-slate-100 whitespace-pre">
               {normalized}
             </code>

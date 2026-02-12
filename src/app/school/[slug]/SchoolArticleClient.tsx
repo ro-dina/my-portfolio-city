@@ -9,22 +9,29 @@ import CodeBlock from "@/components/article/CodeBlock";
 import ImageBlock from "@/components/article/ImageBlock";
 import TableBlock from "@/components/article/TableBlock";
 
+const ENABLE_TOC_TARGET_UNDERLINE = false;
+
 export default function SchoolArticleClient({ article }: { article: SchoolArticle }) {
   const { locale } = useI18n()
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900">
       <div className="mx-auto max-w-4xl px-4 pt-24 pb-16">
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
+        <h1 className="select-text inline-block max-w-full align-top text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
           {pickText(article.title, locale)}
         </h1>
-        <p className="mt-3 text-slate-600 dark:text-slate-300">
+        <p className="select-text inline-block max-w-full align-top mt-3 text-slate-600 dark:text-slate-300">
           {pickText(article.summary, locale)}
         </p>
 
-        <div className="mt-10 space-y-6">
+        <div className="mt-10 space-y-6 select-none">
           {article.blocks.map((b, i) => (
-            <BlockRenderer key={i} block={b} lang={locale} />
+            <BlockRenderer
+              key={i}
+              block={b}
+              lang={locale}
+              enableTargetUnderline={ENABLE_TOC_TARGET_UNDERLINE}
+            />
           ))}
         </div>
       </div>
@@ -32,7 +39,15 @@ export default function SchoolArticleClient({ article }: { article: SchoolArticl
   );
 }
 
-function BlockRenderer({ block, lang }: { block: SchoolBlock; lang: "ja" | "en" | "ru" }) {
+function BlockRenderer({
+  block,
+  lang,
+  enableTargetUnderline,
+}: {
+  block: SchoolBlock;
+  lang: "ja" | "en" | "ru";
+  enableTargetUnderline: boolean;
+}) {
   const normalizeBodyText = (value: string) => {
     // Keep intentional newlines, but remove editor-wrap newlines with indentation.
     return value
@@ -53,9 +68,9 @@ function BlockRenderer({ block, lang }: { block: SchoolBlock; lang: "ja" | "en" 
 
   if (block.type === "lead") {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white/60 p-5 text-slate-700
-                      dark:border-white/10 dark:bg-slate-900/50 dark:text-slate-200">
-        <p className="whitespace-pre-wrap">
+      <div className="select-none rounded-2xl border border-slate-200 bg-white p-5 text-slate-700 shadow-sm overflow-hidden
+                      dark:border-white/10 dark:bg-slate-900 dark:text-slate-200">
+        <p className="select-text inline-block max-w-full align-top whitespace-pre-wrap">
           {normalizeBodyText(pickText(block.text, lang))}
         </p>
       </div>
@@ -66,8 +81,8 @@ function BlockRenderer({ block, lang }: { block: SchoolBlock; lang: "ja" | "en" 
     const title = pickText(block.title, lang);
     const id = block.anchor ?? toAnchorId(title);
     return (
-      <Section title={title} id={id}>
-        <p className="text-slate-700 dark:text-slate-200 whitespace-pre-wrap">
+      <Section title={title} id={id} highlightOnTarget={enableTargetUnderline}>
+        <p className="select-text inline-block max-w-full align-top text-slate-700 dark:text-slate-200 whitespace-pre-wrap">
           {normalizeBodyText(pickText(block.body, lang))}
         </p>
       </Section>
@@ -77,7 +92,7 @@ function BlockRenderer({ block, lang }: { block: SchoolBlock; lang: "ja" | "en" 
   if (block.type === "list") {
     return (
       <Section title={pickText(block.title, lang)}>
-        <ul className="space-y-2 list-disc pl-5 text-slate-700 dark:text-slate-200">
+        <ul className="select-text space-y-2 list-disc pl-5 text-slate-700 dark:text-slate-200">
           {block.items.map((x, idx) => (
             <li key={idx}>{pickText(x, lang)}</li>
           ))}
@@ -89,13 +104,16 @@ function BlockRenderer({ block, lang }: { block: SchoolBlock; lang: "ja" | "en" 
   if (block.type === "toc") {
     return (
       <Section title={block.title ? pickText(block.title, lang) : "Contents"}>
-        <ul className="space-y-2 list-disc pl-5 text-slate-700 dark:text-slate-200">
+        <ul className="select-text space-y-2 list-disc pl-5 text-slate-700 dark:text-slate-200">
           {block.items.map((item, idx) => {
             const title = pickText(item.title, lang);
             const anchor = item.anchor ?? toAnchorId(title);
             return (
               <li key={idx}>
-                <a className="hover:underline" href={`#${anchor}`}>
+                <a
+                  className="select-text inline-block max-w-full align-top hover:underline focus:outline-none focus-visible:underline"
+                  href={`#${anchor}`}
+                >
                   {title}
                 </a>
               </li>
@@ -108,22 +126,31 @@ function BlockRenderer({ block, lang }: { block: SchoolBlock; lang: "ja" | "en" 
 
   if (block.type === "paragraph") {
     const id = block.anchor;
-    const content = (
-      <p
-        id={id}
-        className="text-slate-700 dark:text-slate-200 whitespace-pre-wrap"
-      >
+    const paragraphText = (
+      <p className="select-text inline-block max-w-full align-top text-slate-700 dark:text-slate-200 whitespace-pre-wrap">
         {normalizeBodyText(pickText(block.body, lang))}
       </p>
     );
     if (block.title) {
       return (
-        <Section title={pickText(block.title, lang)} id={id}>
-          {content}
+        <Section
+          title={pickText(block.title, lang)}
+          id={id}
+          highlightOnTarget={enableTargetUnderline}
+        >
+          {paragraphText}
         </Section>
       );
     }
-    return content;
+    return (
+      <div
+        id={id}
+        className="select-none rounded-2xl border border-slate-200 bg-white p-5 text-slate-700 shadow-sm overflow-hidden [scroll-margin-top:var(--school-anchor-offset,7rem)]
+                   dark:border-white/10 dark:bg-slate-900 dark:text-slate-200"
+      >
+        {paragraphText}
+      </div>
+    );
   }
 
   if (block.type === "image") {
@@ -167,9 +194,9 @@ function BlockRenderer({ block, lang }: { block: SchoolBlock; lang: "ja" | "en" 
 
   // code
   return (
-    <div>
+    <div className="select-none">
       {block.title && (
-        <div className="mb-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
+        <div className="select-text inline-block max-w-full align-top mb-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
           {pickText(block.title, lang)}
         </div>
       )}

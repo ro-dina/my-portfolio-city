@@ -86,7 +86,7 @@ export default function TableBlock({
   return (
     <figure
       className={[
-        "rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 shadow-sm overflow-hidden",
+        "rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 shadow-sm overflow-hidden select-text",
         className,
       ].join(" ")}
     >
@@ -155,7 +155,9 @@ export default function TableBlock({
 
       {current.caption && (
         <figcaption className="px-3 sm:px-4 py-2 text-sm text-slate-600 dark:text-slate-300 border-t border-slate-200 dark:border-white/10">
-          {pickText(current.caption, lang)}
+          <span className="select-text inline-block max-w-full align-top">
+            {pickText(current.caption, lang)}
+          </span>
         </figcaption>
       )}
     </figure>

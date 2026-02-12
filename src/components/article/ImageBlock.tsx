@@ -39,7 +39,7 @@ export default function ImageBlock({
   return (
     <figure
       className={[
-        "rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 shadow-sm overflow-hidden",
+        "rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 shadow-sm overflow-hidden select-text",
         className,
       ].join(" ")}
     >
@@ -78,7 +78,7 @@ export default function ImageBlock({
           className="w-full rounded-xl border border-slate-200/70 dark:border-slate-800/80"
         />
         {current.caption && (
-          <figcaption className="text-sm text-slate-600 dark:text-slate-300">
+          <figcaption className="select-text inline-block max-w-full align-top text-sm text-slate-600 dark:text-slate-300">
             {pickText(current.caption, lang)}
           </figcaption>
         )}

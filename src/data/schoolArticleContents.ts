@@ -146,10 +146,10 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
         items: [
           { title: { ja: "実行計画とは", en: "What is an execution plan?" }, anchor: "what-is-execution-plan" },
           { title: { ja: "前準備: テーブルの作成", en: "Preparation: Creating tables" }, anchor: "preparation-tables" },
-          { title: { ja: "EXPLAIN コマンド", en: "EXPLAIN command" }, anchor: "explain-command" },
-          { title: { ja: "EXPLAIN ANALYZE コマンド", en: "EXPLAIN ANALYZE command" }, anchor: "explain-analyze-command" },
-          { title: { ja: "実行計画の読み方", en: "How to read execution plans" }, anchor: "reading-execution-plans" },
-          { title: { ja: "パフォーマンスチューニングへの応用", en: "Application to performance tuning" }, anchor: "performance-tuning-application" },
+          { title: { ja: "実験1", en: "Experiment 1" }, anchor: "experiment-1" },
+          { title: { ja: "実験2", en: "Experiment 2" }, anchor: "experiment-2" },
+          { title: { ja: "実験3", en: "Experiment 3" }, anchor: "experiment-3" },
+          { title: { ja: "まとめ", en: "Summary" }, anchor: "summary" },
         ],
       },
       {
@@ -346,6 +346,7 @@ ANALYZE orders;`
       {
         type: "section",
         title: { ja: "実験1", en: "Experiment 1" },
+        anchor: "experiment-1",
         body: {
           ja: `status='paid' はヒット率が高い（低カーディナリティ）ので、インデックスがあっても Seq Scan が選ばれるか確認する。`,
           en: `For status='paid', which has a high hit rate (low cardinality), we will check if a Seq Scan is still selected even with an index.`,
@@ -397,6 +398,7 @@ WHERE status = 'paid';`
       {
         type: "section",
         title: { ja: "実験2", en: "Experiment 2" },
+        anchor: "experiment-2",
         body: {
           ja: `created_atの範囲検索でBitmapがIndex Scanに切り替わる境界を観測する。`,
           en: `Observe the boundary where range searches on created_at switch from Bitmap to Index Scan.`,
@@ -585,6 +587,7 @@ Execution Time: 0.011 ms`,
       {
         type: "section",
         title: { ja: "JOIN + GROUP BY", en: "JOIN + GROUP BY" },
+        anchor: "experiment-3",
         body: {
           ja: ``,
           en: ``,
@@ -719,6 +722,7 @@ ORDER BY total_amount DESC;`
       {
         type: "paragraph",
         title: { ja: "考察", en: "Discussion" },
+        anchor: "summary",
         body: {
           ja: `WHERE 条件を追加して orders の候補行数を大きく減らすと、実行計画は Parallel Seq Scan + Hash Join から、Index Scan + Nested Loop に切り替わりました。
           \n\nWHERE句がない場合、ordersをほぼ全件読み取る必要があるため、並列全走査ろHash Joinによってスループットを稼ぐ戦略が有効でした。一方で、created_atの範囲条件により、

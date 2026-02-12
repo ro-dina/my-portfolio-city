@@ -6,3 +6,31 @@
   0%, 100% { opacity: .9; filter: blur(6px) brightness(1); }
   50%      { opacity: 1;  filter: blur(8px) brightness(1.05); }
 }
+
+:root {
+  --school-anchor-offset: 7rem;
+}
+
+.toc-target-highlight > .section-title {
+  position: relative;
+  padding-bottom: 0.2rem;
+}
+
+.toc-target-highlight > .section-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -0.15rem;
+  height: 2px;
+  width: 0;
+  background: rgb(14 165 233);
+  transition: width 200ms ease;
+}
+
+.toc-target-highlight:target > .section-title::after {
+  width: min(14rem, 100%);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
