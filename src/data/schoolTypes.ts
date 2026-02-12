@@ -9,12 +9,15 @@ export type SchoolImageFile = {
   tabLabel?: I18nText;
 };
 export type SchoolTableFile = {
-  headers: I18nText[];
-  rows: I18nText[][];
+  headers?: I18nText[];
+  rows?: I18nText[][];
+  rawText?: string;
   caption?: I18nText;
   tabLabel?: I18nText;
   showRowNumbers?: boolean;
   rowNumberStart?: number;
+  preserveCellWhitespace?: boolean;
+  monospace?: boolean;
 };
 
 /** I18nText または string を受けて、言語に応じて取り出す（無ければ ja にフォールバック） */
@@ -73,11 +76,14 @@ export type SchoolBlock =
   | {
       type: "table";
       title?: I18nText;
-      headers: I18nText[];
-      rows: I18nText[][];
+      headers?: I18nText[];
+      rows?: I18nText[][];
+      rawText?: string;
       caption?: I18nText;
       showRowNumbers?: boolean;
       rowNumberStart?: number;
+      preserveCellWhitespace?: boolean;
+      monospace?: boolean;
       files?: SchoolTableFile[];
     }
   | {

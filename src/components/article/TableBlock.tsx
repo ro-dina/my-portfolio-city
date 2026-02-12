@@ -7,9 +7,12 @@ import { pickText, type I18nText, type Lang, type SchoolTableFile } from "@/data
 type Props = {
   headers?: I18nText[];
   rows?: I18nText[][];
+  rawText?: string;
   caption?: I18nText;
   showRowNumbers?: boolean;
   rowNumberStart?: number;
+  preserveCellWhitespace?: boolean;
+  monospace?: boolean;
   files?: SchoolTableFile[];
   lang: Lang;
   className?: string;
@@ -18,9 +21,12 @@ type Props = {
 export default function TableBlock({
   headers,
   rows,
+  rawText,
   caption,
   showRowNumbers = false,
   rowNumberStart = 1,
+  preserveCellWhitespace,
+  monospace,
   files,
   lang,
   className = "",
@@ -29,12 +35,53 @@ export default function TableBlock({
 
   const fileList = useMemo<SchoolTableFile[]>(() => {
     if (files && files.length > 0) return files;
-    if (!headers || !rows) return [];
-    return [{ headers, rows, caption, showRowNumbers, rowNumberStart }];
-  }, [files, headers, rows, caption, showRowNumbers, rowNumberStart]);
+    if (!headers && !rows && !rawText) return [];
+    return [{
+      headers,
+      rows,
+      rawText,
+      caption,
+      showRowNumbers,
+      rowNumberStart,
+      preserveCellWhitespace,
+      monospace,
+    }];
+  }, [
+    files,
+    headers,
+    rows,
+    rawText,
+    caption,
+    showRowNumbers,
+    rowNumberStart,
+    preserveCellWhitespace,
+    monospace,
+  ]);
 
   const current = fileList[Math.min(active, Math.max(fileList.length - 1, 0))];
   if (!current) return null;
+  const currentRows =
+    current.rows && current.rows.length > 0
+      ? current.rows
+      : (current.rawText ?? "")
+          .replace(/\r\n?/g, "\n")
+          .split("\n")
+          .filter((line) => line.length > 0)
+          .map((line) => [line as I18nText]);
+  const currentHeaders =
+    current.headers && current.headers.length > 0
+      ? current.headers
+      : ["QUERY PLAN"];
+  const useMonospace = current.monospace ?? Boolean(current.rawText);
+  const keepWhitespace =
+    current.preserveCellWhitespace ?? Boolean(current.rawText);
+  const cellClassName = [
+    "px-3 py-2 align-top border-b border-slate-200 dark:border-white/10",
+    useMonospace ? "font-mono text-[13px] leading-relaxed" : "",
+    keepWhitespace ? "whitespace-pre-wrap" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <figure
@@ -77,7 +124,7 @@ export default function TableBlock({
                   #
                 </th>
               )}
-              {current.headers.map((h, idx) => (
+              {currentHeaders.map((h, idx) => (
                 <th
                   key={idx}
                   className="px-3 py-2 font-semibold border-b border-slate-200 dark:border-white/10 whitespace-nowrap"
@@ -88,7 +135,7 @@ export default function TableBlock({
             </tr>
           </thead>
           <tbody>
-            {current.rows.map((row, rowIdx) => (
+            {currentRows.map((row, rowIdx) => (
               <tr key={rowIdx} className="odd:bg-white even:bg-slate-50/60 dark:odd:bg-transparent dark:even:bg-white/[0.03]">
                 {current.showRowNumbers && (
                   <td className="px-3 py-2 align-top border-b border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 tabular-nums">
@@ -96,10 +143,7 @@ export default function TableBlock({
                   </td>
                 )}
                 {row.map((cell, cellIdx) => (
-                  <td
-                    key={cellIdx}
-                    className="px-3 py-2 align-top border-b border-slate-200 dark:border-white/10"
-                  >
+                  <td key={cellIdx} className={cellClassName}>
                     {pickText(cell, lang)}
                   </td>
                 ))}

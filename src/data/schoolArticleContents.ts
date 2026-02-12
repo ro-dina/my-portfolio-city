@@ -424,13 +424,63 @@ FROM orders
 WHERE created_at > now() - interval '1 day';`
       },
       {
-        type: "image",
-        title: { ja: "実験2結果", en: "Experiment 2 Results" }, 
-        src: "/images/script/Database/postgresql_execution_plan_experiment2.png",
-        alt: { ja: "実験2の結果", en: "Experiment 2 results" },
-        caption: { ja: "図3: 実験2の実行計画", en: "Fig.3 Execution plan of Experiment 2" },
-        width: 800, 
-        height: 600,
+        type: "table",
+        title: { ja: "実験2結果", en: "Experiment 2 Results" },
+        files: [
+          {
+            tabLabel: "30days",
+            headers: ["QUERY PLAN"],
+            rawText: `Bitmap Heap Scan on orders  (cost=1337.72..10921.08 rows=71392 width=35) (actual time=6.732..56.848 rows=74025 loops=1)
+  Recheck Cond: (created_at > (now() - '30 days'::interval))
+  Heap Blocks: exact=8334
+  Buffers: shared hit=3 read=8540
+  ->  Bitmap Index Scan on idx_orders_created_at  (cost=0.00..1319.87 rows=71392 width=0) (actual time=5.318..5.318 rows=74025 loops=1)
+        Index Cond: (created_at > (now() - '30 days'::interval))
+        Buffers: shared hit=3 read=206
+Planning:
+  Buffers: shared hit=117 read=9
+Planning Time: 0.925 ms
+Execution Time: 58.499 ms`,
+          showRowNumbers: true,
+          rowNumberStart: 1,
+          preserveCellWhitespace: true,
+          monospace: true
+          },
+          {
+            tabLabel: "7days",
+            headers: ["QUERY PLAN"],
+            rawText: `Bitmap Heap Scan on orders  (cost=183.54..9101.04 rows=9691 width=35) (actual time=0.941..3.937 rows=10072 loops=1)
+  Recheck Cond: (created_at > (now() - '7 days'::interval))
+  Heap Blocks: exact=5872
+  Buffers: shared hit=5903
+  ->  Bitmap Index Scan on idx_orders_created_at  (cost=0.00..181.11 rows=9691 width=0) (actual time=0.521..0.522 rows=10072 loops=1)
+        Index Cond: (created_at > (now() - '7 days'::interval))
+        Buffers: shared hit=31
+Planning:
+  Buffers: shared hit=2 read=2
+Planning Time: 0.232 ms
+Execution Time: 4.160 ms`,
+          showRowNumbers: true,
+          rowNumberStart: 1,
+          preserveCellWhitespace: true,
+          monospace: true
+          },
+          {
+            tabLabel: "1day",
+            headers: ["QUERY PLAN"],
+            rawText: `Index Scan using idx_orders_created_at on orders  (cost=0.43..8.45 rows=1 width=35) (actual time=0.009..0.009 rows=0 loops=1)
+  Index Cond: (created_at > (now() - '1 day'::interval))
+  Buffers: shared hit=3
+Planning:
+  Buffers: shared hit=4
+Planning Time: 0.068 ms
+Execution Time: 0.018 ms`,
+            showRowNumbers: true,
+            rowNumberStart: 1,
+            preserveCellWhitespace: true,
+            monospace: true
+          }
+        ]
       },
       {
         type: "paragraph",
@@ -468,13 +518,55 @@ FROM orders
 WHERE created_at > now() - interval '1 minute';`
       },
       {
-        type: "image",
-        title: { ja: "実験2追加結果", en: "Experiment 2 Additional Results" }, 
-        src: "/images/script/Database/postgresql_execution_plan_experiment2_additional.png",
-        alt: { ja: "実験2追加の結果", en: "Experiment 2 additional results" },
-        caption: { ja: "図4: 実験2追加の実行計画", en: "Fig.4 Execution plan of Experiment 2 Additional" },
-        width: 800, 
-        height: 600,
+        type: "table",
+        title: { ja: "実験2追加結果", en: "Experiment add 2 Results" },
+        files: [
+          {
+            tabLabel: "1 hour",
+            headers: ["QUERY PLAN"],
+            rawText: `Index Scan using idx_orders_created_at on orders  (cost=0.43..8.45 rows=1 width=35) (actual time=0.010..0.010 rows=0 loops=1)
+  Index Cond: (created_at > (now() - '01:00:00'::interval))
+  Buffers: shared hit=6
+Planning:
+  Buffers: shared hit=130
+Planning Time: 0.258 ms
+Execution Time: 0.024 ms`,
+          showRowNumbers: true,
+          rowNumberStart: 1,
+          preserveCellWhitespace: true,
+          monospace: true
+          },
+          {
+            tabLabel: "10 minutes",
+            headers: ["QUERY PLAN"],
+            rawText: `Index Scan using idx_orders_created_at on orders  (cost=0.43..8.45 rows=1 width=35) (actual time=0.004..0.004 rows=0 loops=1)
+  Index Cond: (created_at > (now() - '00:10:00'::interval))
+  Buffers: shared hit=3
+Planning:
+  Buffers: shared hit=4
+Planning Time: 0.065 ms
+Execution Time: 0.016 ms`,
+          showRowNumbers: true,
+          rowNumberStart: 1,
+          preserveCellWhitespace: true,
+          monospace: true
+          },
+          {
+            tabLabel: "1 minute",
+            headers: ["QUERY PLAN"],
+            rawText: `Index Scan using idx_orders_created_at on orders  (cost=0.43..8.45 rows=1 width=35) (actual time=0.004..0.004 rows=0 loops=1)
+  Index Cond: (created_at > (now() - '00:01:00'::interval))
+  Buffers: shared hit=3
+Planning:
+  Buffers: shared hit=4
+Planning Time: 0.072 ms
+Execution Time: 0.011 ms`,
+            showRowNumbers: true,
+            rowNumberStart: 1,
+            preserveCellWhitespace: true,
+            monospace: true
+          }
+        ]
       },
       {
         type: "paragraph",
@@ -512,13 +604,50 @@ GROUP BY u.prefecture
 ORDER BY total_amount DESC;`
       },
       {
-        type: "image",
-        title: { ja: "実験3結果", en: "Experiment 3 Results" }, 
-        src: "/images/script/Database/postgresql_execution_plan_experiment3.png",
-        alt: { ja: "実験3の結果", en: "Experiment 3 results" },
-        caption: { ja: "図5: 実験3の実行計画", en: "Fig.5 Execution plan of Experiment 3" },
-        width: 800, 
-        height: 600,
+        type: "table",
+        title: { ja: "実験3結果", en: "Experiment 3 Results" },
+        headers: ["QUERY PLAN"],
+        rawText: `Sort  (cost=19763.25..19763.27 rows=5 width=15) (actual time=121.768..123.715 rows=5 loops=1)
+  Sort Key: (sum(o.amount)) DESC
+  Sort Method: quicksort  Memory: 25kB
+  Buffers: shared hit=10882
+  ->  Finalize GroupAggregate  (cost=19761.93..19763.20 rows=5 width=15) (actual time=121.762..123.711 rows=5 loops=1)
+        Group Key: u.prefecture
+        Buffers: shared hit=10882
+        ->  Gather Merge  (cost=19761.93..19763.10 rows=10 width=15) (actual time=121.758..123.707 rows=15 loops=1)
+              Workers Planned: 2
+              Workers Launched: 2
+              Buffers: shared hit=10882
+              ->  Sort  (cost=18761.91..18761.92 rows=5 width=15) (actual time=117.854..117.855 rows=5 loops=3)
+                    Sort Key: u.prefecture
+                    Sort Method: quicksort  Memory: 25kB
+                    Buffers: shared hit=10882
+                    Worker 0:  Sort Method: quicksort  Memory: 25kB
+                    Worker 1:  Sort Method: quicksort  Memory: 25kB
+                    ->  Partial HashAggregate  (cost=18761.80..18761.85 rows=5 width=15) (actual time=117.830..117.832 rows=5 loops=3)
+                          Group Key: u.prefecture
+                          Batches: 1  Memory Usage: 24kB
+                          Buffers: shared hit=10866
+                          Worker 0:  Batches: 1  Memory Usage: 24kB
+                          Worker 1:  Batches: 1  Memory Usage: 24kB
+                          ->  Hash Join  (cost=3084.00..16678.46 rows=416667 width=11) (actual time=23.340..91.715 rows=333333 loops=3)
+                                Hash Cond: (o.user_id = u.id)
+                                Buffers: shared hit=10866
+                                ->  Parallel Seq Scan on orders o  (cost=0.00..12500.67 rows=416667 width=12) (actual time=0.020..11.975 rows=333333 loops=3)
+                                      Buffers: shared hit=8334
+                                ->  Hash  (cost=1834.00..1834.00 rows=100000 width=15) (actual time=22.577..22.577 rows=100000 loops=3)
+                                      Buckets: 131072  Batches: 1  Memory Usage: 5907kB
+                                      Buffers: shared hit=2502
+                                      ->  Seq Scan on users u  (cost=0.00..1834.00 rows=100000 width=15) (actual time=0.059..8.932 rows=100000 loops=3)
+                                            Buffers: shared hit=2502
+Planning:
+  Buffers: shared hit=14
+Planning Time: 0.324 ms
+Execution Time: 123.799 ms`,
+        showRowNumbers: true,
+        rowNumberStart: 1,
+        preserveCellWhitespace: true,
+        monospace: true
       },
       {
         type: "paragraph",
@@ -560,7 +689,32 @@ ORDER BY total_amount DESC;`
         type: "table",
         title: { ja: "実験3+α結果", en: "Experiment 3+α Results" },
         headers: ["QUERY PLAN"],
-        rows: []
+        rows: [
+          ["Sort  (cost=16.80..16.80 rows=1 width=15) (actual time=0.013..0.013 rows=0 loops=1)"],
+          ["　Sort Key: (sum(o.amount)) DESC"],
+          ["　Sort Method: quicksort  Memory: 25kB"],
+          ["　Buffers: shared hit=3"],
+          ["　->   GroupAggregate  (cost=16.77..16.79 rows=1 width=15) (actual time=0.010..0.010 rows=0 loops=1)"],
+          ["　　　　Group Key: u.prefecture"],
+          ["　　　　Buffers: shared hit=3"],
+          ["　　　　->   Sort  (cost=16.77..16.77 rows=1 width=11) (actual time=0.009..0.010 rows=0 loops=1)"],
+          ["　　　　　　　Sort Key: u.prefecture"],
+          ["　　　　　　　Sort Method: quicksort  Memory: 25kB"],
+          ["　　　　　　　Buffers: shared hit=3"],
+          ["　　　　　　　->   Nested Loop  (cost=0.72..16.76 rows=1 width=11) (actual time=0.005..0.006 rows=0 loops=1)"],
+          ["　　　　　　　　　　Buffers: shared hit=3"],
+          ["　　　　　　　　　　->   Index Scan using idx_orders_created_at on orders o  (cost=0.43..8.45 rows=1 width=12) (actual time=0.005..0.005 rows=0 loops=1)"],
+          ["　　　　　　　　　　　　　Index Cond: (created_at > (now() - '01:00:00'::interval))"],
+          ["　　　　　　　　　　　　　 Buffers: shared hit=3"],
+          ["　　　　　　　　　　->   Index Scan using users_pkey on users u  (cost=0.29..8.31 rows=1 width=15) (never executed)"],
+          ["　　　　　　　　　　　　　Index Cond: (id = o.user_id)"],
+          ["Planning:"],
+          ["　Buffers: shared hit=18"],
+          ["Planning Time: 0.192 ms"],
+          ["Execution Time: 0.034 ms"]
+        ],
+        showRowNumbers: true,
+        rowNumberStart: 1,
       },
       {
         type: "paragraph",

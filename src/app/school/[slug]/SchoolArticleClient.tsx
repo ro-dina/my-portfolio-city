@@ -149,9 +149,12 @@ function BlockRenderer({ block, lang }: { block: SchoolBlock; lang: "ja" | "en" 
       <TableBlock
         headers={block.headers}
         rows={block.rows}
+        rawText={block.rawText}
         caption={block.caption}
         showRowNumbers={block.showRowNumbers}
         rowNumberStart={block.rowNumberStart}
+        preserveCellWhitespace={block.preserveCellWhitespace}
+        monospace={block.monospace}
         files={block.files}
         lang={lang}
       />
