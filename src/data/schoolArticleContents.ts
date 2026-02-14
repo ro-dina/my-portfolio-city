@@ -137,7 +137,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
         title: { ja: "メモ", en: "Notes" },
         body: {
           ja: "実行計画EXPLAIN、EXPLAIN ANALYZE、オプティマイザ、Seq Scan / Index Scan\nパフォーマンスチューニング (インデックス設計を含む) に興味関心がある学生におすすめ。\n参考: 📖 教科書「6-4 統計情報」\n難易度: ⭐⭐⭐",
-          en: "Interested students in execution plans EXPLAIN, EXPLAIN ANALYZE, the optimizer, Seq Scan / Index Scan\nPerformance tuning (including index design) will find this useful.\nRef: 📖 Textbook '6-4 Statistics'\nDifficulty: ⭐⭐⭐",
+          en: "This article covers EXPLAIN, EXPLAIN ANALYZE, the optimizer, Seq Scan, and Index Scan.\nRecommended for students interested in performance tuning, including index design.\nRef: 📖 Textbook \"6-4 Statistics\"\nDifficulty: ⭐⭐⭐",
         },
       },
       { //目次
@@ -146,11 +146,12 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
         items: [
           { title: { ja: "実行計画とは", en: "What is an execution plan?" }, anchor: "what-is-execution-plan" },
           { title: { ja: "前準備: テーブルの作成", en: "Preparation: Creating tables" }, anchor: "preparation-tables" },
-          { title: { ja: "実験1: 低カーディナリ列の検索（Bitmap Scan）", en: "Experiment 1" }, anchor: "experiment-1" },
-          { title: { ja: "実験2: 範囲検索の選択率とプラン切替（Bitmap ↔ Index）", en: "Experiment 2" }, anchor: "experiment-2" },
-          { title: { ja: "実験3: JOIN + GROUP BY", en: "Experiment 3" }, anchor: "experiment-3" },
-          { title: { ja: "実験3+α: 絞り込みによるJoin戦略の切替（Hash Join → Nested Loop)", en: ""}, anchor: "experiment-3+α"},
-          { title: { ja: "まとめ", en: "Summary" }, anchor: "summary" },
+          { title: { ja: "実験1: 低カーディナリ列の検索（Bitmap Scan）", en: "Experiment 1: Searching a low-cardinality column (Bitmap Scan)" }, anchor: "experiment-1" },
+          { title: { ja: "実験2: 範囲検索の選択率とプラン切替（Bitmap ↔ Index）", en: "Experiment 2: Selectivity in range queries and plan switching (Bitmap ↔ Index)" }, anchor: "experiment-2" },
+          { title: { ja: "実験3: JOIN + GROUP BY", en: "Experiment 3: JOIN + GROUP BY" }, anchor: "experiment-3" },
+          { title: { ja: "実験3+α: 絞り込みによるJoin戦略の切替（Hash Join → Nested Loop)", en: "Experiment 3+alpha: Join strategy switching with filtering (Hash Join -> Nested Loop)"}, anchor: "experiment-3+α"},
+          { title: { ja: "統計分布", en: "Statistical distribution"}, anchor: "statistical-distribution"},
+          { title: { ja: "問題演習", en: "drill"}, anchor: "drill"}
         ],
       },
       {
@@ -165,8 +166,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
           \nオプティマイザが実行計画を立てる際には、統計情報を用います。統計情報は、カタログマネージャというモジュールによって管理され、オプティマイザに提供されます。
           \n本記事では、同一クエリに対してデータ分布・統計情報・インデックス有無を変化させ、EXPLAIN（推定）と EXPLAIN ANALYZE（実測）の差から、オプティマイザの意思決定を観察します。`,
 
-          en: `You can write long text.\nLine breaks are preserved.\n\nBlank lines separate paragraphs.
-          \nAn execution plan outlines the steps and methods a database uses to execute an SQL query. 
+          en: `An execution plan outlines the steps and methods a database uses to execute an SQL query.
           \nWhen a user issues an SQL statement to the DBMS, it first parses the SQL statement using a module called the parser. 
           Next, a module called the optimizer determines the best way to execute the query, resulting in the generation of an execution plan. 
           The execution plan includes details such as which indexes will be used, join methods, and the order of data retrieval. 
@@ -350,7 +350,7 @@ ANALYZE orders;`
         anchor: "experiment-1",
         body: {
           ja: `ヒット件数が多い条件で Bitmap が選ばれるかどうかを確認する。`,
-          en: ``,
+          en: `Check whether Bitmap Scan is chosen when a condition matches many rows.`,
         },
       },
       { // code 実験1
@@ -433,17 +433,17 @@ WHERE created_at > now() - interval '1 day';`
           {
             tabLabel: "30days",
             headers: ["QUERY PLAN"],
-            rawText: `Bitmap Heap Scan on orders  (cost=3001.54..22434.90 rows=158078 width=35) (actual time=14.389..49.294 rows=153295 loops=1)
+            rawText: `Bitmap Heap Scan on orders  (cost=1920.69..11700.43 rows=82614 width=35) (actual time=7.663..23.873 rows=83375 loops=1)
   Recheck Cond: (created_at > (now() - '30 days'::interval))
-  Heap Blocks: exact=16667
-  Buffers: shared hit=8748 read=8364 written=1040
-  ->  Bitmap Index Scan on idx_orders_created_at  (cost=0.00..2962.02 rows=158078 width=0) (actual time=12.000..12.001 rows=153295 loops=1)
+  Heap Blocks: exact=8333
+  Buffers: shared hit=8642
+  ->  Bitmap Index Scan on idx_orders_created_at  (cost=0.00..1900.04 rows=82614 width=0) (actual time=6.244..6.244 rows=83375 loops=1)
         Index Cond: (created_at > (now() - '30 days'::interval))
-        Buffers: shared hit=84 read=361
+        Buffers: shared hit=309
 Planning:
   Buffers: shared hit=49
-Planning Time: 0.286 ms
-Execution Time: 53.455 ms`,
+Planning Time: 0.174 ms
+Execution Time: 27.081 ms`,
           showRowNumbers: true,
           rowNumberStart: 1,
           preserveCellWhitespace: true,
@@ -452,17 +452,17 @@ Execution Time: 53.455 ms`,
           {
             tabLabel: "7days",
             headers: ["QUERY PLAN"],
-            rawText: `Bitmap Heap Scan on orders  (cost=545.80..18241.89 rows=28563 width=35) (actual time=2.599..11.971 rows=25084 loops=1)
+            rawText: `Bitmap Heap Scan on orders  (cost=444.28..9112.15 rows=19078 width=35) (actual time=2.136..8.574 rows=19429 loops=1)
   Recheck Cond: (created_at > (now() - '7 days'::interval))
-  Heap Blocks: exact=11608
-  Buffers: shared hit=9766 read=1927
-  ->  Bitmap Index Scan on idx_orders_created_at  (cost=0.00..538.65 rows=28563 width=0) (actual time=1.570..1.570 rows=25084 loops=1)
+  Heap Blocks: exact=7535
+  Buffers: shared hit=7609
+  ->  Bitmap Index Scan on idx_orders_created_at  (cost=0.00..439.51 rows=19078 width=0) (actual time=1.275..1.275 rows=19429 loops=1)
         Index Cond: (created_at > (now() - '7 days'::interval))
-        Buffers: shared hit=45 read=40
+        Buffers: shared hit=74
 Planning:
   Buffers: shared hit=4
-Planning Time: 0.049 ms
-Execution Time: 12.547 ms`,
+Planning Time: 0.068 ms
+Execution Time: 9.138 ms`,
           showRowNumbers: true,
           rowNumberStart: 1,
           preserveCellWhitespace: true,
@@ -471,17 +471,17 @@ Execution Time: 12.547 ms`,
           {
             tabLabel: "1day",
             headers: ["QUERY PLAN"],
-            rawText: `Bitmap Heap Scan on orders  (cost=67.77..8702.72 rows=3527 width=35) (actual time=0.339..1.202 rows=2789 loops=1)
+            rawText: `Bitmap Heap Scan on orders  (cost=65.60..5766.53 rows=2732 width=35) (actual time=0.410..1.751 rows=2724 loops=1)
   Recheck Cond: (created_at > (now() - '1 day'::interval))
-  Heap Blocks: exact=2388
-  Buffers: shared hit=2400
-  ->  Bitmap Index Scan on idx_orders_created_at  (cost=0.00..66.88 rows=3527 width=0) (actual time=0.152..0.152 rows=2789 loops=1)
+  Heap Blocks: exact=2320
+  Buffers: shared hit=2334
+  ->  Bitmap Index Scan on idx_orders_created_at  (cost=0.00..64.92 rows=2732 width=0) (actual time=0.191..0.191 rows=2724 loops=1)
         Index Cond: (created_at > (now() - '1 day'::interval))
-        Buffers: shared hit=12
+        Buffers: shared hit=14
 Planning:
   Buffers: shared hit=4
-Planning Time: 0.029 ms
-Execution Time: 1.266 ms`,
+Planning Time: 0.043 ms
+Execution Time: 1.829 ms`,
             showRowNumbers: true,
             rowNumberStart: 1,
             preserveCellWhitespace: true,
@@ -532,17 +532,32 @@ WHERE created_at > now() - interval '1 minute';`
           {
             tabLabel: "1 hour",
             headers: ["QUERY PLAN"],
-            rawText: `Bitmap Heap Scan on orders  (cost=5.50..522.25 rows=138 width=35) (actual time=0.018..0.103 rows=97 loops=1)
+            rawText: `Bitmap Heap Scan on orders  (cost=5.06..306.52 rows=81 width=35) (actual time=0.020..0.101 rows=99 loops=1)
   Recheck Cond: (created_at > (now() - '01:00:00'::interval))
-  Heap Blocks: exact=97
-  Buffers: shared hit=100
-  ->  Bitmap Index Scan on idx_orders_created_at  (cost=0.00..5.47 rows=138 width=0) (actual time=0.007..0.007 rows=97 loops=1)
+  Heap Blocks: exact=98
+  Buffers: shared hit=102
+  ->  Bitmap Index Scan on idx_orders_created_at  (cost=0.00..5.04 rows=81 width=0) (actual time=0.010..0.010 rows=99 loops=1)
         Index Cond: (created_at > (now() - '01:00:00'::interval))
-        Buffers: shared hit=3
+        Buffers: shared hit=4
 Planning:
   Buffers: shared hit=4
-Planning Time: 0.058 ms
-Execution Time: 0.113 ms`,
+Planning Time: 0.048 ms
+Execution Time: 0.110 ms`,
+          showRowNumbers: true,
+          rowNumberStart: 1,
+          preserveCellWhitespace: true,
+          monospace: true
+          },
+          {
+            tabLabel: "18 minutes",
+            headers: ["QUERY PLAN"],
+            rawText: `Index Scan using idx_orders_created_at on orders  (cost=0.43..8.45 rows=1 width=35) (actual time=0.006..0.006 rows=1 loops=1)
+  Index Cond: (created_at > (now() - '00:18:00'::interval))
+  Buffers: shared hit=4
+Planning:
+  Buffers: shared hit=4
+Planning Time: 0.056 ms
+Execution Time: 0.013 ms`,
           showRowNumbers: true,
           rowNumberStart: 1,
           preserveCellWhitespace: true,
@@ -551,32 +566,13 @@ Execution Time: 0.113 ms`,
           {
             tabLabel: "10 minutes",
             headers: ["QUERY PLAN"],
-            rawText: `Bitmap Heap Scan on orders  (cost=4.55..63.46 rows=15 width=35) (actual time=0.006..0.010 rows=7 loops=1)
-  Recheck Cond: (created_at > (now() - '00:10:00'::interval))
-  Heap Blocks: exact=7
-  Buffers: shared hit=10
-  ->  Bitmap Index Scan on idx_orders_created_at  (cost=0.00..4.54 rows=15 width=0) (actual time=0.003..0.003 rows=7 loops=1)
-        Index Cond: (created_at > (now() - '00:10:00'::interval))
-        Buffers: shared hit=3
+            rawText: `Index Scan using idx_orders_created_at on orders  (cost=0.43..8.45 rows=1 width=35) (actual time=0.003..0.004 rows=0 loops=1)
+  Index Cond: (created_at > (now() - '00:10:00'::interval))
+  Buffers: shared hit=3
 Planning:
   Buffers: shared hit=4
-Planning Time: 0.029 ms
-Execution Time: 0.014 ms`,
-          showRowNumbers: true,
-          rowNumberStart: 1,
-          preserveCellWhitespace: true,
-          monospace: true
-          },
-          {
-            tabLabel: "9 minutes",
-            headers: ["QUERY PLAN"],
-            rawText: `Index Scan using idx_orders_created_at on orders  (cost=0.43..8.45 rows=1 width=35) (actual time=0.005..0.005 rows=1 loops=1)
-  Index Cond: (created_at > (now() - '00:09:00'::interval))
-  Buffers: shared hit=4
-Planning:
-  Buffers: shared hit=4
-Planning Time: 0.048 ms
-Execution Time: 0.011 ms`,
+Planning Time: 0.054 ms
+Execution Time: 0.009 ms`,
           showRowNumbers: true,
           rowNumberStart: 1,
           preserveCellWhitespace: true,
@@ -590,8 +586,8 @@ Execution Time: 0.011 ms`,
   Buffers: shared hit=3
 Planning:
   Buffers: shared hit=4
-Planning Time: 0.044 ms
-Execution Time: 0.009 ms`,
+Planning Time: 0.040 ms
+Execution Time: 0.008 ms`,
             showRowNumbers: true,
             rowNumberStart: 1,
             preserveCellWhitespace: true,
@@ -619,7 +615,7 @@ Execution Time: 0.009 ms`,
         anchor: "experiment-3",
         body: {
           ja: `本クエリは、usersとordersを結合して、都道府県ごとの合計金額を求める集計処理をしています。具体的なコードは以下に示される通りです。`,
-          en: ``,
+          en: `This query joins users and orders, then aggregates the total amount by prefecture. The SQL is shown below.`,
         },
       },
       {
@@ -693,6 +689,12 @@ Execution Time: 123.799 ms`,
           これにより、並列化によるスループット向上が図られています。
           \n\n最後の ORDER BY は出力が5行のみであり、ソートは quicksort でメモリ 25kB 程度と小さいことがわかります。
           以上より、本実行計画は「大量データ走査＋小テーブルハッシュ結合＋並列集約」という、読み取り主体の集計クエリに適したプランであると考えられます。`,
+          en: `This query has no WHERE clause, so it must read most of orders (1,000,000 rows). Even with indexes, the read volume barely decreases, so PostgreSQL likely chose Seq Scan.
+          \n\nFor the join, PostgreSQL builds a hash table on users (100,000 rows) and probes it while scanning orders, which is a typical strategy: hash the smaller table and scan the larger one.
+          \n\nFor GROUP BY, each worker performs partial aggregation, then the results are merged with Gather Merge and finalized by Finalize GroupAggregate.
+          This improves throughput through parallelism.
+          \n\nThe final ORDER BY sorts only five output rows, so quicksort uses a very small amount of memory (about 25kB).
+          Overall, this plan, "large data scan + hash join on a smaller table + parallel aggregation," is suitable for a read-heavy aggregation query.`,
         }
       },
       {
@@ -752,7 +754,6 @@ ORDER BY total_amount DESC;`
       {
         type: "paragraph",
         title: { ja: "考察", en: "Discussion" },
-        anchor: "summary",
         body: {
           ja: `WHERE 条件を追加して orders の候補行数を大きく減らすと、実行計画は Parallel Seq Scan + Hash Join から、Index Scan + Nested Loop に切り替わりました。
           \n\nWHERE句がない場合、ordersをほぼ全件読み取る必要があるため、並列全走査とHash Joinによってスループットを稼ぐ戦略が有効でした。一方で、created_atの範囲条件により、
@@ -765,6 +766,88 @@ ORDER BY total_amount DESC;`
           \n\nIn this execution, there were zero records within one hour, so the reference on the users side was not executed. However, in general, the fewer candidate rows there are, the more effective Nested Loop becomes,
           indicating that the selectivity of conditions significantly influences the optimizer's join strategy.`,
         },
+      },
+      {
+        type: "section",
+        title: { ja: "統計情報", en: ""},
+        anchor: "statistical-distribution",
+        body: {ja: ``, en:``},
+      },
+      {
+        type: "code",
+        title: {ja: "", en: ""},
+
+        files: [
+          {
+            tabLabel: "比率確認",
+            lang: "sql",
+            filename: "",
+            code: `
+SELECT
+  attname,
+  n_distinct,
+  most_common_vals,
+  most_common_freqs
+FROM pg_stats
+WHERE tablename='orders' AND attname IN ('status');`,
+          },
+          {
+            tabLabel: "実際の分布",
+            lang: "sql",
+            filename: "",
+            code: `
+-- 実際の分布（真値）
+SELECT status, count(*) AS cnt, count(*)::float / (SELECT count(*) FROM orders) AS ratio
+FROM orders
+GROUP BY status
+ORDER BY cnt DESC;`,
+          },
+        ],
+      },
+      {
+        type: "table",
+        title: { ja: "実行結果", en: "" },
+        files: [
+          {
+            tabLabel: "比率確認",
+            headers: ["attname","n_distinct","most_common_vals","most_common_freqs"],
+            rows: [
+              ["status","4","{paid,shipped,pending,cancelled}","{0.33426666,0.33116665,0.1688,0.16576667}"]
+            ],
+            showRowNumbers: true,
+            rowNumberStart: 1,
+          },
+          {
+            tabLabel: "実際の分布",
+            headers: ["status","cnt","ratio"],
+            rows:[
+              ["paid","333656","0.333656"],
+              ["shipped","333625","0.333625"],
+              ["pending","166368","0.166368"],
+              ["cancelled","166351","0.166351"]
+            ],
+          showRowNumbers: true,
+          rowNumberStart: 1,
+          }
+        ]
+      },
+      {
+        type: "paragraph",
+        title: "ここからわかること",
+        body: {
+          ja: `ダミーデータ生成では本来はstatusを一様分布として生成したつもりであったが、実際の分布は約33%,33%,16%,16%となってしまいました。
+          \nこれは、(random()*3)::int の切り捨てによるものだと考えられます。
+          \nしかしこの違いは、実験1においては少し影響を与えるものの、ヒット件数が多いのでIndex Scanが不利になりやすいために、結果に対して強い影響を与えることはないと考えられます。
+          \n実験2に関しては、created_atの選択率が支配的なので、結論は変わりません。
+          \n実験3もstatus分布はほぼ無関係で、実験3+αも問題ないです。
+          \n話を分布に戻しますと、オプティマイザは単に「値の種類数」ではなく、「実際の頻度分布」に基づいて実行計画を選択していることが確認できると思います。`, 
+          en: ``}
+      },
+      {
+        type: "section",
+        title: {ja: "問題演習", en: "drill" },
+        anchor: "drill",
+        body: {ja:"幾つか問題を用意しましたので、理解を深めるためにぜひ取り組んでみて下さい。" , en:""}
       }
 
 
