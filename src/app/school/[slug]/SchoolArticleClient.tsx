@@ -172,16 +172,21 @@ function BlockRenderer({
   }
 
   if (block.type === "table") {
+    const rawText = "rawText" in block ? block.rawText : undefined;
+    const preserveCellWhitespace =
+      "preserveCellWhitespace" in block ? block.preserveCellWhitespace : undefined;
+    const monospace = "monospace" in block ? block.monospace : undefined;
+
     const table = (
       <TableBlock
         headers={block.headers}
         rows={block.rows}
-        rawText={block.rawText}
+        rawText={rawText}
         caption={block.caption}
         showRowNumbers={block.showRowNumbers}
         rowNumberStart={block.rowNumberStart}
-        preserveCellWhitespace={block.preserveCellWhitespace}
-        monospace={block.monospace}
+        preserveCellWhitespace={preserveCellWhitespace}
+        monospace={monospace}
         files={block.files}
         lang={lang}
       />
