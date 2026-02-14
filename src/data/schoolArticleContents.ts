@@ -61,7 +61,8 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
       },
     ],
   },
-  {    slug: "how-to-use-table-of-contents-in-school-articles",
+  {
+    slug: "how-to-use-table-of-contents-in-school-articles",
     blocks: [
         {
           type: "toc",
@@ -75,13 +76,19 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
           type: "section",
           title: { ja: "概要", en: "Overview" },
           anchor: "overview",
-          body: { ja: "..." , en: "..." },
+          body: {
+            ja: "この記事では、School記事に目次（TOC）を追加する方法を説明します。見出しに `anchor` を付けることで、目次クリック時に対応セクションへ移動できます。",
+            en: "This article explains how to add a table of contents (TOC) to School articles. Add an `anchor` to each heading so clicking a TOC item jumps to the corresponding section.",
+          },
         },
         {
           type: "section",
           title: { ja: "実装の要点", en: "Key Points" },
           anchor: "key-points",
-          body: { ja: "..." , en: "..." },
+          body: {
+            ja: "1) `type: \"toc\"` ブロックを先頭に置く\n2) 各項目の `anchor` を本文の見出しと一致させる\n3) 目次項目の順序は読み順に合わせる",
+            en: "1) Place a `type: \"toc\"` block near the top.\n2) Match each item `anchor` with the target section heading.\n3) Keep TOC item order aligned with reading flow.",
+          },
         },
             ],
   },
@@ -124,22 +131,6 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   {
     slug: "postgresql_Execution_Plans",
     blocks: [
-      {
-        type: "section",
-        title: { ja: "概要", en: "Overview" },
-        body: {
-          ja: "（ここに目的・データ・モデルの概要を追記）",
-          en: "(Add motivation, data sources, and model overview here)",
-        },
-      },
-      {
-        type: "section",
-        title: { ja: "メモ", en: "Notes" },
-        body: {
-          ja: "実行計画EXPLAIN、EXPLAIN ANALYZE、オプティマイザ、Seq Scan / Index Scan\nパフォーマンスチューニング (インデックス設計を含む) に興味関心がある学生におすすめ。\n参考: 📖 教科書「6-4 統計情報」\n難易度: ⭐⭐⭐",
-          en: "This article covers EXPLAIN, EXPLAIN ANALYZE, the optimizer, Seq Scan, and Index Scan.\nRecommended for students interested in performance tuning, including index design.\nRef: 📖 Textbook \"6-4 Statistics\"\nDifficulty: ⭐⭐⭐",
-        },
-      },
       { //目次
         type: "toc",
         title: { ja: "目次", en: "Contents" },
@@ -149,9 +140,9 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
           { title: { ja: "実験1: 低カーディナリ列の検索（Bitmap Scan）", en: "Experiment 1: Searching a low-cardinality column (Bitmap Scan)" }, anchor: "experiment-1" },
           { title: { ja: "実験2: 範囲検索の選択率とプラン切替（Bitmap ↔ Index）", en: "Experiment 2: Selectivity in range queries and plan switching (Bitmap ↔ Index)" }, anchor: "experiment-2" },
           { title: { ja: "実験3: JOIN + GROUP BY", en: "Experiment 3: JOIN + GROUP BY" }, anchor: "experiment-3" },
-          { title: { ja: "実験3+α: 絞り込みによるJoin戦略の切替（Hash Join → Nested Loop)", en: "Experiment 3+alpha: Join strategy switching with filtering (Hash Join -> Nested Loop)"}, anchor: "experiment-3+α"},
-          { title: { ja: "統計分布", en: "Statistics Distribution" }, anchor: "statistical-distribution" },
-          { title: { ja: "問題演習", en: "Drills" }, anchor: "drill" }
+          { title: { ja: "実験3+α: 絞り込みによるJoin戦略の切替（Hash Join → Nested Loop）", en: "Experiment 3+alpha: Join strategy switching with filtering (Hash Join -> Nested Loop)"}, anchor: "experiment-3+α"},
+          { title: { ja: "統計分布", en: "Statistical Distribution" }, anchor: "statistical-distribution" },
+          { title: { ja: "問題演習", en: "Drills" }, anchor: "drill-1" }
         ],
       },
       {
@@ -204,10 +195,10 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
             height: 400,
           },
           {
-            tabLabel: { ja: "Index only Scan", en: "Index Only Scan" },
+            tabLabel: { ja: "Index Only Scan", en: "Index Only Scan" },
             src: "/images/script/Database/index_only_scan.gif",
-            alt: { ja: "Index only Scanの図", en: "Diagram of Index Only Scan" },
-            caption: { ja: "図4: Index only Scanのイメージ", en: "Fig. 4: Index Only Scan overview" },
+            alt: { ja: "Index Only Scanの図", en: "Diagram of Index Only Scan" },
+            caption: { ja: "図4: Index Only Scanのイメージ", en: "Fig. 4: Index Only Scan overview" },
             width: 600,
             height: 400,
           }
@@ -495,7 +486,7 @@ Execution Time: 1.829 ms`,
         body: {
           ja: `実験2では created_at に対する範囲検索で(30日、7日、1日)の3つのケースを試しました。しかし、いずれのケースでもPostgreSQLはBitmap Heap Scanを選択しました。
           \nこれは、一致行数がまだ一定数存在する場合や、対象行がテーブル上に散在している場合、対象ブロックをまとめて読むBitmap Heap Scanが効率的であると判断されたためだと考えられます。
-          \n実際、Heap Blocksが8333→7535→2320と減少し、Execution Timeも27.081ms→9.138ms→1.829mmsと改善しています。
+          \n実際、Heap Blocksが8333→7535→2320と減少し、Execution Timeも27.081ms→9.138ms→1.829msと改善しています。
           \n変化しなかった原因は日にち単位だとヒット件数がまだまだ多いことが考えられます。
           \nIndex Scanに切り替わる境界をある程度絞りたいので1時間・10分・1分も試してみます。`,
           en: `In Experiment 2, we tested three cases of range searches on created_at (30 days, 7 days, 1 day). However, in all cases, PostgreSQL chose Bitmap Heap Scan.
@@ -602,7 +593,7 @@ Execution Time: 0.008 ms`,
           ja: `追加の実験2ではcreated_atに対する範囲検索で(1時間、10分、1分)の3つのケースを試した。PostgreSQLは、1時間の時を除き、すべてのケースでIndex Scanを選択しています。
           \nこれは、ヒット件数（選択率）が高い場合には Index Scan で1行ずつヒープへアクセスするとランダムアクセスが増え、I/O効率が悪化するためです。
           Bitmap Heap Scan は、インデックスから対象行の位置情報をまとめて収集してからヒープブロックをまとめて読み込むため、ヒット件数が多い領域で有利になりやすい。
-一方で、1時間以下のようにヒット件数が十分少ない場合は、インデックスを辿って必要な行だけを取得する Index Scan の方が総コストが低くなります。その結果、実行計画が Bitmap 系から Index Scan に切り替わったと考えられます。`,
+一方で、18分以下のようにヒット件数が十分少ない場合は、インデックスを辿って必要な行だけを取得する Index Scan の方が総コストが低くなります。その結果、実行計画が Bitmap 系から Index Scan に切り替わったと考えられます。`,
           en: `In the additional Experiment 2, we tested three cases of range searches on created_at (1 hour, 10 minutes, 1 minute). PostgreSQL chose Index Scan in all cases.
           \nThis is because when the number of hits (selectivity) is high, accessing the heap row by row with Index Scan increases random access, worsening I/O efficiency.
           Bitmap Heap Scan collects the position information of target rows from the index in bulk and then reads the heap blocks in bulk, making it advantageous in areas with many hits.
@@ -702,7 +693,7 @@ Execution Time: 123.799 ms`,
         title: { ja: "実験3+α: 絞り込みによるJoin戦略の切替（Hash Join → Nested Loop）", en: "Experiment 3+alpha: Join strategy switching with filtering" },
         anchor: "experiment-3+α",
         body: {
-          ja: `orderを１時間以内に絞るとどうなるか？`,
+          ja: `ordersを1時間以内に絞るとどうなるか？`,
           en: `What happens if you narrow down orders to within one hour?`,
         }
       },
@@ -772,13 +763,13 @@ ORDER BY total_amount DESC;`
         title: { ja: "統計情報", en: "Statistics" },
         anchor: "statistical-distribution",
         body: {
-          ja: ``,
+          ja: `問題演習に入る前に、pg_stats にある推定分布と実データの分布を比較します。どのプランが選ばれたかを説明するための前提確認です。`,
           en: `Before moving to drills, compare the estimated distribution in pg_stats with the actual data distribution. This helps explain why certain plans were chosen.`
         },
       },
       {
         type: "code",
-        title: {ja: "統計分布の確認", en: "Check statistics distribution"},
+        title: {ja: "統計分布の確認", en: "Check statistical distribution"},
 
         files: [
           {
@@ -851,66 +842,24 @@ ORDER BY cnt DESC;`,
           \nExperiment 3 is also mostly unaffected by status distribution, and Experiment 3+alpha remains valid.
           \nIn short, the optimizer does not choose plans based only on the number of distinct values, but on the actual frequency distribution.`}
       },
-            {
-        type: "exercise",
-        title: { ja: "問題演習 1: statusが一様分布の場合", en: "Drill 1: When status is uniformly distributed" },
-        anchor: "drill",
-        question: {
-          ja: "statusが一様ではなくとも大きく問題ないと書いてありますが、本当にそうか検証してみて下さい。\ndrill_1.sqlを実行することで確認できます。",
-          en: "The article says the non-uniform status distribution is not a major issue. Verify whether that is really true by running `drill_1.sql`."
-        },
-        questionBlocks: [
-          {
-            type: "code",
-            lang: "sql",
-            filename: "drill_1.sql",
-            code: `EXPLAIN
-SELECT *
-FROM orders
-WHERE status = 'paid';`
-          },
-          {
-            type: "paragraph",
-            body: {
-              ja: `ヒント: オーダーを初期化し、(ARRAY['pending','paid','shipped','cancelled'])[1 + (random()*3)::int],の箇所を変えると均等なデータが作れます。`,
-              en: "Hint: the ratio of status='paid' is about 33%. With many rows, random access cost becomes important."
-            }
-          }
-        ],
-        answer: {
-          ja: "実行環境によって数値などは変化しますが、例としては、以下の様な結果になると考えられます。\n推定行数の現象や実行時間、Buffersが変化すると思います。",
-          en: "You should get a result similar to the following."
-        },
-        answerBlocks: [
-          {
-            type: "table",
-            rawText: `Bitmap Heap Scan on orders  (cost=5501.40..28466.73 rows=503867 width=35) (actual time=13.058..90.873 rows=499798 loops=1)
-  Recheck Cond: (status = 'paid'::text)
-  Heap Blocks: exact=16667
-  Buffers: shared hit=6712 read=10349 written=5390
-  ->  Bitmap Index Scan on idx_orders_status  (cost=0.00..5375.43 rows=503867 width=0) (actual time=11.097..11.097 rows=499798 loops=1)
-        Index Cond: (status = 'paid'::text)
-        Buffers: shared hit=48 read=346
-Planning:
-  Buffers: shared hit=40 read=9
-Planning Time: 0.230 ms
-Execution Time: 101.498 ms`,
-            showRowNumbers: true,
-            monospace: true,
-            preserveCellWhitespace: true
-          },
-          {
-            type: "paragraph",
-            body:{
-              ja: `生成は次の様にすると均等になります。`,
-              en: `Use the following data generation query to make status nearly uniform.`
-            }
-          },
-          {
-            type: "code",
-            lang: "sql",
-            filename: "drill_1_orders_table_data",
-            code:`INSERT INTO orders (user_id, amount, status, created_at)
+{
+  type: "exercise",
+  title: { ja: "問題演習 1: status が一様分布でも結論は変わらないか？", en: "Drill 1: Does uniform status change the conclusion?" },
+  anchor: "drill-1",
+  question: {
+    ja: "本文では「status が一様でなくても実験1の結論は大きく変わらない」と述べています。orders を一様分布に作り直し、EXPLAIN (ANALYZE, BUFFERS) のプランと実行時間がどう変わるか確認してください。",
+    en: "Rebuild orders with uniform status distribution and check whether the plan/time changes for status='paid'."
+  },
+  questionBlocks: [
+    {
+      type: "code",
+      lang: "sql",
+      filename: "drill_1_rebuild_uniform.sql",
+      code: `-- 1) 初期化（必要なら）
+TRUNCATE orders;
+
+-- 2) 一様分布に近い status を生成（4値を均等に）
+INSERT INTO orders (user_id, amount, status, created_at)
 SELECT
   (random()*99999)::int + 1,
   (random()*10000)::int,
@@ -918,183 +867,244 @@ SELECT
   now() - (random() * interval '1 year')
 FROM generate_series(1, 1000000);
 
+-- 3) 統計情報更新
 ANALYZE orders;
-            `
-          }
-        ]
-      },
-      {
-        type: "exercise",
-        title: { ja: "問題演習 2: どの実行計画になる？", en: "Drill 2: Which plan will be chosen?" },
-        anchor: "drill",
-        question: {
-          ja: "orders(status) にインデックスがある状態で、以下のクエリを EXPLAIN すると何系のプランになりやすいでしょうか？理由も考えてみてください。",
-          en: "With an index on orders(status), what kind of plan is likely for the following EXPLAIN query? Also think about why."
-        },
-        questionBlocks: [
-          {
-            type: "code",
-            lang: "sql",
-            filename: "drill_1.sql",
-            code: `EXPLAIN
+
+-- 4) 分布確認
+SELECT status, count(*) AS cnt, count(*)::float / (SELECT count(*) FROM orders) AS ratio
+FROM orders
+GROUP BY status
+ORDER BY cnt DESC;`
+    },
+    {
+      type: "code",
+      lang: "sql",
+      filename: "drill_1_explain.sql",
+      code: `EXPLAIN (ANALYZE, BUFFERS)
 SELECT *
 FROM orders
 WHERE status = 'paid';`
-          },
-          {
-            type: "paragraph",
-            body: {
-              ja: "ヒント: status='paid' の割合は約 33% です。行数が多いと、ランダムアクセスコストが効いてきます。",
-              en: "Hint: the ratio of status='paid' is about 33%. With many rows, random access cost becomes important."
-            }
-          }
+    }
+  ],
+  answer: {
+    ja: "多くの場合、status='paid' が 25% 程度になるため推定 rows / actual rows や Buffers の値は変化しますが、ヒット件数が依然として多いので、Bitmap Index Scan + Bitmap Heap Scan が選ばれやすいです。Index Scan よりもページ単位でまとめて読む方が有利になりやすいためです。",
+    en: "Even with uniform distribution, many rows match, so Bitmap Index + Bitmap Heap is still likely."
+  }
+},
+
+{
+  type: "exercise",
+  title: { ja: "問題演習 2: どの実行計画になりやすい？（選択率の目安）", en: "Drill 2: Which plan is likely? (Selectivity rule of thumb)" },
+  anchor: "drill-2",
+  question: {
+    ja: "orders(status) にインデックスがある状態で、次のクエリを EXPLAIN すると、どの系のプランになりやすいでしょうか？理由も述べてください。",
+    en: "With an index on orders(status), which plan family is likely for the query below?"
+  },
+  questionBlocks: [
+    {
+      type: "code",
+      lang: "sql",
+      filename: "drill_2_explain.sql",
+      code: `EXPLAIN
+SELECT *
+FROM orders
+WHERE status = 'paid';`
+    },
+    {
+      type: "paragraph",
+      body: {
+        ja: "ヒント: status='paid' の割合が 25%〜33% 程度になると、行単位のランダムアクセスよりもページ単位でまとめて読む戦略が有利になりやすいです。",
+        en: "Hint: If selectivity is ~25–33%, batched page access often wins over per-row random access."
+      }
+    }
+  ],
+  answer: {
+    ja: "Bitmap Index Scan + Bitmap Heap Scan が選ばれやすいです。ヒット件数が多い場合、Index Scan はヒープへのランダムアクセスが増えやすく、Bitmap で対象ページをまとめて読む方が I/O 的に有利になりやすいからです。",
+    en: "Bitmap Index + Bitmap Heap is likely due to many matches and reduced random heap access."
+  },
+  answerBlocks: [
+    {
+      type: "table",
+      headers: [
+        { ja: "条件（選択率の目安）", en: "Condition (rough selectivity)" },
+        { ja: "選ばれやすいプラン", en: "Likely plan" }
+      ],
+      rows: [
+        [
+          { ja: "高選択率（< 1%）", en: "High selectivity (<1%)" },
+          { ja: "Index Scan", en: "Index Scan" }
         ],
-        answer: {
-          ja: "Bitmap Index Scan + Bitmap Heap Scan が選ばれやすいです。理由は、ヒット件数が比較的多く、Index Scan の行ごとのランダムアクセスより Bitmap でまとめてページアクセスする方が有利になりやすいためです。",
-          en: "Bitmap Index Scan + Bitmap Heap Scan is likely. Since many rows match, batched page access via bitmap is often cheaper than per-row random access in Index Scan."
-        },
-        answerBlocks: [
-          {
-            type: "table",
-            headers: [
-              { ja: "条件", en: "Condition" },
-              { ja: "選ばれやすいプラン", en: "Likely plan" }
-            ],
-            rows: [
-              [
-                { ja: "高選択率（1%未満）", en: "High selectivity (<1%)" },
-                { ja: "Index Scan", en: "Index Scan" }
-              ],
-              [
-                { ja: "中選択率（数%〜数十%）", en: "Mid selectivity (a few % to tens of %)" },
-                { ja: "Bitmap Heap Scan", en: "Bitmap Heap Scan" }
-              ],
-              [
-                { ja: "低選択率（ほぼ全件）", en: "Low selectivity (almost all rows)" },
-                { ja: "Seq Scan", en: "Seq Scan" }
-              ]
-            ],
-            showRowNumbers: true
-          }
+        [
+          { ja: "中選択率（数%〜数十%）", en: "Mid selectivity (few % to tens %)" },
+          { ja: "Bitmap Heap Scan", en: "Bitmap Heap Scan" }
+        ],
+        [
+          { ja: "低選択率（ほぼ全件）", en: "Low selectivity (almost all rows)" },
+          { ja: "Seq Scan", en: "Seq Scan" }
         ]
-      },
-      {
-        type: "exercise",
-        title: { ja: "演習問題 3: EXPLAIN と EXPLAIN ANALYZE の違い", en: "" },
-        anchor: "drill",
-        question: {
-          ja: "EXPLAIN と EXPLAIN ANALYZE の違いを2点述べ、どちらが実測時間を含むか答えよ。",
-          en: ""
-        },
-        answer: {
-          ja: "推定か実測かどうかです。ANALYZEは実行します、BUFFERSはI/O観察などです。",
-          en: ""
-        },
-      },
-      {
-        type: "exercise",
-        title: { ja: "演習問題 4: 推定 rows と actual rows がズレる理由", en: "" },
-        anchor: "drill",
-        question: {
-          ja: "実験1（status）で rows 推定と actual rows がズレる理由を1〜2個挙下てください。",
-          en: ""
-        },
-        answer: {
-          ja: "標本をとってきて予想しているためなど、統計が推定であることやサンプル、相関などについて触れていると良いです。",
-          en: ""
-        },
-      },
-      {
-        type: "exercise",
-        title: { ja: "問題演習 5:  JOIN戦略の予想（Hash Join vs Nested Loop）", en: "" },
-        anchor: "drill",
-        question: {
-          ja: "orders をほぼ全件読むクエリでは Hash Join が選ばれやすい理由を説明して下さい。",
-          en: ""
-        },
-        answer: {
-          ja: "小表をhash化し、大表を走査する方法を取ることで速くなります。NLは外側×内側を走査するため回数が増えてしまい、多くの場合採用されません。",
-          en: ""
-        },
-      },
-      {
-        type: "exercise",
-        title: { ja: "問題演習 6:  絞り込みで Nested Loop が有利になる条件", en: "" },
-        anchor: "drill",
-        question: {
-          ja: "WHERE で orders の候補が少ないとき Nested Loop が有利になるのはなぜですか?",
-          en: ""
-        },
-        answer: {
-          ja: "外側が少数であれば内側のindex lookupが効きます。hash Joinはhash構築コストがかかってしまうため、 NLが有利になります。",
-          en: ""
-        },
-      },
-      {
-        type: "exercise",
-        title: { ja: "問題演習 7:  Index Only Scanを観察", en: "" },
-        anchor: "drill",
-        question: {
-          ja: "WHERE で orders の候補が少ないとき Nested Loop が有利になるのはなぜですか?",
-          en: ""
-        },
-        answer: {
-          ja: "外側が少数であれば内側のindex lookupが効きます。hash Joinはhash構築コストがかかってしまうため、 NLが有利になります。",
-          en: ""
-        },
-      },
-      {
-        type: "exercise",
-        title: { ja: "問題演習 7:  Index Only Scanを観察", en: "" },
-        anchor: "drill",
-        question: {
-          ja: "以下のコードを実行してIndex Only Scanが出るか検証してみて下さい。",
-          en: ""
-        },
-        questionBlocks: [
-          {
-            type: "code",
-            lang: "sql",
-            filename: "drill_create_table.sql",
-            code: `CREATE INDEX idx_orders_status_amount ON orders(status, amount);
+      ],
+      showRowNumbers: true
+    }
+  ]
+},
+
+{
+  type: "exercise",
+  title: { ja: "問題演習 3: EXPLAIN と EXPLAIN ANALYZE の違い", en: "Drill 3: EXPLAIN vs EXPLAIN ANALYZE" },
+  anchor: "drill-3",
+  question: {
+    ja: "EXPLAIN と EXPLAIN ANALYZE の違いを 2 点述べ、どちらが実測時間（actual time）を含むか答えてください。",
+    en: "State two differences and which includes actual timings."
+  },
+  answer: {
+    ja: "① EXPLAIN はクエリを実行せず、統計情報に基づく推定（cost / rows）を表示する。② EXPLAIN ANALYZE は実際にクエリを実行し、actual time / actual rows を含む。実測時間を含むのは EXPLAIN ANALYZE。",
+    en: "EXPLAIN is estimated without running; EXPLAIN ANALYZE runs the query and shows actual timings/rows."
+  }
+},
+
+{
+  type: "exercise",
+  title: { ja: "問題演習 4: 推定 rows と actual rows がズレる理由", en: "Drill 4: Why estimated rows differ from actual rows?" },
+  anchor: "drill-4",
+  question: {
+    ja: "実験1（status）で rows（推定）と actual rows（実測）がズレる理由を 1〜2 個挙げてください。",
+    en: "Give 1–2 reasons why estimated vs actual rows differ."
+  },
+  answer: {
+    ja: "例: (1) 統計情報は全件ではなくサンプルに基づく推定であり誤差が出る。(2) データ分布の偏りや相関、更新後に ANALYZE が不十分（または未実行）だと推定が古くなる。",
+    en: "Sampling-based stats, skew/correlation, stale stats without ANALYZE, etc."
+  }
+},
+
+{
+  type: "exercise",
+  title: { ja: "問題演習 5: orders をほぼ全件読むと Hash Join が選ばれやすい理由", en: "Drill 5: Why Hash Join for scanning most rows?" },
+  anchor: "drill-5",
+  question: {
+    ja: "orders をほぼ全件読む JOIN クエリでは Hash Join が選ばれやすい理由を説明してください。",
+    en: "Explain why Hash Join is favored when scanning most rows."
+  },
+  answer: {
+    ja: "Hash Join は小さい表（users）をハッシュ表にしておき、大きい表（orders）を 1 回走査しながら照合できるため、全件に近い読み取りでは効率が良い。Nested Loop は外側×内側の参照回数が増えやすく、大量走査では不利になりやすい。",
+    en: "Hash the small table and scan the large table once; NL can multiply probes and becomes costly."
+  }
+},
+
+{
+  type: "exercise",
+  title: { ja: "問題演習 6: 絞り込みで Nested Loop が有利になる条件", en: "Drill 6: When filtering makes Nested Loop favorable" },
+  anchor: "drill-6",
+  question: {
+    ja: "WHERE で orders の候補が少ないとき Nested Loop が有利になりやすい理由を説明してください。",
+    en: "Why does Nested Loop become favorable when filtered rows are few?"
+  },
+  answer: {
+    ja: "外側（orders の候補）が少数なら、内側（users）への index lookup を少ない回数で済ませられるため総コストが下がる。Hash Join はハッシュ表構築コストが先に発生するので、ヒットが極小のときは構築コストの方が相対的に重くなりやすい。",
+    en: "Few outer rows means few index probes; hash build overhead may dominate for tiny result sets."
+  }
+},
+
+{
+  type: "exercise",
+  title: { ja: "問題演習 7: Index Only Scan を観察する", en: "Drill 7: Observe Index Only Scan" },
+  anchor: "drill-7",
+  question: {
+    ja: "次の手順で Index Only Scan が出るか確認してください。出ない場合も失敗ではなく、Index Only Scan にならない理由（Heap Fetches が発生する等）を説明できればOKです。",
+    en: "Try to trigger Index Only Scan; if it doesn't appear, explain why (e.g., heap fetches)."
+  },
+  questionBlocks: [
+    {
+      type: "code",
+      lang: "sql",
+      filename: "drill_7_setup.sql",
+      code: `-- 1) Index Only Scan を狙うため、必要列を含む複合インデックスを作成
+CREATE INDEX IF NOT EXISTS idx_orders_status_amount ON orders(status, amount);
+
+-- 2) 可視性マップ更新を期待して VACUUM (ANALYZE)
 VACUUM (ANALYZE) orders;`
-          },
-          {
-            type: "code",
-            lang: "sql",
-            filename: "dill8",
-            code: `EXPLAIN (ANALYZE, BUFFERS)
+    },
+    {
+      type: "code",
+      lang: "sql",
+      filename: "drill_7_explain.sql",
+      code: `EXPLAIN (ANALYZE, BUFFERS)
 SELECT amount
 FROM orders
-WHERE status='paid';
-            `
-          }],
-        answer: {
-          ja: "以下のような出力が確認できたら成功です。是非出力結果やコードを見て考察して下さい。",
-          en: ""
-        },
-        answerBlocks: [
-          {
-            type: "table",
-            rawText: `Index Only Scan using idx_orders_status_amount on orders  (cost=0.43..10393.10 rows=493067 width=4) (actual time=0.056..32.308 rows=499798 loops=1)
-  Index Cond: (status = 'paid'::text)
-  Heap Fetches: 0
-  Buffers: shared hit=1 read=446
-Planning:
-  Buffers: shared hit=101
-Planning Time: 0.262 ms
-Execution Time: 47.997 ms`,
-            showRowNumbers: true,
-            monospace: true,
-            preserveCellWhitespace: true
-          },
-        ]
-      },
+WHERE status = 'paid';`
+    }
+  ],
+  answer: {
+    ja: "Index Only Scan が出た場合は、プラン名と Heap Fetches の値（0 かどうか）に注目してください。Index Only Scan が出ない場合でも、(1) 可視性マップが十分でない (2) ヒープ参照が必要 (3) コスト推定で別プランが有利、といった理由を説明できればOKです。",
+    en: "Check plan type and Heap Fetches; explain why it may not appear."
+  },
+  answerBlocks: [
+    {
+      type: "paragraph",
+      body: {
+        ja: "観察ポイント: `Index Only Scan` か / `Heap Fetches` が 0 か / Buffers の read/hit の変化",
+        en: "Observe: plan node, Heap Fetches, and buffer behavior."
+      }
+    }
+  ]
+},
+
+{
+  type: "exercise",
+  title: { ja: "問題演習 8: ANALYZE の重要性（統計情報で推定 rows は変わるか？）", en: "Drill 8: Importance of ANALYZE (does estimation change?)" },
+  anchor: "drill-8",
+  question: {
+    ja: "TRUNCATE→再投入の直後は統計情報が古くなりやすいです。ANALYZE 前後で EXPLAIN の推定 rows がどう変わるか比較してください。",
+    en: "Compare EXPLAIN estimated rows before/after ANALYZE after rebuilding data."
+  },
+  questionBlocks: [
+    {
+      type: "code",
+      lang: "sql",
+      filename: "drill_8_rebuild.sql",
+      code: `-- 1) データ再投入（例: 一様分布で再生成）
+TRUNCATE orders;
+
+INSERT INTO orders (user_id, amount, status, created_at)
+SELECT
+  (random()*99999)::int + 1,
+  (random()*10000)::int,
+  (ARRAY['pending','paid','shipped','cancelled'])[1 + floor(random()*4)::int],
+  now() - (random() * interval '1 year')
+FROM generate_series(1, 1000000);`
+    },
+    {
+      type: "code",
+      lang: "sql",
+      filename: "drill_8_before_analyze.sql",
+      code: `-- 2) ANALYZE 前の推定を確認
+EXPLAIN
+SELECT *
+FROM orders
+WHERE status = 'paid';`
+    },
+    {
+      type: "code",
+      lang: "sql",
+      filename: "drill_8_after_analyze.sql",
+      code: `-- 3) 統計情報を更新して、推定がどう変わるか再確認
+ANALYZE orders;
+
+EXPLAIN
+SELECT *
+FROM orders
+WHERE status = 'paid';`
+    }
+  ],
+  answer: {
+    ja: "ANALYZE 前は推定 rows が実態とズレやすく、ANALYZE 後は pg_stats が更新されて推定 rows が実測に近づきやすいです。推定が改善すると、境界付近のケースでは実行計画が切り替わることもあります。",
+    en: "ANALYZE refreshes stats; estimates become closer and can affect plan choices near boundaries."
+  }
+},
       {
         type: "section",
-        title: { ja: "コラム", en: "" },
-        body: { ja: "制作時間: 約12時間", en: ""} 
-      }
+        title: { ja: "コラム", en: "Column" },
+        body: { ja: "制作時間: 約12時間", en: "Estimated implementation time: about 12 hours."} 
+      },
     ],
   },
 ];
