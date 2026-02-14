@@ -20,6 +20,69 @@ export type SchoolTableFile = {
   monospace?: boolean;
 };
 
+export type SchoolExerciseContentBlock =
+  | {
+      type: "paragraph";
+      body: I18nText;
+    }
+  | {
+      type: "list";
+      items: I18nText[];
+    }
+  | {
+      type: "image";
+      src: string;
+      alt?: I18nText;
+      caption?: I18nText;
+      width?: number;
+      height?: number;
+      files?: SchoolImageFile[];
+    }
+  | {
+      type: "image";
+      files: SchoolImageFile[];
+      src?: string;
+      alt?: I18nText;
+      caption?: I18nText;
+      width?: number;
+      height?: number;
+    }
+  | {
+      type: "table";
+      headers?: I18nText[];
+      rows?: I18nText[][];
+      rawText?: string;
+      caption?: I18nText;
+      showRowNumbers?: boolean;
+      rowNumberStart?: number;
+      preserveCellWhitespace?: boolean;
+      monospace?: boolean;
+      files?: SchoolTableFile[];
+    }
+  | {
+      type: "table";
+      files: SchoolTableFile[];
+      headers?: I18nText[];
+      rows?: I18nText[][];
+      caption?: I18nText;
+      showRowNumbers?: boolean;
+      rowNumberStart?: number;
+    }
+  | {
+      type: "code";
+      lang?: string;
+      filename?: string;
+      code: string;
+      files?: { code: string; lang?: string; filename?: string; tabLabel?: string }[];
+    }
+  | {
+      type: "code";
+      files: { code: string; lang?: string; filename?: string; tabLabel?: string }[];
+      code?: string;
+      lang?: string;
+      filename?: string;
+    };
+
 /** I18nText または string を受けて、言語に応じて取り出す（無ければ ja にフォールバック） */
 export function pickText(v: I18nText, lang: Lang) {
   if (typeof v === "string") return v;
@@ -111,6 +174,16 @@ export type SchoolBlock =
       code?: string;
       lang?: string;
       filename?: string;
+    }
+  | {
+      type: "exercise";
+      title: I18nText;
+      anchor?: string;
+      question: I18nText;
+      questionBlocks?: SchoolExerciseContentBlock[];
+      answer?: I18nText;
+      answerBlocks?: SchoolExerciseContentBlock[];
+      initiallyOpen?: boolean;
     };
 
 export type SchoolArticleCard = {

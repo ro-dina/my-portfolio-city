@@ -150,8 +150,8 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
           { title: { ja: "実験2: 範囲検索の選択率とプラン切替（Bitmap ↔ Index）", en: "Experiment 2: Selectivity in range queries and plan switching (Bitmap ↔ Index)" }, anchor: "experiment-2" },
           { title: { ja: "実験3: JOIN + GROUP BY", en: "Experiment 3: JOIN + GROUP BY" }, anchor: "experiment-3" },
           { title: { ja: "実験3+α: 絞り込みによるJoin戦略の切替（Hash Join → Nested Loop)", en: "Experiment 3+alpha: Join strategy switching with filtering (Hash Join -> Nested Loop)"}, anchor: "experiment-3+α"},
-          { title: { ja: "統計分布", en: "Statistical distribution"}, anchor: "statistical-distribution"},
-          { title: { ja: "問題演習", en: "drill"}, anchor: "drill"}
+          { title: { ja: "統計分布", en: "Statistics Distribution" }, anchor: "statistical-distribution" },
+          { title: { ja: "問題演習", en: "Drills" }, anchor: "drill" }
         ],
       },
       {
@@ -183,7 +183,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
             tabLabel: { ja: "Seq Scan", en: "Seq Scan" },
             src: "/images/script/Database/seq_scan.gif",
             alt: { ja: "Seq Scanの図", en: "Diagram of Seq Scan" },
-            caption: { ja: "図1: Seq Scanのイメージ", en: "Fig.1 Image of Seq Scan" },
+            caption: { ja: "図1: Seq Scanのイメージ", en: "Fig. 1: Seq Scan overview" },
             width: 600,
             height: 400,
           },
@@ -191,7 +191,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
             tabLabel: { ja: "Index Scan", en: "Index Scan" },
             src: "/images/script/Database/index_scan.gif",
             alt: { ja: "Index Scanの図", en: "Diagram of Index Scan" },
-            caption: { ja: "図2: Index Scanのイメージ", en: "Fig.2 Image of Index Scan" },
+            caption: { ja: "図2: Index Scanのイメージ", en: "Fig. 2: Index Scan overview" },
             width: 600,
             height: 400,
           },
@@ -199,7 +199,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
             tabLabel: { ja: "Bitmap Heap Scan", en: "Bitmap Heap Scan" },
             src: "/images/script/Database/bitmap_heap_scan.gif",
             alt: { ja: "Bitmap Heap Scanの図", en: "Diagram of Bitmap Heap Scan" },
-            caption: { ja: "図3: Bitmap Heap Scanのイメージ", en: "Fig.3 Image of Bitmap Heap Scan" },
+            caption: { ja: "図3: Bitmap Heap Scanのイメージ", en: "Fig. 3: Bitmap Heap Scan overview" },
             width: 600,
             height: 400,
           },
@@ -207,7 +207,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
             tabLabel: { ja: "Index only Scan", en: "Index Only Scan" },
             src: "/images/script/Database/index_only_scan.gif",
             alt: { ja: "Index only Scanの図", en: "Diagram of Index Only Scan" },
-            caption: { ja: "図4: Index only Scanのイメージ", en: "Fig.4 Image of Index Only Scan" },
+            caption: { ja: "図4: Index only Scanのイメージ", en: "Fig. 4: Index Only Scan overview" },
             width: 600,
             height: 400,
           }
@@ -305,7 +305,7 @@ FROM generate_series(1, 1000000);`,
   title: { ja: "構成図", en: "Diagram" }, // 任意
   src: "/images/script/Database/plane_image_database.png", // 任意
   alt: { ja: "構成の図", en: "System diagram" }, // 任意
-  caption: { ja: "図1: 全体構成", en: "Fig.1 Overview" }, // 任意
+  caption: { ja: "図1: 全体構成", en: "Fig. 1: System overview" }, // 任意
   width: 1200, // 任意
   height: 700,  // 任意
       },
@@ -346,7 +346,7 @@ ANALYZE orders;`
       },
       { // section 実験1
         type: "section",
-        title: { ja: "実験1: 低カーディナリ列の検索（Bitmap Scan）", en: "Experiment 1" },
+        title: { ja: "実験1: 低カーディナリ列の検索（Bitmap Scan）", en: "Experiment 1: Low-cardinality search (Bitmap Scan)" },
         anchor: "experiment-1",
         body: {
           ja: `ヒット件数が多い条件で Bitmap が選ばれるかどうかを確認する。`,
@@ -355,7 +355,7 @@ ANALYZE orders;`
       },
       { // code 実験1
         type: "code", 
-        title: { ja: "実験1: 低カーディナリ列の検索", en: "Experiment 1: " },
+        title: { ja: "実験1: 低カーディナリ列の検索", en: "Experiment 1: Low-cardinality search" },
         lang: "sql",
         filename: "experiment1_low_selectivity.sql",
         code: `
@@ -393,12 +393,12 @@ WHERE status = 'paid';`
           \n\nPostgreSQLはまずインデックスから一致行の位置をビットマップとして収集し、その後テーブルをまとめて読み込むBitmap Heap Scanを採用することで、検索効率とI/O効率の両立を図っています。`,
           en: `In Experiment 1, for searches on the low-cardinality column 'status', PostgreSQL chose Bitmap Heap Scan instead of Seq Scan or Index Scan.
           \nSince 'status' has only four possible values, many rows match a single value. In this case, using Index Scan to reference individual rows is inefficient, and Seq Scan is costly as it reads all rows.
-          \n\nPostgreSQL first collects the positions of matching rows from the index as a bitmap, and then reads the table in bulk using Bitmap Heap Scan, balancing search efficiency and I/O efficiency`,
+          \n\nPostgreSQL first collects the positions of matching rows from the index as a bitmap, and then reads the table in bulk using Bitmap Heap Scan, balancing search efficiency and I/O efficiency.`,
         },
       },
       { // section 実験2 
         type: "section",
-        title: { ja: "実験2: 範囲検索の選択率とプラン切替（Bitmap ↔ Index）", en: "Experiment 2" },
+        title: { ja: "実験2: 範囲検索の選択率とプラン切替（Bitmap ↔ Index）", en: "Experiment 2: Range-query selectivity and plan switching (Bitmap ↔ Index)" },
         anchor: "experiment-2",
         body: {
           ja: `created_atの範囲検索でBitmapがIndex Scanに切り替わる境界を観測する。`,
@@ -407,7 +407,7 @@ WHERE status = 'paid';`
       },
       { // code 実験2
         type: "code",
-        title: { ja: "実験2: 範囲検索（30日/7日/1日）", en: "Experiment 2: Range search（30日/7日/1日）" },
+        title: { ja: "実験2: 範囲検索（30日/7日/1日）", en: "Experiment 2: Range search (30 days / 7 days / 1 day)" },
         lang: "sql",
         filename: "experiment2_range_search.sql",
         code: `
@@ -491,22 +491,22 @@ Execution Time: 1.829 ms`,
       },
       { // 実験2 考察A
         type: "paragraph",
-        title: { ja: "考察A", en: "DiscussionA" },
+        title: { ja: "考察A", en: "Discussion A" },
         body: {
           ja: `実験2では created_at に対する範囲検索で(30日、7日、1日)の3つのケースを試しました。しかし、いずれのケースでもPostgreSQLはBitmap Heap Scanを選択しました。
           \nこれは、一致行数がまだ一定数存在する場合や、対象行がテーブル上に散在している場合、対象ブロックをまとめて読むBitmap Heap Scanが効率的であると判断されたためだと考えられます。
-          \n実際、Heap Blocksが8334→7549→2273と減少し、Execution Timeも25.777ms→9.115ms→1.714mmsと改善しています。
+          \n実際、Heap Blocksが8333→7535→2320と減少し、Execution Timeも27.081ms→9.138ms→1.829mmsと改善しています。
           \n変化しなかった原因は日にち単位だとヒット件数がまだまだ多いことが考えられます。
           \nIndex Scanに切り替わる境界をある程度絞りたいので1時間・10分・1分も試してみます。`,
           en: `In Experiment 2, we tested three cases of range searches on created_at (30 days, 7 days, 1 day). However, in all cases, PostgreSQL chose Bitmap Heap Scan.
           \nThis is likely because when there are still a certain number of matching rows or when the target rows are scattered across the table, Bitmap Heap Scan, which reads the target blocks in bulk, is considered efficient.
-          \nIn fact, the number of Heap Blocks decreased from 8334 to 7549 to 2273, and the Execution Time improved from 25.777ms to 9.115ms to 1.714ms.
+          \nIn fact, the number of Heap Blocks decreased from 8333 to 7535 to 2320, and the Execution Time improved from 27.081ms to 9.138ms to 1.829ms.
           \nTo narrow down the boundary where it switches to Index Scan, we will also test 1 hour, 10 minutes, and 1 minute.`,
         },
       },
       { // code 実験2 追加
         type: "code",
-        title: { ja: "実験2追加: 範囲検索（1時間/10分/1分）", en: "Experiment 2 Additional: Range search（1 hour/10 minutes/1 minute）" },
+        title: { ja: "実験2追加: 範囲検索（1時間/10分/1分）", en: "Experiment 2 (additional): Range search (1 hour / 10 minutes / 1 minute)" },
         lang: "sql",
         filename: "experiment2_additional_range_search.sql",
         code: `
@@ -527,7 +527,7 @@ WHERE created_at > now() - interval '1 minute';`
       },
       {
         type: "table",
-        title: { ja: "実験2追加結果", en: "Experiment add 2 Results" },
+        title: { ja: "実験2追加結果", en: "Additional results for Experiment 2" },
         files: [
           {
             tabLabel: "1 hour",
@@ -597,9 +597,9 @@ Execution Time: 0.008 ms`,
       },
       {
         type: "paragraph",
-        title: { ja: "考察B", en: "DiscussionB" },
+        title: { ja: "考察B", en: "Discussion B" },
         body: {
-          ja: `追加の実験2ではcreated_atに対する範囲検索で(1時間、10分、1分)の3つのケースを試した。PostgreSQLは、すべてのケースでIndex Scanを選択しています。
+          ja: `追加の実験2ではcreated_atに対する範囲検索で(1時間、10分、1分)の3つのケースを試した。PostgreSQLは、1時間の時を除き、すべてのケースでIndex Scanを選択しています。
           \nこれは、ヒット件数（選択率）が高い場合には Index Scan で1行ずつヒープへアクセスするとランダムアクセスが増え、I/O効率が悪化するためです。
           Bitmap Heap Scan は、インデックスから対象行の位置情報をまとめて収集してからヒープブロックをまとめて読み込むため、ヒット件数が多い領域で有利になりやすい。
 一方で、1時間以下のようにヒット件数が十分少ない場合は、インデックスを辿って必要な行だけを取得する Index Scan の方が総コストが低くなります。その結果、実行計画が Bitmap 系から Index Scan に切り替わったと考えられます。`,
@@ -611,7 +611,7 @@ Execution Time: 0.008 ms`,
       },
       {
         type: "section",
-        title: { ja: "実験3: JOIN + GROUP BY（Hash Join / Parallel / Aggregate）", en: "Experiment 3 JOIN + GROUP BY（Hash Join / Parallel / Aggregate）" },
+        title: { ja: "実験3: JOIN + GROUP BY（Hash Join / Parallel / Aggregate）", en: "Experiment 3: JOIN + GROUP BY (Hash Join / Parallel / Aggregate)" },
         anchor: "experiment-3",
         body: {
           ja: `本クエリは、usersとordersを結合して、都道府県ごとの合計金額を求める集計処理をしています。具体的なコードは以下に示される通りです。`,
@@ -685,7 +685,7 @@ Execution Time: 123.799 ms`,
           、インデックスを使っても読み取り量はほとんど減らないため、PostgreSQLはSeq Scanを選択したと考えられます。
           \n\n結合はusers(10万行)をハッシュ表として構築し、orders側を走査しながら参照するHash Joinが選択されています。これは、
           小さい表をハッシュ化し、大きい表を走査する典型的な戦略であると言えます。
-          \n\nまた、GROUP BYはワーカーごとに部分集約を行い、Gther Mergeにより統合した後、Finalize GroupAggregateによって最終結果を確定しています。
+          \n\nまた、GROUP BYはワーカーごとに部分集約を行い、Gather Mergeにより統合した後、Finalize GroupAggregateによって最終結果を確定しています。
           これにより、並列化によるスループット向上が図られています。
           \n\n最後の ORDER BY は出力が5行のみであり、ソートは quicksort でメモリ 25kB 程度と小さいことがわかります。
           以上より、本実行計画は「大量データ走査＋小テーブルハッシュ結合＋並列集約」という、読み取り主体の集計クエリに適したプランであると考えられます。`,
@@ -699,7 +699,7 @@ Execution Time: 123.799 ms`,
       },
       {
         type: "section",
-        title: { ja: "実験3+α: 絞り込みによるJoin戦略の切替（Hash Join → Nested Loop）", en: "Experiment 3+α" },
+        title: { ja: "実験3+α: 絞り込みによるJoin戦略の切替（Hash Join → Nested Loop）", en: "Experiment 3+alpha: Join strategy switching with filtering" },
         anchor: "experiment-3+α",
         body: {
           ja: `orderを１時間以内に絞るとどうなるか？`,
@@ -769,17 +769,20 @@ ORDER BY total_amount DESC;`
       },
       {
         type: "section",
-        title: { ja: "統計情報", en: ""},
+        title: { ja: "統計情報", en: "Statistics" },
         anchor: "statistical-distribution",
-        body: {ja: ``, en:``},
+        body: {
+          ja: ``,
+          en: `Before moving to drills, compare the estimated distribution in pg_stats with the actual data distribution. This helps explain why certain plans were chosen.`
+        },
       },
       {
         type: "code",
-        title: {ja: "", en: ""},
+        title: {ja: "統計分布の確認", en: "Check statistics distribution"},
 
         files: [
           {
-            tabLabel: "比率確認",
+            tabLabel: "Estimated distribution",
             lang: "sql",
             filename: "",
             code: `
@@ -792,7 +795,7 @@ FROM pg_stats
 WHERE tablename='orders' AND attname IN ('status');`,
           },
           {
-            tabLabel: "実際の分布",
+            tabLabel: "Actual distribution",
             lang: "sql",
             filename: "",
             code: `
@@ -806,10 +809,10 @@ ORDER BY cnt DESC;`,
       },
       {
         type: "table",
-        title: { ja: "実行結果", en: "" },
+        title: { ja: "実行結果", en: "Execution results" },
         files: [
           {
-            tabLabel: "比率確認",
+            tabLabel: "Estimated distribution",
             headers: ["attname","n_distinct","most_common_vals","most_common_freqs"],
             rows: [
               ["status","4","{paid,shipped,pending,cancelled}","{0.33426666,0.33116665,0.1688,0.16576667}"]
@@ -818,7 +821,7 @@ ORDER BY cnt DESC;`,
             rowNumberStart: 1,
           },
           {
-            tabLabel: "実際の分布",
+            tabLabel: "Actual distribution",
             headers: ["status","cnt","ratio"],
             rows:[
               ["paid","333656","0.333656"],
@@ -833,7 +836,7 @@ ORDER BY cnt DESC;`,
       },
       {
         type: "paragraph",
-        title: "ここからわかること",
+        title: { ja: "ここからわかること", en: "Key takeaways" },
         body: {
           ja: `ダミーデータ生成では本来はstatusを一様分布として生成したつもりであったが、実際の分布は約33%,33%,16%,16%となってしまいました。
           \nこれは、(random()*3)::int の切り捨てによるものだと考えられます。
@@ -841,20 +844,257 @@ ORDER BY cnt DESC;`,
           \n実験2に関しては、created_atの選択率が支配的なので、結論は変わりません。
           \n実験3もstatus分布はほぼ無関係で、実験3+αも問題ないです。
           \n話を分布に戻しますと、オプティマイザは単に「値の種類数」ではなく、「実際の頻度分布」に基づいて実行計画を選択していることが確認できると思います。`, 
-          en: ``}
+          en: `In dummy data generation, we intended status to be uniformly distributed, but the actual distribution became roughly 33%, 33%, 16%, and 16%.
+          \nThis is likely caused by integer truncation in (random()*3)::int.
+          \nThis difference slightly affects Experiment 1, but because the hit count is still large, Index Scan tends to remain disadvantageous, so the overall conclusion does not change much.
+          \nFor Experiment 2, selectivity on created_at is dominant, so the conclusion is unchanged.
+          \nExperiment 3 is also mostly unaffected by status distribution, and Experiment 3+alpha remains valid.
+          \nIn short, the optimizer does not choose plans based only on the number of distinct values, but on the actual frequency distribution.`}
+      },
+            {
+        type: "exercise",
+        title: { ja: "問題演習 1: statusが一様分布の場合", en: "Drill 1: When status is uniformly distributed" },
+        anchor: "drill",
+        question: {
+          ja: "statusが一様ではなくとも大きく問題ないと書いてありますが、本当にそうか検証してみて下さい。\ndrill_1.sqlを実行することで確認できます。",
+          en: "The article says the non-uniform status distribution is not a major issue. Verify whether that is really true by running `drill_1.sql`."
+        },
+        questionBlocks: [
+          {
+            type: "code",
+            lang: "sql",
+            filename: "drill_1.sql",
+            code: `EXPLAIN
+SELECT *
+FROM orders
+WHERE status = 'paid';`
+          },
+          {
+            type: "paragraph",
+            body: {
+              ja: `ヒント: オーダーを初期化し、(ARRAY['pending','paid','shipped','cancelled'])[1 + (random()*3)::int],の箇所を変えると均等なデータが作れます。`,
+              en: "Hint: the ratio of status='paid' is about 33%. With many rows, random access cost becomes important."
+            }
+          }
+        ],
+        answer: {
+          ja: "実行環境によって数値などは変化しますが、例としては、以下の様な結果になると考えられます。\n推定行数の現象や実行時間、Buffersが変化すると思います。",
+          en: "You should get a result similar to the following."
+        },
+        answerBlocks: [
+          {
+            type: "table",
+            rawText: `Bitmap Heap Scan on orders  (cost=5501.40..28466.73 rows=503867 width=35) (actual time=13.058..90.873 rows=499798 loops=1)
+  Recheck Cond: (status = 'paid'::text)
+  Heap Blocks: exact=16667
+  Buffers: shared hit=6712 read=10349 written=5390
+  ->  Bitmap Index Scan on idx_orders_status  (cost=0.00..5375.43 rows=503867 width=0) (actual time=11.097..11.097 rows=499798 loops=1)
+        Index Cond: (status = 'paid'::text)
+        Buffers: shared hit=48 read=346
+Planning:
+  Buffers: shared hit=40 read=9
+Planning Time: 0.230 ms
+Execution Time: 101.498 ms`,
+            showRowNumbers: true,
+            monospace: true,
+            preserveCellWhitespace: true
+          },
+          {
+            type: "paragraph",
+            body:{
+              ja: `生成は次の様にすると均等になります。`,
+              en: `Use the following data generation query to make status nearly uniform.`
+            }
+          },
+          {
+            type: "code",
+            lang: "sql",
+            filename: "drill_1_orders_table_data",
+            code:`INSERT INTO orders (user_id, amount, status, created_at)
+SELECT
+  (random()*99999)::int + 1,
+  (random()*10000)::int,
+  (ARRAY['pending','paid','shipped','cancelled'])[1 + floor(random()*4)::int],
+  now() - (random() * interval '1 year')
+FROM generate_series(1, 1000000);
+
+ANALYZE orders;
+            `
+          }
+        ]
+      },
+      {
+        type: "exercise",
+        title: { ja: "問題演習 2: どの実行計画になる？", en: "Drill 2: Which plan will be chosen?" },
+        anchor: "drill",
+        question: {
+          ja: "orders(status) にインデックスがある状態で、以下のクエリを EXPLAIN すると何系のプランになりやすいでしょうか？理由も考えてみてください。",
+          en: "With an index on orders(status), what kind of plan is likely for the following EXPLAIN query? Also think about why."
+        },
+        questionBlocks: [
+          {
+            type: "code",
+            lang: "sql",
+            filename: "drill_1.sql",
+            code: `EXPLAIN
+SELECT *
+FROM orders
+WHERE status = 'paid';`
+          },
+          {
+            type: "paragraph",
+            body: {
+              ja: "ヒント: status='paid' の割合は約 33% です。行数が多いと、ランダムアクセスコストが効いてきます。",
+              en: "Hint: the ratio of status='paid' is about 33%. With many rows, random access cost becomes important."
+            }
+          }
+        ],
+        answer: {
+          ja: "Bitmap Index Scan + Bitmap Heap Scan が選ばれやすいです。理由は、ヒット件数が比較的多く、Index Scan の行ごとのランダムアクセスより Bitmap でまとめてページアクセスする方が有利になりやすいためです。",
+          en: "Bitmap Index Scan + Bitmap Heap Scan is likely. Since many rows match, batched page access via bitmap is often cheaper than per-row random access in Index Scan."
+        },
+        answerBlocks: [
+          {
+            type: "table",
+            headers: [
+              { ja: "条件", en: "Condition" },
+              { ja: "選ばれやすいプラン", en: "Likely plan" }
+            ],
+            rows: [
+              [
+                { ja: "高選択率（1%未満）", en: "High selectivity (<1%)" },
+                { ja: "Index Scan", en: "Index Scan" }
+              ],
+              [
+                { ja: "中選択率（数%〜数十%）", en: "Mid selectivity (a few % to tens of %)" },
+                { ja: "Bitmap Heap Scan", en: "Bitmap Heap Scan" }
+              ],
+              [
+                { ja: "低選択率（ほぼ全件）", en: "Low selectivity (almost all rows)" },
+                { ja: "Seq Scan", en: "Seq Scan" }
+              ]
+            ],
+            showRowNumbers: true
+          }
+        ]
+      },
+      {
+        type: "exercise",
+        title: { ja: "演習問題 3: EXPLAIN と EXPLAIN ANALYZE の違い", en: "" },
+        anchor: "drill",
+        question: {
+          ja: "EXPLAIN と EXPLAIN ANALYZE の違いを2点述べ、どちらが実測時間を含むか答えよ。",
+          en: ""
+        },
+        answer: {
+          ja: "推定か実測かどうかです。ANALYZEは実行します、BUFFERSはI/O観察などです。",
+          en: ""
+        },
+      },
+      {
+        type: "exercise",
+        title: { ja: "演習問題 4: 推定 rows と actual rows がズレる理由", en: "" },
+        anchor: "drill",
+        question: {
+          ja: "実験1（status）で rows 推定と actual rows がズレる理由を1〜2個挙下てください。",
+          en: ""
+        },
+        answer: {
+          ja: "標本をとってきて予想しているためなど、統計が推定であることやサンプル、相関などについて触れていると良いです。",
+          en: ""
+        },
+      },
+      {
+        type: "exercise",
+        title: { ja: "問題演習 5:  JOIN戦略の予想（Hash Join vs Nested Loop）", en: "" },
+        anchor: "drill",
+        question: {
+          ja: "orders をほぼ全件読むクエリでは Hash Join が選ばれやすい理由を説明して下さい。",
+          en: ""
+        },
+        answer: {
+          ja: "小表をhash化し、大表を走査する方法を取ることで速くなります。NLは外側×内側を走査するため回数が増えてしまい、多くの場合採用されません。",
+          en: ""
+        },
+      },
+      {
+        type: "exercise",
+        title: { ja: "問題演習 6:  絞り込みで Nested Loop が有利になる条件", en: "" },
+        anchor: "drill",
+        question: {
+          ja: "WHERE で orders の候補が少ないとき Nested Loop が有利になるのはなぜですか?",
+          en: ""
+        },
+        answer: {
+          ja: "外側が少数であれば内側のindex lookupが効きます。hash Joinはhash構築コストがかかってしまうため、 NLが有利になります。",
+          en: ""
+        },
+      },
+      {
+        type: "exercise",
+        title: { ja: "問題演習 7:  Index Only Scanを観察", en: "" },
+        anchor: "drill",
+        question: {
+          ja: "WHERE で orders の候補が少ないとき Nested Loop が有利になるのはなぜですか?",
+          en: ""
+        },
+        answer: {
+          ja: "外側が少数であれば内側のindex lookupが効きます。hash Joinはhash構築コストがかかってしまうため、 NLが有利になります。",
+          en: ""
+        },
+      },
+      {
+        type: "exercise",
+        title: { ja: "問題演習 7:  Index Only Scanを観察", en: "" },
+        anchor: "drill",
+        question: {
+          ja: "以下のコードを実行してIndex Only Scanが出るか検証してみて下さい。",
+          en: ""
+        },
+        questionBlocks: [
+          {
+            type: "code",
+            lang: "sql",
+            filename: "drill_create_table.sql",
+            code: `CREATE INDEX idx_orders_status_amount ON orders(status, amount);
+VACUUM (ANALYZE) orders;`
+          },
+          {
+            type: "code",
+            lang: "sql",
+            filename: "dill8",
+            code: `EXPLAIN (ANALYZE, BUFFERS)
+SELECT amount
+FROM orders
+WHERE status='paid';
+            `
+          }],
+        answer: {
+          ja: "以下のような出力が確認できたら成功です。是非出力結果やコードを見て考察して下さい。",
+          en: ""
+        },
+        answerBlocks: [
+          {
+            type: "table",
+            rawText: `Index Only Scan using idx_orders_status_amount on orders  (cost=0.43..10393.10 rows=493067 width=4) (actual time=0.056..32.308 rows=499798 loops=1)
+  Index Cond: (status = 'paid'::text)
+  Heap Fetches: 0
+  Buffers: shared hit=1 read=446
+Planning:
+  Buffers: shared hit=101
+Planning Time: 0.262 ms
+Execution Time: 47.997 ms`,
+            showRowNumbers: true,
+            monospace: true,
+            preserveCellWhitespace: true
+          },
+        ]
       },
       {
         type: "section",
-        title: {ja: "問題演習", en: "drill" },
-        anchor: "drill",
-        body: {ja:"幾つか問題を用意しましたので、理解を深めるためにぜひ取り組んでみて下さい。" , en:""}
+        title: { ja: "コラム", en: "" },
+        body: { ja: "制作時間: 約12時間", en: ""} 
       }
-
-
-
-
-
-
     ],
   },
 ];

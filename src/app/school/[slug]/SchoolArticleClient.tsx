@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useI18n } from "@/components/common/LanguageProvider";
-import type { SchoolArticle, SchoolBlock } from "@/data/schoolTypes";
+import type { SchoolArticle, SchoolBlock, SchoolExerciseContentBlock } from "@/data/schoolTypes";
 import { pickText } from "@/data/schoolTypes";
 
 import Section from "@/components/article/Section";
@@ -64,6 +65,81 @@ function BlockRenderer({
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9\u3040-\u30ff\u4e00-\u9faf\-]/g, "")
       .replace(/-+/g, "-");
+  };
+
+  const renderExerciseContentBlock = (item: SchoolExerciseContentBlock, idx: number) => {
+    if (item.type === "paragraph") {
+      return (
+        <p
+          key={idx}
+          className="select-text inline-block max-w-full align-top text-slate-700 dark:text-slate-200 whitespace-pre-wrap"
+        >
+          {normalizeBodyText(pickText(item.body, lang))}
+        </p>
+      );
+    }
+
+    if (item.type === "list") {
+      return (
+        <ul
+          key={idx}
+          className="select-text space-y-2 list-disc pl-5 text-slate-700 dark:text-slate-200"
+        >
+          {item.items.map((x, listIdx) => (
+            <li key={listIdx}>{pickText(x, lang)}</li>
+          ))}
+        </ul>
+      );
+    }
+
+    if (item.type === "image") {
+      return (
+        <ImageBlock
+          key={idx}
+          src={item.src}
+          alt={item.alt}
+          caption={item.caption}
+          width={item.width}
+          height={item.height}
+          files={item.files}
+          lang={lang}
+        />
+      );
+    }
+
+    if (item.type === "table") {
+      const rawText = "rawText" in item ? item.rawText : undefined;
+      const preserveCellWhitespace =
+        "preserveCellWhitespace" in item ? item.preserveCellWhitespace : undefined;
+      const monospace = "monospace" in item ? item.monospace : undefined;
+
+      return (
+        <TableBlock
+          key={idx}
+          headers={item.headers}
+          rows={item.rows}
+          rawText={rawText}
+          caption={item.caption}
+          showRowNumbers={item.showRowNumbers}
+          rowNumberStart={item.rowNumberStart}
+          preserveCellWhitespace={preserveCellWhitespace}
+          monospace={monospace}
+          files={item.files}
+          lang={lang}
+        />
+      );
+    }
+
+    return (
+      <div key={idx} className="select-none">
+        <CodeBlock
+          code={item.code}
+          lang={item.lang}
+          filename={item.filename}
+          files={item.files}
+        />
+      </div>
+    );
   };
 
   if (block.type === "lead") {
@@ -197,6 +273,22 @@ function BlockRenderer({
     return table;
   }
 
+  if (block.type === "exercise") {
+    return (
+      <ExerciseCard
+        id={block.anchor}
+        title={pickText(block.title, lang)}
+        question={normalizeBodyText(pickText(block.question, lang))}
+        questionBlocks={block.questionBlocks}
+        answer={block.answer ? normalizeBodyText(pickText(block.answer, lang)) : undefined}
+        answerBlocks={block.answerBlocks}
+        initiallyOpen={block.initiallyOpen}
+        onRenderItem={renderExerciseContentBlock}
+        highlightOnTarget={enableTargetUnderline}
+      />
+    );
+  }
+
   // code
   return (
     <div className="select-none">
@@ -212,5 +304,70 @@ function BlockRenderer({
         files={block.files}
       />
     </div>
+  );
+}
+
+function ExerciseCard({
+  id,
+  title,
+  question,
+  questionBlocks,
+  answer,
+  answerBlocks,
+  initiallyOpen,
+  onRenderItem,
+  highlightOnTarget,
+}: {
+  id?: string;
+  title: string;
+  question: string;
+  questionBlocks?: SchoolExerciseContentBlock[];
+  answer?: string;
+  answerBlocks?: SchoolExerciseContentBlock[];
+  initiallyOpen?: boolean;
+  onRenderItem: (item: SchoolExerciseContentBlock, idx: number) => React.ReactNode;
+  highlightOnTarget: boolean;
+}) {
+  const [open, setOpen] = useState(Boolean(initiallyOpen));
+
+  return (
+    <Section title={title} id={id} highlightOnTarget={highlightOnTarget}>
+      <div className="rounded-xl border border-sky-200 bg-sky-50/70 p-4 dark:border-sky-900/60 dark:bg-sky-950/25">
+        <div className="text-xs font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-300">
+          Question
+        </div>
+        <p className="mt-2 select-text inline-block max-w-full align-top text-slate-800 dark:text-slate-100 whitespace-pre-wrap">
+          {question}
+        </p>
+        {questionBlocks && questionBlocks.length > 0 && (
+          <div className="mt-3 space-y-3">{questionBlocks.map(onRenderItem)}</div>
+        )}
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-white/80 p-4 dark:border-white/10 dark:bg-slate-900/60">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-200 dark:border-white/15 dark:bg-white/10 dark:text-slate-100 dark:hover:bg-white/15"
+          aria-expanded={open}
+        >
+          <span>{open ? "答えを隠す" : "答えを見る"}</span>
+          <span aria-hidden>{open ? "▲" : "▼"}</span>
+        </button>
+
+        {open && (
+          <div className="mt-3 space-y-3">
+            {answer && (
+              <p className="select-text inline-block max-w-full align-top text-slate-700 dark:text-slate-200 whitespace-pre-wrap">
+                {answer}
+              </p>
+            )}
+            {answerBlocks && answerBlocks.length > 0 && (
+              <div className="space-y-3">{answerBlocks.map(onRenderItem)}</div>
+            )}
+          </div>
+        )}
+      </div>
+    </Section>
   );
 }
