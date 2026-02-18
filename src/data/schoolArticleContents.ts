@@ -1165,7 +1165,8 @@ WHERE status = 'paid';`
         title: { ja: "実験環境の準備", en: ""},
         anchor: "2",
         body: {
-          ja: `使用テーブルを設計します。作成コマンドは以下に示します。`
+          ja: `使用テーブルを設計します。作成コマンドは以下に示します。
+          \n また、この記事ではDockerとVSCodeの拡張機能である、PostgreSQL(ms-ossdata.vscode-pgsql)を使用しています。そのため、実行方法や操作方法はこの拡張機能前提のものです。`
         }
       },
       {
@@ -1186,9 +1187,99 @@ INSERT INTO bank_accounts (owner, balance) VALUES
       },
       {
         type: "section",
-        title: { ja: "コラム", en: "Column" },
-        body: { ja: "制作時間: 約1時間", en: "Estimated implementation time: about 12 hours."} 
+        title: { ja: "Lost Update"},
+        body: {
+          ja: "まずはLost Updateを観測してみましょう。"
+        }
       },
+      {
+        type: "code",
+        title: { ja: "初期状態確認", en: ""},
+        lang: "sql",
+        filename: "check.sql",
+        code: `SELECT * FROM bank_accounts;`
+      },
+      {
+        type: "code",
+        title: { ja: "セッション", en: "session"},
+        files: [
+          {
+            tabLabel: "Session A",
+            lang: "sql",
+            filename: "cc_lost_update_sessionA.sql",
+            code: `BEGIN;
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+SELECT balance FROM bank_accounts WHERE owner='Alice';
+-- 1000 を確認
+
+UPDATE bank_accounts
+SET balance = balance - 100
+WHERE owner='Alice';
+
+-- COMMITはまだしない
+COMMIT;`
+          },
+          {
+            tabLabel: "Session B",
+            lang: "sql",
+            filename: "cc_lost_update_sessionB.sql",
+            code: `BEGIN;
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+SELECT balance FROM bank_accounts WHERE owner='Alice';
+-- まだ1000が見える
+
+UPDATE bank_accounts
+SET balance = balance - 200
+WHERE owner='Alice';
+
+COMMIT;`
+          }
+        ]
+      },
+      {
+        type: "paragraph",
+        title: {ja: "コミットと確認", en: ""},
+        body: {
+          ja: `わかりやすく観測できる方法として、SessionAの12行目(COMMIT;の行)以外を選択して、右クリックから"PostgreSQL クエリを実行する"を選択してください。
+              次にSessionB全体を実行してください。環境によっては出ないかもしれませんが、"pgsql: このエディターのセッションのクエリはすでに実行中です。このクエリをキャンセルするか、完了まで待ってください。"と出ます。
+              \nここでSessionAに戻り今度は12行目だけを選択し、”PostgreSQL クエリを実行する"をクリックしてください。これで、SessionBの処理も行われます。
+              \mSessionAで100、SessionBで200引いているので、更新競合が対策されていれば700と出力されるはずです。以下のコードを実行して確認してみてください。`,
+          en: ``
+        }
+      },
+      {
+        type: "code",
+        title: {ja: "コミットと確認", en: ""},
+        lang: "sql",
+        filename: "check_result.sql",
+        code: `SELECT * FROM bank_accounts WHERE owner='Alice';`
+      },
+      {
+        type: "table",
+        title: {ja: "lost update検証の実行結果", en: ""},
+        headers: ["id", "owner", "balance"],
+        rows:[
+          ["1", "Alice", "700"]
+        ],
+        showRowNumbers: true,
+        rowNumberStart: 1
+      },
+      {
+        type: "paragraph",
+        title: {ja: "lost updateのまとめ"},
+        body: {
+          ja: `PostgreSQLでは、同一行に対する更新が競合した場合、後続トランザクションはロック待ちとなり、
+              先行トランザクションのコミット後に更新対象行を再取得して更新を行います。
+              \nそのため、更新結果が上書きされるLost Updateは発生せず、両方の更新が反映された値になることが確認されました。`
+        }
+      },
+      {
+        type: "section",
+        title: { ja: "コラム", en: "Column" },
+        body: { ja: "制作時間: 約2時間", en: "Estimated implementation time: about 12 hours."} 
+      }
     ]
   }
 ];
