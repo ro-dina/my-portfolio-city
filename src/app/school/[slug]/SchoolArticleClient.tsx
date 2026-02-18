@@ -72,8 +72,14 @@ function BlockRenderer({
       .replace(/-+/g, "-");
   };
 
+  const isDetailedListItem = (
+    item: SchoolListItem
+  ): item is Extract<SchoolListItem, { title: unknown }> => {
+    return typeof item === "object" && item !== null && "title" in item;
+  };
+
   const renderListItem = (item: SchoolListItem, idx: number) => {
-    if (typeof item === "string" || ("ja" in item && !("title" in item))) {
+    if (!isDetailedListItem(item)) {
       return <li key={idx}>{pickText(item, lang)}</li>;
     }
 
