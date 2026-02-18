@@ -1141,10 +1141,23 @@ WHERE status = 'paid';`
         title: { ja: "主な同時実行環境問題の種類", en: ""},
         anchor: "1",
         items: [
-          { ja: "Lost Update", en: "Lost Update"},
-          { ja: "Dirty Read", en: "Dirty Read"},
-          { ja: "Non-repeatable Read", en: "Non-repeatable Read"},
-          { ja: "Phantom Read", en: "Phantom Read"},
+          { title: { ja: "Lost Update", en: "Lost Update" },
+            description: {
+              ja: "同じデータに対して2人が同時に更新をかけた際、後から更新した人の内容で上書きされる現象。"
+            }
+          },
+          { title: { ja: "Dirty Read", en: "Dirty Read"},
+            description: {
+              ja: "確定していないデータを、別の処理が読んでしまう問題。"
+            }},
+          { title: {ja: "Non-repeatable Read", en: "Non-repeatable Read"},
+            description: {
+              ja: "一つのトランザクション内で同じデータを2回読み込んだ時、1回目と2回目で値が変わる現象。"
+            }},
+          { title: {ja: "Phantom Read", en: "Phantom Read"},
+            description: {
+              ja: "検索結果の行数が途中で増減する問題。"
+            }},
         ]
       },
       {
@@ -1170,7 +1183,12 @@ CREATE TABLE bank_accounts (
 INSERT INTO bank_accounts (owner, balance) VALUES
 ('Alice', 1000),
 ('Bob', 1000); `
-      }
+      },
+      {
+        type: "section",
+        title: { ja: "コラム", en: "Column" },
+        body: { ja: "制作時間: 約1時間", en: "Estimated implementation time: about 12 hours."} 
+      },
     ]
   }
 ];

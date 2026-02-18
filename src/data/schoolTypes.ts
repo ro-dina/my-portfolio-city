@@ -20,6 +20,13 @@ export type SchoolTableFile = {
   monospace?: boolean;
 };
 
+export type SchoolListItem =
+  | I18nText
+  | {
+      title: I18nText;
+      description?: I18nText;
+    };
+
 export type SchoolExerciseContentBlock =
   | {
       type: "paragraph";
@@ -27,7 +34,7 @@ export type SchoolExerciseContentBlock =
     }
   | {
       type: "list";
-      items: I18nText[];
+      items: SchoolListItem[];
     }
   | {
       type: "image";
@@ -103,7 +110,7 @@ export type SchoolBlock =
   | {
       type: "list";
       title: I18nText;
-      items: I18nText[];
+      items: SchoolListItem[];
       anchor?: string;
     }
   | {

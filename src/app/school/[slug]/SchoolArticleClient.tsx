@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import { useI18n } from "@/components/common/LanguageProvider";
-import type { SchoolArticle, SchoolBlock, SchoolExerciseContentBlock } from "@/data/schoolTypes";
+import type {
+  SchoolArticle,
+  SchoolBlock,
+  SchoolExerciseContentBlock,
+  SchoolListItem,
+} from "@/data/schoolTypes";
 import { pickText } from "@/data/schoolTypes";
 
 import Section from "@/components/article/Section";
@@ -67,6 +72,25 @@ function BlockRenderer({
       .replace(/-+/g, "-");
   };
 
+  const renderListItem = (item: SchoolListItem, idx: number) => {
+    if (typeof item === "string" || ("ja" in item && !("title" in item))) {
+      return <li key={idx}>{pickText(item, lang)}</li>;
+    }
+
+    return (
+      <li key={idx}>
+        <div className="font-medium text-slate-800 dark:text-slate-100">
+          {pickText(item.title, lang)}
+        </div>
+        {item.description && (
+          <div className="mt-1 text-sm text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
+            {normalizeBodyText(pickText(item.description, lang))}
+          </div>
+        )}
+      </li>
+    );
+  };
+
   const renderExerciseContentBlock = (item: SchoolExerciseContentBlock, idx: number) => {
     if (item.type === "paragraph") {
       return (
@@ -85,9 +109,7 @@ function BlockRenderer({
           key={idx}
           className="select-text space-y-2 list-disc pl-5 text-slate-700 dark:text-slate-200"
         >
-          {item.items.map((x, listIdx) => (
-            <li key={listIdx}>{pickText(x, lang)}</li>
-          ))}
+          {item.items.map(renderListItem)}
         </ul>
       );
     }
@@ -171,9 +193,7 @@ function BlockRenderer({
     return (
       <Section title={title} id={id} highlightOnTarget={enableTargetUnderline}>
         <ul className="select-text space-y-2 list-disc pl-5 text-slate-700 dark:text-slate-200">
-          {block.items.map((x, idx) => (
-            <li key={idx}>{pickText(x, lang)}</li>
-          ))}
+          {block.items.map(renderListItem)}
         </ul>
       </Section>
     );
