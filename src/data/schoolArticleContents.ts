@@ -1279,7 +1279,7 @@ COMMIT;`
         type: "section",
         title: {ja: "Dirty Readは発生するか"},
         body: {
-          ja: `もしもコミット前のDBの情報が見えるとDirty Readが発生します。そのため以下のコードを使って検証します。`,
+          ja: `もしもコミット前のDBの情報が見えるとDirty Readが発生しています。そのため以下のコードを使って検証します。`,
           en: ""
         }
       },
@@ -1321,7 +1321,7 @@ SELECT balance FROM bank_accounts WHERE owner='Alice';`
       },
       { //Dirty readの結果
         type: "table",
-        title: {ja: "lost update検証の実行結果", en: ""},
+        title: {ja: "Dirty read検証の実行結果", en: ""},
         headers: ["balance"],
         rows:[
           ["1000"]
@@ -1336,13 +1336,85 @@ SELECT balance FROM bank_accounts WHERE owner='Alice';`
           ja: `表示は変わらず1000のままです。現在、PostgreSQLはデフォルトではUNCOMMITTEDの分離レベルがないのでDirty readは発生しません。
               \n他のデータベースでも、MySQLやSQL Serverはデフォルトでは発生しておらず、OracleはそもそもREAD UNCOMMITTEDをサポートしていません。
               \nREAD UNCOMMITTEDは未コミットデータの参照を許可する分離レベルとしてSQL標準に定義されていますが、MVCCを採用する現代の主要DBMSでは実用的な利点がありません。
-              そのためPostgreSQLやOracleでは実質的にREAD COMMITTEDと同一の動作となります。`
+              そのためPostgreSQLやOracleでは実質的にREAD COMMITTEDと同一の動作となります。
+              \n\nまた、今後のため、SessionAをCOMMIT;するなどして止めておくことをおすすめします。`
+        }
+      },
+      { // non-repeatable-read
+        type: "paragraph",
+        title: {ja: "Non-repeatable Read", en: "Non-repeatable Read"},
+        body: {
+          ja: `次はNon-repeatable Readの実験をします。同じトランザクション内で同じ行を読んだのに値が変わるのかどうかをみます。
+              \nSessionA → SessionB → SessionAの順に実行して、最初と最後のSessionAの結果を比べてみてください。`
+        }
+      },
+      { //Non-repeatable Readのコード 
+        type: "code",
+        title: {ja: ""},
+        files:[
+          {
+            tabLabel: "SessionA",
+            lang: "sql",
+            filename: "cc_non_repeatable_ReadA.sql",
+            code: `BEGIN;
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+SELECT balance FROM bank_accounts WHERE owner='Alice';
+-- 1000 を確認
+`
+          },
+          {
+            tabLabel: "SessionB",
+            lang: "sql",
+            filename: "cc_non_repeatable_ReadB.sql",
+            code: `BEGIN;
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+SELECT balance FROM bank_accounts WHERE owner='Alice';
+-- 1000 を確認
+`
+          }
+        ]
+      },
+      { //Non-repeatable Readの結果
+        type: "table",
+        title: {ja: "Non-repeatable Readの実行結果(SessionBを実行する前)", en: ""},
+        headers: ["balance"],
+        rows:[
+          ["1000"]
+        ],
+        showRowNumbers: true,
+        rowNumberStart: 1
+      },
+      { //Non-repeatable Readの結果
+        type: "table",
+        title: {ja: "Non-repeatable Readの実行結果(SessionBを実行した後)", en: ""},
+        headers: ["balance"],
+        rows:[
+          ["900"]
+        ],
+        showRowNumbers: true,
+        rowNumberStart: 1
+      },
+      { //Non-repeatable readのまとめ
+        type: "paragraph",
+        title: {ja: "Non-repeatable readのまとめ"},
+        body: {
+          ja: `READ COMMITTEDではかくSELECT時点でのコミット済みの最新データを読みます。そのため、トランザクション開始時の状態は保証されません。
+              他トランザクションのCOMMITが途中で可視化されるため、同じ行を再度読み取ると値が変化します。`
+        }
+      },
+      { //
+        type: "section",
+        title: { ja: ""},
+        body: {
+          ja: ""
         }
       },
       {
         type: "section",
         title: { ja: "コラム", en: "Column" },
-        body: { ja: "制作時間: 約2時間", en: "Estimated implementation time: about 12 hours."} 
+        body: { ja: "制作時間: 約4時間", en: "Estimated implementation time: about 12 hours."} 
       }
     ]
   }
