@@ -1107,4 +1107,70 @@ WHERE status = 'paid';`
       },
     ],
   },
+  {
+    slug: "postgresql_concurrency_control_isolation_levels",
+    blocks: [
+      {
+        type: "toc",
+        title: { ja: "目次", en: "Contents" },
+        items: [
+          {title: { ja: "トランザクションとは", en: ""}, anchor: "0"},
+          {title: { ja: "同時実行問題の種類", en: ""}, anchor: "1"},
+          {title: { ja: "実験環境の準備", en: ""}, anchor: "2"},
+          {title: { ja: "READ UNCOMMITTED / READ COMMITTED",}, anchor: "3"},
+          {title: { ja: "REPEATABLE READ"}, anchor: "4"},
+          {title: { ja: "SERIALIZABLE"}, anchor: "5"},
+          {title: { ja: "PostgreSQLのMVCC"}, anchor: "6"},
+          {title: { ja: "まとめ", en: "summary"}, anchor: "7"},
+          {title: { ja: "問題演習", en: "Drills" }, anchor: "drill-1" }
+        ]
+      },
+      {
+        type: "paragraph",
+        title: { ja: "トランザクションとは", en: ""},
+        anchor: "0",
+        body: {
+          ja: `データベースは複数ユーザから同時にアクセスされることを前提として設計されています。
+          しかし、同時実行によってデータの整合性が破壊される可能性があります。
+          本記事ではPostgreSQLのトランザクション隔離レベルを変更しながら、実際に不整合が発生する状況を再現し、どのように防がれるのかを観察していきます。
+          `
+        },
+      },
+      {
+        type: "list",
+        title: { ja: "主な同時実行環境問題の種類", en: ""},
+        anchor: "1",
+        items: [
+          { ja: "Lost Update", en: "Lost Update"},
+          { ja: "Dirty Read", en: "Dirty Read"},
+          { ja: "Non-repeatable Read", en: "Non-repeatable Read"},
+          { ja: "Phantom Read", en: "Phantom Read"},
+        ]
+      },
+      {
+        type: "paragraph",
+        title: { ja: "実験環境の準備", en: ""},
+        anchor: "2",
+        body: {
+          ja: `使用テーブルを設計します。作成コマンドは以下に示します。`
+        }
+      },
+      {
+        type: "code",
+        title: { ja: "サンプル", en: "Sample" },
+        lang: "sql",
+        filename: "cc_create_tables.sql",
+        code:`
+CREATE TABLE bank_accounts (
+    id SERIAL PRIMARY KEY,
+    owner TEXT,
+    balance INT
+);
+
+INSERT INTO bank_accounts (owner, balance) VALUES
+('Alice', 1000),
+('Bob', 1000); `
+      }
+    ]
+  }
 ];

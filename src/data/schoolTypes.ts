@@ -104,6 +104,7 @@ export type SchoolBlock =
       type: "list";
       title: I18nText;
       items: I18nText[];
+      anchor?: string;
     }
   | {
       type: "toc";

@@ -61,4 +61,14 @@ export const schoolArticleCards: SchoolArticleCard[] = [
     tags: ["PostgreSQL", "Database", "SQL"],
     updatedAt: "2026-1-22",
   },
+  {
+    slug: "postgresql_concurrency_control_isolation_levels",
+    title: {ja: "同時実行制御（隔離レベル）"},
+    summary: {
+      ja: "",
+      en: ""
+    },
+    tags: [],
+    updatedAt: ""
+  }
 ];

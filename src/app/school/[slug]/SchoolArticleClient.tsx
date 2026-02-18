@@ -166,8 +166,10 @@ function BlockRenderer({
   }
 
   if (block.type === "list") {
+    const title = pickText(block.title, lang);
+    const id = block.anchor ?? toAnchorId(title);
     return (
-      <Section title={pickText(block.title, lang)}>
+      <Section title={title} id={id} highlightOnTarget={enableTargetUnderline}>
         <ul className="select-text space-y-2 list-disc pl-5 text-slate-700 dark:text-slate-200">
           {block.items.map((x, idx) => (
             <li key={idx}>{pickText(x, lang)}</li>
