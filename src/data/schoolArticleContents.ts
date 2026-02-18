@@ -1249,14 +1249,14 @@ COMMIT;`
           en: ``
         }
       },
-      {
+      {//コミットと確認
         type: "code",
         title: {ja: "コミットと確認", en: ""},
         lang: "sql",
         filename: "check_result.sql",
         code: `SELECT * FROM bank_accounts WHERE owner='Alice';`
       },
-      {
+      {// 実行結果テーブル
         type: "table",
         title: {ja: "lost update検証の実行結果", en: ""},
         headers: ["id", "owner", "balance"],
@@ -1266,13 +1266,77 @@ COMMIT;`
         showRowNumbers: true,
         rowNumberStart: 1
       },
-      {
+      { //lost update まとめ
         type: "paragraph",
         title: {ja: "lost updateのまとめ"},
         body: {
           ja: `PostgreSQLでは、同一行に対する更新が競合した場合、後続トランザクションはロック待ちとなり、
               先行トランザクションのコミット後に更新対象行を再取得して更新を行います。
               \nそのため、更新結果が上書きされるLost Updateは発生せず、両方の更新が反映された値になることが確認されました。`
+        }
+      },
+      { // Dirty Readが発生するか
+        type: "section",
+        title: {ja: "Dirty Readは発生するか"},
+        body: {
+          ja: `もしもコミット前のDBの情報が見えるとDirty Readが発生します。そのため以下のコードを使って検証します。`,
+          en: ""
+        }
+      },
+      { //Dirty Read検証用コード
+        type: "code",
+        title: {ja: ""},
+        files: [
+          {
+            tabLabel: "Session A",
+            lang: "sql",
+            filename: "cc_dirty_read_sessionA.sql",
+            code:`BEGIN;
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+UPDATE bank_accounts
+SET balance = 5000
+WHERE owner='Alice';
+
+-- COMMITしない`
+          },
+          {
+            tabLabel: "Session B",
+            lang: "sql",
+            filename: "cc_dirty_read_sessionB.sql",
+            code: `BEGIN;
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+SELECT balance FROM bank_accounts WHERE owner='Alice';`
+          }
+        ]
+      },
+      { //結果前に
+        type: "paragraph",
+        title: {ja: "予想"},
+        body: {
+          ja: `もし、Dirty Readが発生するなら、balanceが5000と表示されるはずです。実行結果は以下のようになりました。
+              \nちなみに実行する前に、データをリセットしています。そのため値としてはAliceのbalanceが1000のままです。`
+        }
+      },
+      { //Dirty readの結果
+        type: "table",
+        title: {ja: "lost update検証の実行結果", en: ""},
+        headers: ["balance"],
+        rows:[
+          ["1000"]
+        ],
+        showRowNumbers: true,
+        rowNumberStart: 1
+      },
+      {//Dirty readのまとめ
+        type: "paragraph",
+        title: {ja: "Dirty readのまとめ"},
+        body:{
+          ja: `表示は変わらず1000のままです。現在、PostgreSQLはデフォルトではUNCOMMITTEDの分離レベルがないのでDirty readは発生しません。
+              \n他のデータベースでも、MySQLやSQL Serverはデフォルトでは発生しておらず、OracleはそもそもREAD UNCOMMITTEDをサポートしていません。
+              \nREAD UNCOMMITTEDは未コミットデータの参照を許可する分離レベルとしてSQL標準に定義されていますが、MVCCを採用する現代の主要DBMSでは実用的な利点がありません。
+              そのためPostgreSQLやOracleでは実質的にREAD COMMITTEDと同一の動作となります。`
         }
       },
       {
