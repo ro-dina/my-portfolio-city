@@ -1345,7 +1345,7 @@ SELECT balance FROM bank_accounts WHERE owner='Alice';`
         title: {ja: "Non-repeatable Read", en: "Non-repeatable Read"},
         body: {
           ja: `次はNon-repeatable Readの実験をします。同じトランザクション内で同じ行を読んだのに値が変わるのかどうかをみます。
-              \nSessionA → SessionB → SessionAの順に実行して、最初と最後のSessionAの結果を比べてみてください。`
+              \nSessionA → SessionB → SessionA(4行目)の順に実行して、最初と最後のSessionAの結果を比べてみてください。`
         }
       },
       { //Non-repeatable Readのコード 
@@ -1368,12 +1368,12 @@ SELECT balance FROM bank_accounts WHERE owner='Alice';
             lang: "sql",
             filename: "cc_non_repeatable_ReadB.sql",
             code: `BEGIN;
-SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
-
-SELECT balance FROM bank_accounts WHERE owner='Alice';
--- 1000 を確認
+UPDATE bank_accounts
+SET balance = balance - 100
+WHERE owner='Alice';
+COMMIT;
 `
-          }
+          },
         ]
       },
       { //Non-repeatable Readの結果
@@ -1404,17 +1404,48 @@ SELECT balance FROM bank_accounts WHERE owner='Alice';
               他トランザクションのCOMMITが途中で可視化されるため、同じ行を再度読み取ると値が変化します。`
         }
       },
-      { //
-        type: "section",
-        title: { ja: ""},
+      { //Repeatable Read導入
+        type: "paragraph",
+        title: { ja: "Repeatable Read"},
         body: {
-          ja: ""
+          ja: `同トランザクション内で結果を変えないようにするためにはRepeatable Readというものを使います。
+          \nRepeatable Readはトランザクション開始時点のスナップショットを固定するため、同じ行を2回読んでも値が変わりません。(Non-repeatable Readが起きません)
+          \n方法は簡単でNon-repeatable ReadのSessionAのコードの2行目の"READ COMMITTED"を"REPEATABLE READ”とするだけで観測できます。
+          \n以下にコードを示します。これもSessionA → SessionB → SessionA(4行目)の順に実行してください。`
         }
+      },
+      {
+        type: "code",
+        title: {ja: ""},
+        files:[
+          {
+            tabLabel: "SessionA",
+            lang: "sql",
+            filename: "cc_repeatable_ReadA.sql",
+            code: `BEGIN;
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+SELECT balance FROM bank_accounts WHERE owner='Alice';
+-- 1000
+`
+          },
+          {
+            tabLabel: "SessionB",
+            lang: "sql",
+            filename: "cc_repeatable_ReadB.sql",
+            code: `BEGIN;
+UPDATE bank_accounts
+SET balance = balance - 100
+WHERE owner='Alice';
+COMMIT;
+`
+          },
+        ]
       },
       {
         type: "section",
         title: { ja: "コラム", en: "Column" },
-        body: { ja: "制作時間: 約4時間", en: "Estimated implementation time: about 12 hours."} 
+        body: { ja: "制作時間: 約時間", en: "Estimated implementation time: about  hours."} 
       }
     ]
   }
