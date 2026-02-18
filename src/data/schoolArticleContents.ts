@@ -1414,9 +1414,9 @@ COMMIT;
           \n以下にコードを示します。これもSessionA → SessionB → SessionA(4行目)の順に実行してください。`
         }
       },
-      {
+      { //Repeatable Read のコード
         type: "code",
-        title: {ja: ""},
+        title: {ja: "Repeatable Readのコード", en: "Repeatable Read Code"},
         files:[
           {
             tabLabel: "SessionA",
@@ -1442,10 +1442,38 @@ COMMIT;
           },
         ]
       },
+      { //Repeatable Readの結果
+        type: "table",
+        title: { ja: "Repeatable Readの結果(SessionBを実行する前)"},
+        headers: ["balance"],
+        rows:[
+          ["1000"]
+        ],
+        showRowNumbers: true,
+        rowNumberStart: 1
+      },
+      { //Repeatable Readの結果
+        type: "table",
+        title: { ja: "Repeatable Readの結果(SessionBを実行した後)"},
+        headers: ["balance"],
+        rows:[
+          ["1000"]
+        ],
+        showRowNumbers: true,
+        rowNumberStart: 1
+      },
+      { //repeatable readのまとめ
+        type: "paragraph",
+        title: {ja: "repeatable readのまとめ"},
+        body: {
+          ja: `結果からわかる通り、今回は無事1000のままでした。ここから、Repeatable Readは読んだ結果が途中で変わらない事を保証する分離レベルだからです。
+          \nただし、Repeatable Readでも、存在しなかった行が突然現れる現状(Phantom Read)は理論上ありえます。次はそれを確認していきましょう。`
+        }
+      },
       {
         type: "section",
         title: { ja: "コラム", en: "Column" },
-        body: { ja: "制作時間: 約時間", en: "Estimated implementation time: about  hours."} 
+        body: { ja: "制作時間: 約 時間", en: "Estimated implementation time: about  hours."} //4.5
       }
     ]
   }
