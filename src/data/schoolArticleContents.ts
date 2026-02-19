@@ -1217,8 +1217,7 @@ UPDATE bank_accounts
 SET balance = balance - 100
 WHERE owner='Alice';
 
--- COMMITはまだしない
-COMMIT;`
+-- COMMITはまだしない`
           },
           {
             tabLabel: "Session B",
@@ -1245,7 +1244,7 @@ COMMIT;`
           ja: `わかりやすく観測できる方法として、SessionAの12行目(COMMIT;の行)以外を選択して、右クリックから"PostgreSQL クエリを実行する"を選択してください。
               次にSessionB全体を実行してください。環境によっては出ないかもしれませんが、"pgsql: このエディターのセッションのクエリはすでに実行中です。このクエリをキャンセルするか、完了まで待ってください。"と出ます。
               \nここでSessionAに戻り今度は12行目だけを選択し、”PostgreSQL クエリを実行する"をクリックしてください。これで、SessionBの処理も行われます。
-              \mSessionAで100、SessionBで200引いているので、更新競合が対策されていれば700と出力されるはずです。以下のコードを実行して確認してみてください。`,
+              \nSessionAで100、SessionBで200引いているので、更新競合が対策されていれば700と出力されるはずです。以下のコードを実行して確認してみてください。`,
           en: ``
         }
       },
@@ -1400,7 +1399,7 @@ COMMIT;
         type: "paragraph",
         title: {ja: "Non-repeatable readのまとめ"},
         body: {
-          ja: `READ COMMITTEDではかくSELECT時点でのコミット済みの最新データを読みます。そのため、トランザクション開始時の状態は保証されません。
+          ja: `READ COMMITTEDでは各SELECT時点でのコミット済みの最新データを読みます。そのため、トランザクション開始時の状態は保証されません。
               他トランザクションのCOMMITが途中で可視化されるため、同じ行を再度読み取ると値が変化します。`
         }
       },
@@ -1470,10 +1469,162 @@ COMMIT;
           \nただし、Repeatable Readでも、存在しなかった行が突然現れる現状(Phantom Read)は理論上ありえます。次はそれを確認していきましょう。`
         }
       },
+      { //Phantom Read
+        type: "paragraph",
+        title: { ja: "Phantom Read"},
+        body: {
+          ja: `Phantom Readとは。同じ条件で検索したにも関わらず、途中で存在しなかった行が新たに現れる現象です。
+              \nNon-repeatable Readは既存行の値が変わる現象だったのに対して、Phantom Readは行そのものが増減します。
+              \nSessionA → SessionB → SessionA(check)の順で実行してください。`
+        }
+      },
+      { //Phantom Read
+        type: "code",
+        title: {ja: "Phantom Read"},
+        files: [
+          {
+            tabLabel: "Session A",
+            lang: "sql",
+            filename: "cc_phantom_read_A_begin_read_committed.sql",
+            code:`BEGIN;
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+SELECT count(*)
+FROM bank_accounts
+WHERE balance >= 1000;
+-- 2件 (Alice, Bob)
+`
+          },
+          {
+            tabLabel: "Session B",
+            lang: "sql",
+            filename: "cc_phantom_read_B_insert_carol_commit.sql",
+            code: `BEGIN;
+
+INSERT INTO bank_accounts(owner, balance)
+VALUES ('Carol', 2000);
+
+COMMIT;`
+          },
+          {
+            tabLabel: "Session A(check)",
+            lang: "sql",
+            filename: "cc_phantom_read_A_reread_commit.sql",
+            code: `SELECT count(*)
+FROM bank_accounts
+WHERE balance >= 1000;
+-- 3件 (Alice, Bob, Carol)
+
+COMMIT;`
+          }
+        ]
+      },
+      { //Phantom Readの結果
+        type: "table",
+        title: {ja: "Phantom Readの実行結果(SessionBを実行する前)", en: ""},
+        headers: ["count"],
+        rows:[
+          ["2"]
+        ],
+        showRowNumbers: true,
+        rowNumberStart: 1
+      },
+      { //Phantom Readの結果
+        type: "table",
+        title: {ja: "Phantom Readの実行結果(SessionBを実行した後)", en: ""},
+        headers: ["count"],
+        rows:[
+          ["3"]
+        ],
+        showRowNumbers: true,
+        rowNumberStart: 1
+      },
+      { //Phantom Readのまとめ
+        type: "paragraph",
+        title: { ja: "Phantom Readの実行結果"},
+        body: {
+          ja: `READ COMMITTEDでは、同一トランザクション中でも後続のSELECTで他トランザクションのCOMMIT済み行が見えるため、件数が2→3に増加しました。これでPhantom readが観測されました。`
+        }
+      },
+      { //phantom read対策
+        type: "paragraph",
+        title: { ja: "phantom readを起こさないためには"},
+        body: {
+          ja: `phantom readもNon-repeatable readとrepeatable readのように起こさないようにできます。`
+        }
+      },
+      { //Phantom Readを発生させないコード
+        type: "code",
+        title: {ja: "Phantom Readを発生させないコード"},
+        files: [
+          {
+            tabLabel: "Session A",
+            lang: "sql",
+            filename: "cc_phantom_read_A_begin_read_committed.sql",
+            code:`BEGIN;
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+SELECT count(*)
+FROM bank_accounts
+WHERE balance >= 1000;
+-- 2件 (Alice, Bob)
+`
+          },
+          {
+            tabLabel: "Session B",
+            lang: "sql",
+            filename: "cc_phantom_read_B_insert_carol_commit.sql",
+            code: `BEGIN;
+
+INSERT INTO bank_accounts(owner, balance)
+VALUES ('Carol', 2000);
+
+COMMIT;`
+          },
+          {
+            tabLabel: "Session A(check)",
+            lang: "sql",
+            filename: "cc_phantom_read_A_reread_commit.sql",
+            code: `SELECT count(*)
+FROM bank_accounts
+WHERE balance >= 1000;
+-- 2件 (Alice, Bob)
+
+COMMIT;`
+          }
+        ]
+      },
+      { //Phantom Readの結果
+        type: "table",
+        title: {ja: "Phantom Readの実行結果(SessionBを実行する前)", en: ""},
+        headers: ["count"],
+        rows:[
+          ["2"]
+        ],
+        showRowNumbers: true,
+        rowNumberStart: 1
+      },
+      { //Phantom Readの結果
+        type: "table",
+        title: {ja: "Phantom Readの実行結果(SessionBを実行した後)", en: ""},
+        headers: ["count"],
+        rows:[
+          ["2"]
+        ],
+        showRowNumbers: true,
+        rowNumberStart: 1
+      },
+      { //Phantom Read対策のまとめ
+        type: "paragraph",
+        title: { ja: "Phantom Read対策"},
+        body: {
+          ja: `REPEATABLE READでは、トランザクション開始時点のスナップショットに基づいて読み取るため。途中で追加された行が同一トランザクション内の再検索に現れず。件数が2で保たれました。`
+        }
+      },
       {
         type: "section",
         title: { ja: "コラム", en: "Column" },
-        body: { ja: "制作時間: 約 時間", en: "Estimated implementation time: about  hours."} //4.5
+        body: { ja: "制作時間: 約 6時間", en: "Estimated implementation time: about  hours."} //4.5
       }
     ]
   }
