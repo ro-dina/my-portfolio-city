@@ -1621,6 +1621,254 @@ COMMIT;`
           ja: `REPEATABLE READでは、トランザクション開始時点のスナップショットに基づいて読み取るため。途中で追加された行が同一トランザクション内の再検索に現れず。件数が2で保たれました。`
         }
       },
+      { //SERIALIZABLE(5)
+        type: "paragraph",
+        title: { ja: "SERIALIZABLE", en: "SERIALIZABLE" },
+        anchor: "5",
+        body: {
+          ja: `SERIALIZABLE は、SQL 標準で定義されている最も強い分離レベルです。
+          \nこの分離レベルでは、複数トランザクションが同時に実行されていたとしても、
+          「それらが何らかの順序で直列（1つずつ）に実行された結果」と同じになることが保証されます。
+          \n\nPostgreSQL では SERIALIZABLE をロックで実現するのではなく、
+          SSI（Serializable Snapshot Isolation）という仕組みを使い、
+          危険な同時実行が検出された場合にトランザクションを中断（エラー）させます。
+          \n\nそのため、SERIALIZABLE では処理が「止まる」のではなく、
+          COMMIT 時にエラーが発生することがある点が重要です。
+          \n\n以下は 2 セッションで、A→B→A→B の順に実行して挙動を観察します。
+          \n(1) Session A: BEGIN〜UPDATE まで（COMMITはまだ）
+          \n(2) Session B: BEGIN〜UPDATE まで（COMMITはまだ）
+          \n(3) Session A: COMMIT
+          \n(4) Session B: COMMIT（ここで serialization failure になることがある）
+          \n(5) Session A: SELECT で最終状態を確認`
+        }
+      },
+      { //SERIALIZABLE code
+        type: "code",
+        title: { ja: "SERIALIZABLE のコード", en: "SERIALIZABLE Code" },
+        files:[
+          {
+            tabLabel: "SessionA",
+            lang: "sql",
+            filename: "cc_serializable_A.sql",
+            code: `BEGIN;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+SELECT SUM(balance) FROM bank_accounts;
+-- 2000
+
+UPDATE bank_accounts
+SET balance = balance - 100
+WHERE owner = 'Alice';
+
+-- まだ COMMIT しない
+`
+          },
+          {
+            tabLabel: "SessionB",
+            lang: "sql",
+            filename: "cc_serializable_B.sql",
+            code: `BEGIN;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+SELECT SUM(balance) FROM bank_accounts;
+-- 2000
+
+UPDATE bank_accounts
+SET balance = balance - 200
+WHERE owner = 'Bob';
+
+-- まだ COMMIT しない
+`
+          },
+          {
+            tabLabel: "the last of each section",
+            lang: "sql",
+            code: `COMMIT;`
+          },
+          {
+            tabLabel: "check the result",
+            lang: "sql",
+            code: `SELECT * FROM bank_accounts ORDER BY id;`
+          }
+        ]
+      },
+      { //SERIALIZABLE 実行結果
+        type: "table",
+        title: {ja: "SERIALIZABLEの実行結果(SessionAのUPDATE実行)", en: ""},
+        headers: ["time", "log"],
+        rows:[
+          ["10:29:42", "次の場所でクエリの実行を開始しました: 行 8 UPDATE 1"],
+          ["10:29:42", "次の場所でクエリの実行を開始しました: 行 12 COMMIT"],
+          ["/", "総実行時間: 00:00:00.002"]
+        ],
+        showRowNumbers: false,
+      },
+      { //SERIALIZABLE 実行結果
+        type: "table",
+        title: {ja: "SERIALIZABLEの実行結果(SessionBのUPDATE実行)", en: ""},
+        headers: ["time", "log"],
+        rows:[
+          ["10:29:42", `次の場所でクエリの実行を開始しました: 行 8
+could not serialize access due to read/write dependencies among transactions
+DETAIL: Reason code: Canceled on identification as a pivot, during write.
+HINT: The transaction might succeed if retried.`],
+          ["/", "総実行時間: 00:00:00.002"]
+        ],
+        showRowNumbers: false,
+      },
+      { //SERIALIZABLE 実行結果
+        type: "table",
+        title: {ja: "SERIALIZABLEの実行結果(SessionBで直列化エラー)", en: ""},
+        headers: ["id", "owner", "balance"],
+        rows:[
+          ["1", "Alice", "900"],
+          ["2", "Bob", "1000"]
+        ],
+        showRowNumbers: true,
+      },
+      { //考察
+        type: "paragraph",
+        title: { ja: "SERIALIZABLEの考察", en: ""},
+        body: {
+          ja: `SERIALIZABLE では、すべてのトランザクションの結果が「直列に実行された場合」と等価である必要があります。
+              \n\n今回の例では、Session A と Session B がどちらも「合計残高が 2000」という同じ前提（同一スナップショット）で処理を開始しました。
+              その後、互いに更新を行うことで read/write の依存関係が発生し、PostgreSQL が「直列実行として安全に説明できない可能性がある」と判断すると、
+              どちらか一方を serialization failure として中断します。
+              \n\n実行結果として、Session A は COMMIT できましたが、Session B は
+              "could not serialize access ..." で失敗しました。これはバグではなく、SERIALIZABLE が整合性を守るための仕様です。`
+        }
+      },
+      { //実務での扱い
+        type: "paragraph",
+        title: { ja: "実務でのSERIALIZABLEの扱い", en: ""},
+        body: {
+          ja: `SERIALIZABLE は最も安全な分離レベルですが、serialization failure（直列化失敗）が発生する可能性があります。
+              そのため実務では「失敗したらリトライする」前提で利用されることが多いです。
+              \n\n典型的には、(1) アプリケーション側で再試行する、(2) トランザクションを短く保つ、(3) 競合しやすい更新を設計で避ける、
+              といった工夫が必要になります。`
+        }
+      },
+      { //MVCCの説明
+        type: "paragraph",
+        title: { ja: "PostgreSQLのMVCC", en: "MVCC in PostgreSQL"},
+        anchor: "6",
+        body: {
+          ja: `ここまでの実験で、READ COMMITTED や REPEATABLE READ、SERIALIZABLE の違いを観察しました。
+              ではなぜ、PostgreSQL では Dirty Read が起きず、なぜ REPEATABLE READでは値が固定されるのでしょうか。
+              \n\nその仕組みの中核となるのが、MVCC（Multi-Version Concurrency Control）です。
+              \nMVCCとは、同じ行に複数のバージョンを持たせることで、ロックに頼らず並列処理を実現する仕組みです。`
+        }
+      },
+      { //MVCCとは
+        type: "paragraph",
+        title: { ja: "MVCCとは何か", en: "what is MVCC"},
+        body: {
+          ja: `PostgreSQL では、行を更新しても元の行を上書きしません。代わりに新しいバージョンの行を作成します。
+              \n\n各行には内部的に以下の情報が付与されています。
+              \n- xmin : この行を作成したトランザクションID
+              \n- xmax : この行を削除（無効化）したトランザクションID
+              \n\nトランザクションは、自分が開始した時点のスナップショットを基準に、自分から見える行だけを読む仕組みになっています。`
+        }
+      },
+      { //xmin/xmax観察
+        type: "code",
+        title: { ja: "xmin / xmax を確認する", en: ""},
+        lang: "sql",
+        filename: "mvcc_check_xmin.sql",
+        code: `SELECT id, owner, balance, xmin, xmax
+FROM bank_accounts
+ORDER BY id;`
+      },
+      { //xmin/xmax観察結果
+        type: "table",
+        title: { ja: "xmin / xmax の確認結果", en: ""},
+        headers: ["id", "owner", "balance", "xmin", "xmax"],
+        rows:[
+          ["1", "Alice", "1000", "885", "0"],
+          ["2", "Bob", "1000", "885", "0"]
+        ],
+        showRowNumbers: true,
+      },
+      { //xmin/xmax開設
+        type: "paragraph",
+        body: {
+          ja: `xmin はその行を作成したトランザクションIDです。
+          \nxmax は削除または更新によって無効化された場合に設定されます。
+          \n\nUPDATE を実行すると、
+          古い行の xmax が埋まり、新しい行が別バージョンとして追加されます。
+          \n\nこれにより、同じ物理行をロックして書き換えるのではなく、
+          「新しい行を作って切り替える」方式が実現されています。
+          \n\n次は実際にUPDATEしてバージョンを見てみましょう。`
+        }
+      },
+      { //MVCCのバージョン生成を確認する。
+        type: "code",
+        title: { ja: "MVCCのバージョン生成を確認する", en: "" },
+        lang: "sql",
+        filename: "mvcc_update_demo.sql",
+        code: `BEGIN;
+
+UPDATE bank_accounts
+SET balance = balance + 50
+WHERE owner = 'Alice';
+
+SELECT id, owner, balance, xmin, xmax
+FROM bank_accounts
+WHERE owner = 'Alice';
+
+ROLLBACK;`
+      },
+      { //MVCCバージョン結果
+        type: "table",
+        title: { ja: "xmin / xmax の確認結果", en: ""},
+        headers: ["id", "owner", "balance", "xmin", "xmax"],
+        rows:[
+          ["1", "Alice", "1050", "886", "0"]
+        ],
+        showRowNumbers: true,
+      },
+      {// MVCCのバージョン結果の解説
+        type: "paragraph",
+        body: {
+          ja: `xmin の値が 885 から 886 に変わっていることから、UPDATE によって新しいバージョンの行が生成されたことが分かります。
+              \n\n実際には、元の行が上書きされたのではなく、古い行は内部的に残りつつ、新しい行が追加されています。
+              \n\nROLLBACK を実行すると、この新しいバージョンは無効化され、元の行が再び可視になります。
+              \n\nこの仕組みにより、他トランザクションは、自分のスナップショット時点の行を読むことができ、Dirty Read が発生しない構造になっています。`
+        }
+      },
+      { //重要点
+        type: "paragraph",
+        body: {
+          ja: `ここで重要なのは、「他のトランザクションからはこの 1050 の行は見えない」という点です。
+          \n\nPostgreSQL は各トランザクションごとに「どの xmin/xmax が可視か」を判定しています。
+          そのため、COMMIT 前の変更は他セッションからは参照できず、Dirty Read が発生しない構造になっています。`
+        }
+      },
+      {//なぜ各分離レベルが成立するのか
+        type: "paragraph",
+        title: { ja: "分離レベルとMVCCの関係", en: "" },
+        body: {
+          ja: `MVCC によって、トランザクションごとに「見える行の集合」が制御されています。
+          \n\nREAD COMMITTED
+          \n→ 各 SELECT ごとに最新のコミット済みバージョンを見る
+          \n\nREPEATABLE READ
+          \n→ トランザクション開始時点のスナップショットを固定
+          \n\nSERIALIZABLE
+          \n→ スナップショットに加えて、危険な依存関係を検出し、必要ならエラーで中断する（SSI）
+          \n\nつまり PostgreSQL の同時実行制御は、
+          ロック中心ではなく「バージョン管理中心」で設計されています。`
+        }
+      },
+      { //VACUUM
+        type: "paragraph",
+        title: { ja: "MVCCとVACUUM", en: "" },
+        body: {
+          ja: `UPDATE や DELETE によって古いバージョンの行が増えていきます。それらは自動的には消えません。
+          \n不要になった古いバージョンを回収する仕組みが VACUUM です。
+          \n\nMVCC を理解すると、
+          なぜ VACUUM が必要なのかも理解できます。`
+        }
+      },
       {
         type: "section",
         title: { ja: "コラム", en: "Column" },
