@@ -1869,10 +1869,133 @@ ROLLBACK;`
           なぜ VACUUM が必要なのかも理解できます。`
         }
       },
+      { //drill導入
+        type: "section",
+        title: { ja: "問題演習", en: "Drills" },
+        anchor: "drill-1",
+        body: { ja: "本記事の内容を確認するための演習問題です。SQLを実際に実行して確認してください。" }
+      },
+      { //問題1
+        type: "exercise",
+        title: { ja: "問題演習1 : MVCCの基本概念"},
+        question: {
+          ja: "PostgreSQLでは、UPDATEを実行した際に元の行はどのように扱われるでしょうか。以下から最も適切なものを選んでください。"
+        },
+        questionBlocks: [
+          {
+            type: "list",
+            items: [
+          { title: { ja: "元の行を上書きする", en: "" },},
+          { title: { ja: "元の行を消去しつつ新しい行を作る", en: "" },},
+          { title: { ja: "元の行を残しつつ新しいバージョンを作る", en: "" },},
+          { title: { ja: "ロックして書き換える", en: "" },},
+        ]
+          }
+        ],
+        answer: {
+          ja: "元の行を残しつつ新しいバージョンを作る"
+        }
+      },
+      { //問題2
+        type: "exercise",
+        title: { ja: "Drill 2 : Dirty Readの観測" },
+        question: {
+          ja: "READ UNCOMMITTED を指定しても Dirty Read が発生しない理由を説明してください。"
+        },
+        questionBlocks: [
+          {
+            type: "paragraph",
+            body: {
+              ja: "ヒント：PostgreSQLの分離レベル実装を考えてみましょう。"
+            }
+          }
+        ],
+        answer: {
+          ja: `PostgreSQL は MVCC により「未コミットの変更」を他トランザクションから見えないようにするためです。
+              READ UNCOMMITTED を指定しても挙動は READ COMMITTED と同じになり、未コミット行を読む（Dirty Read）は発生しません。`
+        }
+      },
+      { //問題3
+        type: "exercise",
+        title: { ja : "Drill 3：Non-repeatable Readの発生条件" },
+        question: {
+          ja: `READ COMMITTED で同一トランザクション内の同じ SELECT が異なる値を返す理由を説明してください。
+              \nまた、どの分離レベルに変更すれば防げるか答えてください。`
+        },
+        answer: {
+          ja: `READ COMMITTED では「各 SELECT 文の開始時点でのコミット済みスナップショット」を読むためです。
+              そのため、同一トランザクション内でも、途中で他トランザクションが COMMIT した更新が次の SELECT では見えるようになり、結果が変化します。
+              防ぐには REPEATABLE READ（または SERIALIZABLE）にします。`
+        }
+      },
+      { //問題4
+        type: "exercise",
+        title: { ja: "Drill 4：Phantom Readの確認" },
+        question: {
+          ja: `READ COMMITTED で Phantom Read が発生する理由を説明してください。
+              \nまた、REPEATABLE READ ではなぜ発生しないのかを MVCC の観点から説明してください。`
+        },
+        answer: {
+          ja: `READ COMMITTED では各 SELECT ごとに「その時点でコミット済みの最新状態」を見るため、途中で INSERT された行が次の SELECT で見えることがあり、件数が変化（Phantom）します。
+              REPEATABLE READ ではトランザクション開始時点のスナップショットを固定して読むため、途中で追加された行は同一トランザクション内の再検索では見えず、Phantom が発生しません。`
+        }
+      },
+      { //問題5
+        type: "exercise",
+        title: { ja: "Drill 5：SERIALIZABLEの特徴"},
+        question: {
+          ja: `SERIALIZABLE 分離レベルでは、なぜトランザクションがエラーになることがあるのでしょうか。
+              \n「ロック」との違いに触れて説明してください。`
+        },
+        answer: {
+          ja: `PostgreSQL の SERIALIZABLE はロックで直列化するのではなく、SSI（Serializable Snapshot Isolation）で「直列実行と同じ結果にできない依存関係」を検出するとトランザクションをエラー（serialization failure）で中断します。
+              ロックのように待たせるのではなく、整合性のために abort してリトライを促す点が違いです。`
+        }
+      },
+      { //問題6
+        type: "exercise",
+        title: { ja: "Drill 6：xmin / xmax の意味"},
+        question: {
+          ja: `xmin と xmax はそれぞれ何を表していますか。
+              \nUPDATE 実行時にこれらの値がどのように変化するか説明してください。`
+        },
+        answer: {
+          ja: `xmin は「その行（そのバージョン）を作成したトランザクションID」です。
+              \nxmax は「その行（そのバージョン）を無効化したトランザクションID（DELETE または UPDATE）」です。
+
+              \n\nUPDATE では、古い行バージョンに xmax が設定され、新しい行バージョンが作られて xmin が新しいトランザクションIDになります。`
+        }
+      },
+      {//問題7
+        type: "exercise",
+        title: { ja: "Drill 7：VACUUMの必要性"},
+        question: {
+          ja: `なぜ MVCC を採用している PostgreSQL では VACUUM が必要になるのでしょうか。
+              \n「古いバージョン」という言葉を使って説明してください。`
+        },
+        answer: {
+          ja: `MVCC では UPDATE/DELETE のたびに古いバージョンの行が残り続けます。
+              不要になった古いバージョン（どのトランザクションからも参照されない行）を回収してストレージを再利用するために VACUUM が必要です。`
+        }
+      },
+      { //問題8
+        type: "exercise",
+        title: { ja: "Drill 8：分離レベルの選択" },
+        question: {
+          ja: `銀行口座の残高更新のように整合性が重要な処理では、どの分離レベルを選択すべきでしょうか。
+              \n理由も含めて説明してください。`
+        },
+        answer: {
+          ja: `基本は READ COMMITTED で十分なことが多いです。ただし「残高の整合性」を確実に守るには更新方法が重要で、
+              SELECT してから計算して UPDATE するのではなく、UPDATE で直接加減算する、または SELECT ... FOR UPDATE で対象行をロックしてから更新します。
+
+              \n厳密に直列化と同等の結果が必要なら SERIALIZABLE を選び、serialization failure が出たらアプリ側でリトライする運用にします。`
+        }
+      },
       {
         type: "section",
         title: { ja: "コラム", en: "Column" },
-        body: { ja: "制作時間: 約 6時間", en: "Estimated implementation time: about  hours."} //4.5
+        body: { ja: "制作時間: 約 10時間", en: "Estimated implementation time: about  hours."} //4.5
       }
     ]
   }
