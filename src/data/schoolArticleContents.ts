@@ -1114,59 +1114,68 @@ WHERE status = 'paid';`
         type: "toc",
         title: { ja: "目次", en: "Contents" },
         items: [
-          {title: { ja: "トランザクションとは", en: ""}, anchor: "0"},
-          {title: { ja: "同時実行問題の種類", en: ""}, anchor: "1"},
-          {title: { ja: "実験環境の準備", en: ""}, anchor: "2"},
-          {title: { ja: "READ UNCOMMITTED / READ COMMITTED",}, anchor: "3"},
-          {title: { ja: "REPEATABLE READ"}, anchor: "4"},
-          {title: { ja: "SERIALIZABLE"}, anchor: "5"},
-          {title: { ja: "PostgreSQLのMVCC"}, anchor: "6"},
-          {title: { ja: "まとめ", en: "summary"}, anchor: "7"},
+          { title: { ja: "トランザクションとは", en: "What is a transaction?" }, anchor: "transaction-overview" },
+          { title: { ja: "同時実行問題の種類", en: "Types of concurrency anomalies" }, anchor: "concurrency-anomalies" },
+          { title: { ja: "実験環境の準備", en: "Preparing the experiment environment" }, anchor: "setup" },
+          { title: { ja: "READ UNCOMMITTED / READ COMMITTED", en: "READ UNCOMMITTED / READ COMMITTED" }, anchor: "read-committed" },
+          { title: { ja: "REPEATABLE READ", en: "REPEATABLE READ" }, anchor: "repeatable-read" },
+          { title: { ja: "SERIALIZABLE", en: "SERIALIZABLE" }, anchor: "serializable" },
+          { title: { ja: "PostgreSQLのMVCC", en: "MVCC in PostgreSQL" }, anchor: "mvcc" },
+          { title: { ja: "まとめ", en: "Summary" }, anchor: "summary" },
           {title: { ja: "問題演習", en: "Drills" }, anchor: "drill-1" }
         ]
       },
       {
         type: "paragraph",
-        title: { ja: "トランザクションとは", en: ""},
-        anchor: "0",
+        title: { ja: "トランザクションとは", en: "What is a transaction?" },
+        anchor: "transaction-overview",
         body: {
           ja: `データベースは複数ユーザから同時にアクセスされることを前提として設計されています。
           しかし、同時実行によってデータの整合性が破壊される可能性があります。
           本記事ではPostgreSQLのトランザクション隔離レベルを変更しながら、実際に不整合が発生する状況を再現し、どのように防がれるのかを観察していきます。
-          `
+          `,
+          en: `Databases are designed for concurrent access from multiple users.
+          However, concurrency can break data consistency if not controlled.
+          In this article, we change PostgreSQL transaction isolation levels, reproduce inconsistent scenarios, and observe how each level prevents them.`
         },
       },
       {
         type: "list",
-        title: { ja: "主な同時実行環境問題の種類", en: ""},
-        anchor: "1",
+        title: { ja: "主な同時実行環境問題の種類", en: "Main types of concurrency anomalies" },
+        anchor: "concurrency-anomalies",
         items: [
           { title: { ja: "Lost Update", en: "Lost Update" },
             description: {
               ja: "同じデータに対して2人が同時に更新をかけた際、後から更新した人の内容で上書きされる現象。"
+              ,en: "When two users update the same row concurrently and one update effectively overwrites the other."
             }
           },
           { title: { ja: "Dirty Read", en: "Dirty Read"},
             description: {
               ja: "確定していないデータを、別の処理が読んでしまう問題。"
+              ,en: "Reading uncommitted data written by another transaction."
             }},
           { title: {ja: "Non-repeatable Read", en: "Non-repeatable Read"},
             description: {
               ja: "一つのトランザクション内で同じデータを2回読み込んだ時、1回目と2回目で値が変わる現象。"
+              ,en: "Reading the same row twice in one transaction returns different values."
             }},
           { title: {ja: "Phantom Read", en: "Phantom Read"},
             description: {
               ja: "検索結果の行数が途中で増減する問題。"
+              ,en: "Re-running the same query changes the number of returned rows."
             }},
         ]
       },
       {
         type: "paragraph",
-        title: { ja: "実験環境の準備", en: ""},
-        anchor: "2",
+        title: { ja: "実験環境の準備", en: "Preparing the experiment environment" },
+        anchor: "setup",
         body: {
           ja: `使用テーブルを設計します。作成コマンドは以下に示します。
-          \n また、この記事ではDockerとVSCodeの拡張機能である、PostgreSQL(ms-ossdata.vscode-pgsql)を使用しています。そのため、実行方法や操作方法はこの拡張機能前提のものです。`
+          \n また、この記事ではDockerとVSCodeの拡張機能である、PostgreSQL(ms-ossdata.vscode-pgsql)を使用しています。そのため、実行方法や操作方法はこの拡張機能前提のものです。`,
+          en: `We first prepare the tables used in the experiments. The creation SQL is shown below.
+          \nThis article assumes Docker and the VS Code extension PostgreSQL (ms-ossdata.vscode-pgsql), so the execution flow follows that setup.`
         }
       },
       {
@@ -1187,14 +1196,16 @@ INSERT INTO bank_accounts (owner, balance) VALUES
       },
       {
         type: "section",
-        title: { ja: "Lost Update"},
+        title: { ja: "Lost Update", en: "Lost Update" },
+        anchor: "read-committed",
         body: {
-          ja: "まずはLost Updateを観測してみましょう。"
+          ja: "まずはLost Updateを観測してみましょう。",
+          en: "Let's start by observing Lost Update behavior."
         }
       },
       {
         type: "code",
-        title: { ja: "初期状態確認", en: ""},
+        title: { ja: "初期状態確認", en: "Check initial state" },
         lang: "sql",
         filename: "check.sql",
         code: `SELECT * FROM bank_accounts;`
@@ -1239,25 +1250,28 @@ COMMIT;`
       },
       {
         type: "paragraph",
-        title: {ja: "コミットと確認", en: ""},
+        title: {ja: "コミットと確認", en: "Commit and verify"},
         body: {
           ja: `わかりやすく観測できる方法として、SessionAの12行目(COMMIT;の行)以外を選択して、右クリックから"PostgreSQL クエリを実行する"を選択してください。
               次にSessionB全体を実行してください。環境によっては出ないかもしれませんが、"pgsql: このエディターのセッションのクエリはすでに実行中です。このクエリをキャンセルするか、完了まで待ってください。"と出ます。
               \nここでSessionAに戻り今度は12行目だけを選択し、”PostgreSQL クエリを実行する"をクリックしてください。これで、SessionBの処理も行われます。
               \nSessionAで100、SessionBで200引いているので、更新競合が対策されていれば700と出力されるはずです。以下のコードを実行して確認してみてください。`,
-          en: ``
+          en: `To observe this clearly, run Session A except the COMMIT line first, then run all of Session B.
+              Depending on your environment, Session B may wait while Session A is still active.
+              \nThen return to Session A and run only the COMMIT line. Session B proceeds afterward.
+              \nBecause Session A subtracts 100 and Session B subtracts 200, the final value should be 700 if update conflicts are handled correctly.`
         }
       },
       {//コミットと確認
         type: "code",
-        title: {ja: "コミットと確認", en: ""},
+        title: {ja: "コミットと確認", en: "Commit and verify"},
         lang: "sql",
         filename: "check_result.sql",
         code: `SELECT * FROM bank_accounts WHERE owner='Alice';`
       },
       {// 実行結果テーブル
         type: "table",
-        title: {ja: "lost update検証の実行結果", en: ""},
+        title: {ja: "lost update検証の実行結果", en: "Lost Update experiment result"},
         headers: ["id", "owner", "balance"],
         rows:[
           ["1", "Alice", "700"]
@@ -1267,24 +1281,27 @@ COMMIT;`
       },
       { //lost update まとめ
         type: "paragraph",
-        title: {ja: "lost updateのまとめ"},
+        title: {ja: "lost updateのまとめ", en: "Lost Update summary"},
         body: {
           ja: `PostgreSQLでは、同一行に対する更新が競合した場合、後続トランザクションはロック待ちとなり、
               先行トランザクションのコミット後に更新対象行を再取得して更新を行います。
-              \nそのため、更新結果が上書きされるLost Updateは発生せず、両方の更新が反映された値になることが確認されました。`
+              \nそのため、更新結果が上書きされるLost Updateは発生せず、両方の更新が反映された値になることが確認されました。`,
+          en: `In PostgreSQL, when two transactions update the same row, the later one waits for a lock.
+              After the earlier transaction commits, PostgreSQL re-reads the target row and applies the update.
+              \nAs a result, Lost Update does not occur in this scenario, and both updates are reflected.`
         }
       },
       { // Dirty Readが発生するか
         type: "section",
-        title: {ja: "Dirty Readは発生するか"},
+        title: {ja: "Dirty Readは発生するか", en: "Does Dirty Read occur?" },
         body: {
           ja: `もしもコミット前のDBの情報が見えるとDirty Readが発生しています。そのため以下のコードを使って検証します。`,
-          en: ""
+          en: "If uncommitted data becomes visible, Dirty Read has occurred. We verify this with the following sessions."
         }
       },
       { //Dirty Read検証用コード
         type: "code",
-        title: {ja: ""},
+        title: {ja: "Dirty Read検証用コード", en: "Dirty Read test code"},
         files: [
           {
             tabLabel: "Session A",
@@ -1312,15 +1329,17 @@ SELECT balance FROM bank_accounts WHERE owner='Alice';`
       },
       { //結果前に
         type: "paragraph",
-        title: {ja: "予想"},
+        title: {ja: "予想", en: "Prediction"},
         body: {
           ja: `もし、Dirty Readが発生するなら、balanceが5000と表示されるはずです。実行結果は以下のようになりました。
-              \nちなみに実行する前に、データをリセットしています。そのため値としてはAliceのbalanceが1000のままです。`
+              \nちなみに実行する前に、データをリセットしています。そのため値としてはAliceのbalanceが1000のままです。`,
+          en: `If Dirty Read occurs, the balance should appear as 5000.
+              \nIn this setup, we reset data before execution, so Alice starts from 1000.`
         }
       },
       { //Dirty readの結果
         type: "table",
-        title: {ja: "Dirty read検証の実行結果", en: ""},
+        title: {ja: "Dirty read検証の実行結果", en: "Dirty Read experiment result"},
         headers: ["balance"],
         rows:[
           ["1000"]
@@ -1330,13 +1349,17 @@ SELECT balance FROM bank_accounts WHERE owner='Alice';`
       },
       {//Dirty readのまとめ
         type: "paragraph",
-        title: {ja: "Dirty readのまとめ"},
+        title: {ja: "Dirty readのまとめ", en: "Dirty Read summary"},
         body:{
           ja: `表示は変わらず1000のままです。現在、PostgreSQLはデフォルトではUNCOMMITTEDの分離レベルがないのでDirty readは発生しません。
               \n他のデータベースでも、MySQLやSQL Serverはデフォルトでは発生しておらず、OracleはそもそもREAD UNCOMMITTEDをサポートしていません。
               \nREAD UNCOMMITTEDは未コミットデータの参照を許可する分離レベルとしてSQL標準に定義されていますが、MVCCを採用する現代の主要DBMSでは実用的な利点がありません。
               そのためPostgreSQLやOracleでは実質的にREAD COMMITTEDと同一の動作となります。
-              \n\nまた、今後のため、SessionAをCOMMIT;するなどして止めておくことをおすすめします。`
+              \n\nまた、今後のため、SessionAをCOMMIT;するなどして止めておくことをおすすめします。`,
+          en: `The value stayed at 1000, so Dirty Read did not occur.
+              PostgreSQL effectively treats READ UNCOMMITTED like READ COMMITTED under MVCC.
+              \nSimilarly, Oracle does not support READ UNCOMMITTED, and many modern systems avoid exposing uncommitted data.
+              \nFor the next experiments, make sure Session A is properly closed (for example with COMMIT).`
         }
       },
       { // non-repeatable-read
@@ -1344,7 +1367,9 @@ SELECT balance FROM bank_accounts WHERE owner='Alice';`
         title: {ja: "Non-repeatable Read", en: "Non-repeatable Read"},
         body: {
           ja: `次はNon-repeatable Readの実験をします。同じトランザクション内で同じ行を読んだのに値が変わるのかどうかをみます。
-              \nSessionA → SessionB → SessionA(4行目)の順に実行して、最初と最後のSessionAの結果を比べてみてください。`
+              \nSessionA → SessionB → SessionA(4行目)の順に実行して、最初と最後のSessionAの結果を比べてみてください。`,
+          en: `Next, we test Non-repeatable Read: reading the same row twice in one transaction and checking whether the value changes.
+              \nRun in order: Session A -> Session B -> Session A (line 4), then compare Session A's first and second results.`
         }
       },
       { //Non-repeatable Readのコード 
@@ -1377,7 +1402,7 @@ COMMIT;
       },
       { //Non-repeatable Readの結果
         type: "table",
-        title: {ja: "Non-repeatable Readの実行結果(SessionBを実行する前)", en: ""},
+        title: {ja: "Non-repeatable Readの実行結果(SessionBを実行する前)", en: "Non-repeatable Read result (before Session B)"},
         headers: ["balance"],
         rows:[
           ["1000"]
@@ -1387,7 +1412,7 @@ COMMIT;
       },
       { //Non-repeatable Readの結果
         type: "table",
-        title: {ja: "Non-repeatable Readの実行結果(SessionBを実行した後)", en: ""},
+        title: {ja: "Non-repeatable Readの実行結果(SessionBを実行した後)", en: "Non-repeatable Read result (after Session B)"},
         headers: ["balance"],
         rows:[
           ["900"]
@@ -1397,20 +1422,27 @@ COMMIT;
       },
       { //Non-repeatable readのまとめ
         type: "paragraph",
-        title: {ja: "Non-repeatable readのまとめ"},
+        title: {ja: "Non-repeatable readのまとめ", en: "Non-repeatable Read summary"},
         body: {
           ja: `READ COMMITTEDでは各SELECT時点でのコミット済みの最新データを読みます。そのため、トランザクション開始時の状態は保証されません。
-              他トランザクションのCOMMITが途中で可視化されるため、同じ行を再度読み取ると値が変化します。`
+              他トランザクションのCOMMITが途中で可視化されるため、同じ行を再度読み取ると値が変化します。`,
+          en: `Under READ COMMITTED, each SELECT sees the latest committed version at that moment.
+              Therefore, the state at transaction start is not fixed, and the same row can return different values later in the same transaction.`
         }
       },
       { //Repeatable Read導入
         type: "paragraph",
-        title: { ja: "Repeatable Read"},
+        title: { ja: "Repeatable Read", en: "Repeatable Read" },
+        anchor: "repeatable-read",
         body: {
           ja: `同トランザクション内で結果を変えないようにするためにはRepeatable Readというものを使います。
           \nRepeatable Readはトランザクション開始時点のスナップショットを固定するため、同じ行を2回読んでも値が変わりません。(Non-repeatable Readが起きません)
           \n方法は簡単でNon-repeatable ReadのSessionAのコードの2行目の"READ COMMITTED"を"REPEATABLE READ”とするだけで観測できます。
-          \n以下にコードを示します。これもSessionA → SessionB → SessionA(4行目)の順に実行してください。`
+          \n以下にコードを示します。これもSessionA → SessionB → SessionA(4行目)の順に実行してください。`,
+          en: `To keep results stable within one transaction, use REPEATABLE READ.
+          \nREPEATABLE READ fixes the snapshot at transaction start, so reading the same row twice returns the same value.
+          \nYou can test this by changing Session A's isolation level from READ COMMITTED to REPEATABLE READ.
+          \nRun in the same order: Session A -> Session B -> Session A (line 4).`
         }
       },
       { //Repeatable Read のコード
@@ -1443,7 +1475,7 @@ COMMIT;
       },
       { //Repeatable Readの結果
         type: "table",
-        title: { ja: "Repeatable Readの結果(SessionBを実行する前)"},
+        title: { ja: "Repeatable Readの結果(SessionBを実行する前)", en: "Repeatable Read result (before Session B)" },
         headers: ["balance"],
         rows:[
           ["1000"]
@@ -1453,7 +1485,7 @@ COMMIT;
       },
       { //Repeatable Readの結果
         type: "table",
-        title: { ja: "Repeatable Readの結果(SessionBを実行した後)"},
+        title: { ja: "Repeatable Readの結果(SessionBを実行した後)", en: "Repeatable Read result (after Session B)" },
         headers: ["balance"],
         rows:[
           ["1000"]
@@ -1463,24 +1495,30 @@ COMMIT;
       },
       { //repeatable readのまとめ
         type: "paragraph",
-        title: {ja: "repeatable readのまとめ"},
+        title: {ja: "repeatable readのまとめ", en: "Repeatable Read summary"},
         body: {
           ja: `結果からわかる通り、今回は無事1000のままでした。ここから、Repeatable Readは読んだ結果が途中で変わらない事を保証する分離レベルだからです。
-          \nただし、Repeatable Readでも、存在しなかった行が突然現れる現状(Phantom Read)は理論上ありえます。次はそれを確認していきましょう。`
+          \nただし、Repeatable Readでも、存在しなかった行が突然現れる現状(Phantom Read)は理論上ありえます。次はそれを確認していきましょう。`,
+          en: `As shown, the value remained 1000.
+          This confirms that REPEATABLE READ prevents values from changing mid-transaction.
+          \nNext, we check Phantom Read behavior.`
         }
       },
       { //Phantom Read
         type: "paragraph",
-        title: { ja: "Phantom Read"},
+        title: { ja: "Phantom Read", en: "Phantom Read" },
         body: {
           ja: `Phantom Readとは。同じ条件で検索したにも関わらず、途中で存在しなかった行が新たに現れる現象です。
               \nNon-repeatable Readは既存行の値が変わる現象だったのに対して、Phantom Readは行そのものが増減します。
-              \nSessionA → SessionB → SessionA(check)の順で実行してください。`
+              \nSessionA → SessionB → SessionA(check)の順で実行してください。`,
+          en: `Phantom Read means that repeating the same predicate query returns a different row count.
+              \nUnlike Non-repeatable Read (value change in existing rows), Phantom Read changes the set of rows itself.
+              \nRun in order: Session A -> Session B -> Session A (check).`
         }
       },
       { //Phantom Read
         type: "code",
-        title: {ja: "Phantom Read"},
+        title: {ja: "Phantom Read", en: "Phantom Read"},
         files: [
           {
             tabLabel: "Session A",
@@ -1521,7 +1559,7 @@ COMMIT;`
       },
       { //Phantom Readの結果
         type: "table",
-        title: {ja: "Phantom Readの実行結果(SessionBを実行する前)", en: ""},
+        title: {ja: "Phantom Readの実行結果(SessionBを実行する前)", en: "Phantom Read result (before Session B)"},
         headers: ["count"],
         rows:[
           ["2"]
@@ -1531,7 +1569,7 @@ COMMIT;`
       },
       { //Phantom Readの結果
         type: "table",
-        title: {ja: "Phantom Readの実行結果(SessionBを実行した後)", en: ""},
+        title: {ja: "Phantom Readの実行結果(SessionBを実行した後)", en: "Phantom Read result (after Session B)"},
         headers: ["count"],
         rows:[
           ["3"]
@@ -1541,21 +1579,24 @@ COMMIT;`
       },
       { //Phantom Readのまとめ
         type: "paragraph",
-        title: { ja: "Phantom Readの実行結果"},
+        title: { ja: "Phantom Readの実行結果", en: "Phantom Read summary" },
         body: {
           ja: `READ COMMITTEDでは、同一トランザクション中でも後続のSELECTで他トランザクションのCOMMIT済み行が見えるため、件数が2→3に増加しました。これでPhantom readが観測されました。`
+          ,en: `Under READ COMMITTED, later SELECT statements can see rows committed by other transactions.
+          Therefore the count changed from 2 to 3, confirming Phantom Read.`
         }
       },
       { //phantom read対策
         type: "paragraph",
-        title: { ja: "phantom readを起こさないためには"},
+        title: { ja: "phantom readを起こさないためには", en: "How to avoid Phantom Read" },
         body: {
-          ja: `phantom readもNon-repeatable readとrepeatable readのように起こさないようにできます。`
+          ja: `phantom readもNon-repeatable readとrepeatable readのように起こさないようにできます。`,
+          en: `Phantom Read can also be prevented by using a stronger isolation level.`
         }
       },
       { //Phantom Readを発生させないコード
         type: "code",
-        title: {ja: "Phantom Readを発生させないコード"},
+        title: {ja: "Phantom Readを発生させないコード", en: "Code to prevent Phantom Read"},
         files: [
           {
             tabLabel: "Session A",
@@ -1596,7 +1637,7 @@ COMMIT;`
       },
       { //Phantom Readの結果
         type: "table",
-        title: {ja: "Phantom Readの実行結果(SessionBを実行する前)", en: ""},
+        title: {ja: "Phantom Readの実行結果(SessionBを実行する前)", en: "Phantom Read prevention result (before Session B)"},
         headers: ["count"],
         rows:[
           ["2"]
@@ -1606,7 +1647,7 @@ COMMIT;`
       },
       { //Phantom Readの結果
         type: "table",
-        title: {ja: "Phantom Readの実行結果(SessionBを実行した後)", en: ""},
+        title: {ja: "Phantom Readの実行結果(SessionBを実行した後)", en: "Phantom Read prevention result (after Session B)"},
         headers: ["count"],
         rows:[
           ["2"]
@@ -1616,15 +1657,17 @@ COMMIT;`
       },
       { //Phantom Read対策のまとめ
         type: "paragraph",
-        title: { ja: "Phantom Read対策"},
+        title: { ja: "Phantom Read対策", en: "Phantom Read prevention summary" },
         body: {
-          ja: `REPEATABLE READでは、トランザクション開始時点のスナップショットに基づいて読み取るため。途中で追加された行が同一トランザクション内の再検索に現れず。件数が2で保たれました。`
+          ja: `REPEATABLE READでは、トランザクション開始時点のスナップショットに基づいて読み取るため。途中で追加された行が同一トランザクション内の再検索に現れず。件数が2で保たれました。`,
+          en: `With REPEATABLE READ, queries use the snapshot taken at transaction start.
+          Rows inserted later by other transactions are not visible in re-queries, so the count stayed at 2.`
         }
       },
       { //SERIALIZABLE(5)
         type: "paragraph",
         title: { ja: "SERIALIZABLE", en: "SERIALIZABLE" },
-        anchor: "5",
+        anchor: "serializable",
         body: {
           ja: `SERIALIZABLE は、SQL 標準で定義されている最も強い分離レベルです。
           \nこの分離レベルでは、複数トランザクションが同時に実行されていたとしても、
@@ -1694,7 +1737,7 @@ WHERE owner = 'Bob';
       },
       { //SERIALIZABLE 実行結果
         type: "table",
-        title: {ja: "SERIALIZABLEの実行結果(SessionAのUPDATE実行)", en: ""},
+        title: {ja: "SERIALIZABLEの実行結果(SessionAのUPDATE実行)", en: "SERIALIZABLE result (Session A update)"},
         headers: ["time", "log"],
         rows:[
           ["10:29:42", "次の場所でクエリの実行を開始しました: 行 8 UPDATE 1"],
@@ -1705,7 +1748,7 @@ WHERE owner = 'Bob';
       },
       { //SERIALIZABLE 実行結果
         type: "table",
-        title: {ja: "SERIALIZABLEの実行結果(SessionBのUPDATE実行)", en: ""},
+        title: {ja: "SERIALIZABLEの実行結果(SessionBのUPDATE実行)", en: "SERIALIZABLE result (Session B update)"},
         headers: ["time", "log"],
         rows:[
           ["10:29:42", `次の場所でクエリの実行を開始しました: 行 8
@@ -1718,7 +1761,7 @@ HINT: The transaction might succeed if retried.`],
       },
       { //SERIALIZABLE 実行結果
         type: "table",
-        title: {ja: "SERIALIZABLEの実行結果(SessionBで直列化エラー)", en: ""},
+        title: {ja: "SERIALIZABLEの実行結果(SessionBで直列化エラー)", en: "SERIALIZABLE result (serialization failure in Session B)"},
         headers: ["id", "owner", "balance"],
         rows:[
           ["1", "Alice", "900"],
@@ -1728,51 +1771,69 @@ HINT: The transaction might succeed if retried.`],
       },
       { //考察
         type: "paragraph",
-        title: { ja: "SERIALIZABLEの考察", en: ""},
+        title: { ja: "SERIALIZABLEの考察", en: "SERIALIZABLE discussion"},
         body: {
           ja: `SERIALIZABLE では、すべてのトランザクションの結果が「直列に実行された場合」と等価である必要があります。
               \n\n今回の例では、Session A と Session B がどちらも「合計残高が 2000」という同じ前提（同一スナップショット）で処理を開始しました。
               その後、互いに更新を行うことで read/write の依存関係が発生し、PostgreSQL が「直列実行として安全に説明できない可能性がある」と判断すると、
               どちらか一方を serialization failure として中断します。
               \n\n実行結果として、Session A は COMMIT できましたが、Session B は
-              "could not serialize access ..." で失敗しました。これはバグではなく、SERIALIZABLE が整合性を守るための仕様です。`
+              "could not serialize access ..." で失敗しました。これはバグではなく、SERIALIZABLE が整合性を守るための仕様です。`,
+          en: `Under SERIALIZABLE, the final outcome must be equivalent to some serial execution order.
+              \n\nIn this example, both sessions started from the same assumption (total balance = 2000).
+              Their read/write dependencies formed a dangerous pattern, so PostgreSQL aborted one transaction with a serialization failure.
+              \n\nSession A committed, while Session B failed with "could not serialize access ...".
+              This is expected behavior to preserve consistency, not a bug.`
         }
       },
       { //実務での扱い
         type: "paragraph",
-        title: { ja: "実務でのSERIALIZABLEの扱い", en: ""},
+        title: { ja: "実務でのSERIALIZABLEの扱い", en: "Using SERIALIZABLE in production"},
         body: {
           ja: `SERIALIZABLE は最も安全な分離レベルですが、serialization failure（直列化失敗）が発生する可能性があります。
               そのため実務では「失敗したらリトライする」前提で利用されることが多いです。
               \n\n典型的には、(1) アプリケーション側で再試行する、(2) トランザクションを短く保つ、(3) 競合しやすい更新を設計で避ける、
-              といった工夫が必要になります。`
+              といった工夫が必要になります。`,
+          en: `SERIALIZABLE is the safest level but may raise serialization failures.
+              In practice, systems usually adopt retry-on-failure.
+              \n\nCommon strategies are: (1) application-level retries, (2) shorter transactions, and (3) schema/query design that reduces hot contention.`
         }
       },
       { //MVCCの説明
         type: "paragraph",
         title: { ja: "PostgreSQLのMVCC", en: "MVCC in PostgreSQL"},
-        anchor: "6",
+        anchor: "mvcc",
         body: {
           ja: `ここまでの実験で、READ COMMITTED や REPEATABLE READ、SERIALIZABLE の違いを観察しました。
               ではなぜ、PostgreSQL では Dirty Read が起きず、なぜ REPEATABLE READでは値が固定されるのでしょうか。
               \n\nその仕組みの中核となるのが、MVCC（Multi-Version Concurrency Control）です。
-              \nMVCCとは、同じ行に複数のバージョンを持たせることで、ロックに頼らず並列処理を実現する仕組みです。`
+              \nMVCCとは、同じ行に複数のバージョンを持たせることで、ロックに頼らず並列処理を実現する仕組みです。`,
+          en: `So far, we observed differences among READ COMMITTED, REPEATABLE READ, and SERIALIZABLE.
+              Why does PostgreSQL avoid Dirty Read, and why does REPEATABLE READ keep values stable?
+              \n\nThe core mechanism is MVCC (Multi-Version Concurrency Control).
+              \nMVCC maintains multiple versions of the same row to enable concurrent processing without relying on heavy locking.`
         }
       },
       { //MVCCとは
         type: "paragraph",
-        title: { ja: "MVCCとは何か", en: "what is MVCC"},
+        title: { ja: "MVCCとは何か", en: "What is MVCC?" },
         body: {
           ja: `PostgreSQL では、行を更新しても元の行を上書きしません。代わりに新しいバージョンの行を作成します。
               \n\n各行には内部的に以下の情報が付与されています。
               \n- xmin : この行を作成したトランザクションID
               \n- xmax : この行を削除（無効化）したトランザクションID
-              \n\nトランザクションは、自分が開始した時点のスナップショットを基準に、自分から見える行だけを読む仕組みになっています。`
+              \n\nトランザクションは、自分が開始した時点のスナップショットを基準に、自分から見える行だけを読む仕組みになっています。`,
+          en: `In PostgreSQL, UPDATE does not overwrite the original row.
+              Instead, it creates a new row version.
+              \n\nEach row version stores internal metadata:
+              \n- xmin: the transaction ID that created the version
+              \n- xmax: the transaction ID that invalidated the version
+              \n\nEach transaction reads only rows visible from its own snapshot.`
         }
       },
       { //xmin/xmax観察
         type: "code",
-        title: { ja: "xmin / xmax を確認する", en: ""},
+        title: { ja: "xmin / xmax を確認する", en: "Check xmin / xmax" },
         lang: "sql",
         filename: "mvcc_check_xmin.sql",
         code: `SELECT id, owner, balance, xmin, xmax
@@ -1781,7 +1842,7 @@ ORDER BY id;`
       },
       { //xmin/xmax観察結果
         type: "table",
-        title: { ja: "xmin / xmax の確認結果", en: ""},
+        title: { ja: "xmin / xmax の確認結果", en: "xmin / xmax check result"},
         headers: ["id", "owner", "balance", "xmin", "xmax"],
         rows:[
           ["1", "Alice", "1000", "885", "0"],
@@ -1798,12 +1859,17 @@ ORDER BY id;`
           古い行の xmax が埋まり、新しい行が別バージョンとして追加されます。
           \n\nこれにより、同じ物理行をロックして書き換えるのではなく、
           「新しい行を作って切り替える」方式が実現されています。
-          \n\n次は実際にUPDATEしてバージョンを見てみましょう。`
+          \n\n次は実際にUPDATEしてバージョンを見てみましょう。`,
+          en: `xmin is the transaction ID that created the row version.
+          \nxmax is set when the version is invalidated by DELETE or UPDATE.
+          \n\nWhen UPDATE runs, xmax is set on the old row and a new row version is created.
+          \n\nSo PostgreSQL does not rewrite one physical row in place; it creates and switches to a new version.
+          \n\nNext, let's run UPDATE and inspect the versions.`
         }
       },
       { //MVCCのバージョン生成を確認する。
         type: "code",
-        title: { ja: "MVCCのバージョン生成を確認する", en: "" },
+        title: { ja: "MVCCのバージョン生成を確認する", en: "Check MVCC version creation" },
         lang: "sql",
         filename: "mvcc_update_demo.sql",
         code: `BEGIN;
@@ -1820,7 +1886,7 @@ ROLLBACK;`
       },
       { //MVCCバージョン結果
         type: "table",
-        title: { ja: "xmin / xmax の確認結果", en: ""},
+        title: { ja: "xmin / xmax の確認結果", en: "xmin / xmax check result after update"},
         headers: ["id", "owner", "balance", "xmin", "xmax"],
         rows:[
           ["1", "Alice", "1050", "886", "0"]
@@ -1833,7 +1899,11 @@ ROLLBACK;`
           ja: `xmin の値が 885 から 886 に変わっていることから、UPDATE によって新しいバージョンの行が生成されたことが分かります。
               \n\n実際には、元の行が上書きされたのではなく、古い行は内部的に残りつつ、新しい行が追加されています。
               \n\nROLLBACK を実行すると、この新しいバージョンは無効化され、元の行が再び可視になります。
-              \n\nこの仕組みにより、他トランザクションは、自分のスナップショット時点の行を読むことができ、Dirty Read が発生しない構造になっています。`
+              \n\nこの仕組みにより、他トランザクションは、自分のスナップショット時点の行を読むことができ、Dirty Read が発生しない構造になっています。`,
+          en: `Because xmin changed from 885 to 886, UPDATE clearly created a new row version.
+              \n\nThe original row was not overwritten; it remains internally while a new version is added.
+              \n\nAfter ROLLBACK, the new version becomes invalid and the original version becomes visible again.
+              \n\nThis structure allows other transactions to read snapshot-consistent rows and prevents Dirty Read.`
         }
       },
       { //重要点
@@ -1841,12 +1911,16 @@ ROLLBACK;`
         body: {
           ja: `ここで重要なのは、「他のトランザクションからはこの 1050 の行は見えない」という点です。
           \n\nPostgreSQL は各トランザクションごとに「どの xmin/xmax が可視か」を判定しています。
-          そのため、COMMIT 前の変更は他セッションからは参照できず、Dirty Read が発生しない構造になっています。`
+          そのため、COMMIT 前の変更は他セッションからは参照できず、Dirty Read が発生しない構造になっています。`,
+          en: `The key point is that other transactions cannot see this 1050 row version before commit.
+          \n\nPostgreSQL evaluates visibility per transaction based on xmin/xmax.
+          Therefore uncommitted changes are hidden from other sessions, preventing Dirty Read.`
         }
       },
       {//なぜ各分離レベルが成立するのか
         type: "paragraph",
-        title: { ja: "分離レベルとMVCCの関係", en: "" },
+        title: { ja: "分離レベルとMVCCの関係", en: "Isolation levels and MVCC" },
+        anchor: "summary",
         body: {
           ja: `MVCC によって、トランザクションごとに「見える行の集合」が制御されています。
           \n\nREAD COMMITTED
@@ -1856,146 +1930,194 @@ ROLLBACK;`
           \n\nSERIALIZABLE
           \n→ スナップショットに加えて、危険な依存関係を検出し、必要ならエラーで中断する（SSI）
           \n\nつまり PostgreSQL の同時実行制御は、
-          ロック中心ではなく「バージョン管理中心」で設計されています。`
+          ロック中心ではなく「バージョン管理中心」で設計されています。`,
+          en: `MVCC controls the set of row versions visible to each transaction.
+          \n\nREAD COMMITTED
+          \n-> Each SELECT sees the latest committed version at that moment
+          \n\nREPEATABLE READ
+          \n-> The snapshot is fixed at transaction start
+          \n\nSERIALIZABLE
+          \n-> In addition to snapshots, dangerous dependencies are detected and aborted when necessary (SSI)
+          \n\nIn short, PostgreSQL concurrency control is designed around version management rather than lock-only control.`
         }
       },
       { //VACUUM
         type: "paragraph",
-        title: { ja: "MVCCとVACUUM", en: "" },
+        title: { ja: "MVCCとVACUUM", en: "MVCC and VACUUM" },
         body: {
           ja: `UPDATE や DELETE によって古いバージョンの行が増えていきます。それらは自動的には消えません。
           \n不要になった古いバージョンを回収する仕組みが VACUUM です。
           \n\nMVCC を理解すると、
-          なぜ VACUUM が必要なのかも理解できます。`
+          なぜ VACUUM が必要なのかも理解できます。`,
+          en: `UPDATE and DELETE accumulate old row versions, and they are not removed immediately.
+          \nVACUUM reclaims obsolete versions and frees reusable space.
+          \nUnderstanding MVCC makes it clear why VACUUM is necessary.`
         }
       },
       { //drill導入
         type: "section",
         title: { ja: "問題演習", en: "Drills" },
         anchor: "drill-1",
-        body: { ja: "本記事の内容を確認するための演習問題です。SQLを実際に実行して確認してください。" }
+        body: {
+          ja: "本記事の内容を確認するための演習問題です。SQLを実際に実行して確認してください。",
+          en: "These drills help you verify the article's concepts. Run the SQL and confirm each behavior."
+        }
       },
       { //問題1
         type: "exercise",
-        title: { ja: "問題演習1 : MVCCの基本概念"},
+        title: { ja: "問題演習1 : MVCCの基本概念", en: "Drill 1: MVCC fundamentals" },
         question: {
-          ja: "PostgreSQLでは、UPDATEを実行した際に元の行はどのように扱われるでしょうか。以下から最も適切なものを選んでください。"
+          ja: "PostgreSQLでは、UPDATEを実行した際に元の行はどのように扱われるでしょうか。以下から最も適切なものを選んでください。",
+          en: "When PostgreSQL executes UPDATE, how is the original row handled? Choose the best option below."
         },
         questionBlocks: [
           {
             type: "list",
             items: [
-          { title: { ja: "元の行を上書きする", en: "" },},
-          { title: { ja: "元の行を消去しつつ新しい行を作る", en: "" },},
-          { title: { ja: "元の行を残しつつ新しいバージョンを作る", en: "" },},
-          { title: { ja: "ロックして書き換える", en: "" },},
+          { title: { ja: "元の行を上書きする", en: "Overwrite the original row" },},
+          { title: { ja: "元の行を消去しつつ新しい行を作る", en: "Delete the original row and create a new one" },},
+          { title: { ja: "元の行を残しつつ新しいバージョンを作る", en: "Keep the original row and create a new version" },},
+          { title: { ja: "ロックして書き換える", en: "Lock and rewrite the same row" },},
         ]
           }
         ],
         answer: {
-          ja: "元の行を残しつつ新しいバージョンを作る"
+          ja: "元の行を残しつつ新しいバージョンを作る",
+          en: "Keep the original row and create a new version."
         }
       },
       { //問題2
         type: "exercise",
-        title: { ja: "Drill 2 : Dirty Readの観測" },
+        title: { ja: "Drill 2 : Dirty Readの観測", en: "Drill 2: Observe Dirty Read" },
         question: {
-          ja: "READ UNCOMMITTED を指定しても Dirty Read が発生しない理由を説明してください。"
+          ja: "READ UNCOMMITTED を指定しても Dirty Read が発生しない理由を説明してください。",
+          en: "Explain why Dirty Read does not occur even if READ UNCOMMITTED is specified."
         },
         questionBlocks: [
           {
             type: "paragraph",
             body: {
-              ja: "ヒント：PostgreSQLの分離レベル実装を考えてみましょう。"
+              ja: "ヒント：PostgreSQLの分離レベル実装を考えてみましょう。",
+              en: "Hint: think about PostgreSQL's isolation-level implementation."
             }
           }
         ],
         answer: {
           ja: `PostgreSQL は MVCC により「未コミットの変更」を他トランザクションから見えないようにするためです。
-              READ UNCOMMITTED を指定しても挙動は READ COMMITTED と同じになり、未コミット行を読む（Dirty Read）は発生しません。`
+              READ UNCOMMITTED を指定しても挙動は READ COMMITTED と同じになり、未コミット行を読む（Dirty Read）は発生しません。`,
+          en: `PostgreSQL's MVCC keeps uncommitted changes invisible to other transactions.
+              Therefore READ UNCOMMITTED behaves effectively like READ COMMITTED, and Dirty Read does not occur.`
         }
       },
       { //問題3
         type: "exercise",
-        title: { ja : "Drill 3：Non-repeatable Readの発生条件" },
+        title: { ja : "Drill 3：Non-repeatable Readの発生条件", en: "Drill 3: Conditions for Non-repeatable Read" },
         question: {
           ja: `READ COMMITTED で同一トランザクション内の同じ SELECT が異なる値を返す理由を説明してください。
-              \nまた、どの分離レベルに変更すれば防げるか答えてください。`
+              \nまた、どの分離レベルに変更すれば防げるか答えてください。`,
+          en: `Explain why the same SELECT can return different values inside one READ COMMITTED transaction.
+              \nAlso state which isolation level prevents it.`
         },
         answer: {
           ja: `READ COMMITTED では「各 SELECT 文の開始時点でのコミット済みスナップショット」を読むためです。
               そのため、同一トランザクション内でも、途中で他トランザクションが COMMIT した更新が次の SELECT では見えるようになり、結果が変化します。
-              防ぐには REPEATABLE READ（または SERIALIZABLE）にします。`
+              防ぐには REPEATABLE READ（または SERIALIZABLE）にします。`,
+          en: `READ COMMITTED reads a fresh committed snapshot at each SELECT.
+              So commits from other transactions can become visible between reads and change the result.
+              Use REPEATABLE READ (or SERIALIZABLE) to prevent this.`
         }
       },
       { //問題4
         type: "exercise",
-        title: { ja: "Drill 4：Phantom Readの確認" },
+        title: { ja: "Drill 4：Phantom Readの確認", en: "Drill 4: Verify Phantom Read" },
         question: {
           ja: `READ COMMITTED で Phantom Read が発生する理由を説明してください。
-              \nまた、REPEATABLE READ ではなぜ発生しないのかを MVCC の観点から説明してください。`
+              \nまた、REPEATABLE READ ではなぜ発生しないのかを MVCC の観点から説明してください。`,
+          en: `Explain why Phantom Read occurs in READ COMMITTED.
+              \nThen explain from an MVCC perspective why it does not occur in REPEATABLE READ.`
         },
         answer: {
           ja: `READ COMMITTED では各 SELECT ごとに「その時点でコミット済みの最新状態」を見るため、途中で INSERT された行が次の SELECT で見えることがあり、件数が変化（Phantom）します。
-              REPEATABLE READ ではトランザクション開始時点のスナップショットを固定して読むため、途中で追加された行は同一トランザクション内の再検索では見えず、Phantom が発生しません。`
+              REPEATABLE READ ではトランザクション開始時点のスナップショットを固定して読むため、途中で追加された行は同一トランザクション内の再検索では見えず、Phantom が発生しません。`,
+          en: `In READ COMMITTED, each SELECT sees the latest committed state, so rows inserted mid-transaction can appear in later reads.
+              In REPEATABLE READ, the start-time snapshot is fixed, so those later inserts are not visible in re-queries.`
         }
       },
       { //問題5
         type: "exercise",
-        title: { ja: "Drill 5：SERIALIZABLEの特徴"},
+        title: { ja: "Drill 5：SERIALIZABLEの特徴", en: "Drill 5: Characteristics of SERIALIZABLE"},
         question: {
           ja: `SERIALIZABLE 分離レベルでは、なぜトランザクションがエラーになることがあるのでしょうか。
-              \n「ロック」との違いに触れて説明してください。`
+              \n「ロック」との違いに触れて説明してください。`,
+          en: `Why can transactions fail under SERIALIZABLE isolation?
+              \nExplain the difference from lock-based behavior.`
         },
         answer: {
           ja: `PostgreSQL の SERIALIZABLE はロックで直列化するのではなく、SSI（Serializable Snapshot Isolation）で「直列実行と同じ結果にできない依存関係」を検出するとトランザクションをエラー（serialization failure）で中断します。
-              ロックのように待たせるのではなく、整合性のために abort してリトライを促す点が違いです。`
+              ロックのように待たせるのではなく、整合性のために abort してリトライを促す点が違いです。`,
+          en: `PostgreSQL SERIALIZABLE uses SSI, not strict lock-order serialization.
+              When it detects dependency patterns that cannot be serialized safely, it aborts one transaction with a serialization failure.
+              Unlike waiting locks, this approach preserves consistency by abort-and-retry.`
         }
       },
       { //問題6
         type: "exercise",
-        title: { ja: "Drill 6：xmin / xmax の意味"},
+        title: { ja: "Drill 6：xmin / xmax の意味", en: "Drill 6: Meaning of xmin / xmax"},
         question: {
           ja: `xmin と xmax はそれぞれ何を表していますか。
-              \nUPDATE 実行時にこれらの値がどのように変化するか説明してください。`
+              \nUPDATE 実行時にこれらの値がどのように変化するか説明してください。`,
+          en: `What do xmin and xmax represent?
+              \nExplain how they change during UPDATE.`
         },
         answer: {
           ja: `xmin は「その行（そのバージョン）を作成したトランザクションID」です。
               \nxmax は「その行（そのバージョン）を無効化したトランザクションID（DELETE または UPDATE）」です。
 
-              \n\nUPDATE では、古い行バージョンに xmax が設定され、新しい行バージョンが作られて xmin が新しいトランザクションIDになります。`
+              \n\nUPDATE では、古い行バージョンに xmax が設定され、新しい行バージョンが作られて xmin が新しいトランザクションIDになります。`,
+          en: `xmin is the transaction ID that created the row version.
+              \nxmax is the transaction ID that invalidated the row version (DELETE or UPDATE).
+              \n\nDuring UPDATE, the old version gets xmax set, and a new version is created with a new xmin.`
         }
       },
       {//問題7
         type: "exercise",
-        title: { ja: "Drill 7：VACUUMの必要性"},
+        title: { ja: "Drill 7：VACUUMの必要性", en: "Drill 7: Why VACUUM is needed"},
         question: {
           ja: `なぜ MVCC を採用している PostgreSQL では VACUUM が必要になるのでしょうか。
-              \n「古いバージョン」という言葉を使って説明してください。`
+              \n「古いバージョン」という言葉を使って説明してください。`,
+          en: `Why does PostgreSQL with MVCC need VACUUM?
+              \nExplain using the phrase "old versions."`
         },
         answer: {
           ja: `MVCC では UPDATE/DELETE のたびに古いバージョンの行が残り続けます。
-              不要になった古いバージョン（どのトランザクションからも参照されない行）を回収してストレージを再利用するために VACUUM が必要です。`
+              不要になった古いバージョン（どのトランザクションからも参照されない行）を回収してストレージを再利用するために VACUUM が必要です。`,
+          en: `Under MVCC, UPDATE/DELETE leave old row versions behind.
+              VACUUM is needed to reclaim old versions that are no longer visible to any transaction and reuse storage.`
         }
       },
       { //問題8
         type: "exercise",
-        title: { ja: "Drill 8：分離レベルの選択" },
+        title: { ja: "Drill 8：分離レベルの選択", en: "Drill 8: Choosing an isolation level" },
         question: {
           ja: `銀行口座の残高更新のように整合性が重要な処理では、どの分離レベルを選択すべきでしょうか。
-              \n理由も含めて説明してください。`
+              \n理由も含めて説明してください。`,
+          en: `For highly consistent operations such as bank balance updates, which isolation level should be chosen?
+              \nExplain your reasoning.`
         },
         answer: {
           ja: `基本は READ COMMITTED で十分なことが多いです。ただし「残高の整合性」を確実に守るには更新方法が重要で、
               SELECT してから計算して UPDATE するのではなく、UPDATE で直接加減算する、または SELECT ... FOR UPDATE で対象行をロックしてから更新します。
 
-              \n厳密に直列化と同等の結果が必要なら SERIALIZABLE を選び、serialization failure が出たらアプリ側でリトライする運用にします。`
+              \n厳密に直列化と同等の結果が必要なら SERIALIZABLE を選び、serialization failure が出たらアプリ側でリトライする運用にします。`,
+          en: `READ COMMITTED is often sufficient, but update patterns matter for correctness.
+              Prefer atomic updates (e.g., direct arithmetic in UPDATE) or row locking with SELECT ... FOR UPDATE.
+              \nIf strict serial equivalence is required, use SERIALIZABLE and implement retries for serialization failures.`
         }
       },
       {
         type: "section",
         title: { ja: "コラム", en: "Column" },
-        body: { ja: "制作時間: 約 10時間", en: "Estimated implementation time: about  hours."} //4.5
+        body: { ja: "制作時間: 約 10時間", en: "Estimated implementation time: about 10 hours."} //4.5
       }
     ]
   }
