@@ -7,6 +7,7 @@ export const facilities = {
   print: false, //3Dプリンタ
   coding: true, //プログラミング
   soldering: false, //半田付け
+  travel: true,
 } as const;
 
 export type FacilityKey = keyof typeof facilities;

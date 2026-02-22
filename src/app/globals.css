@@ -34,3 +34,19 @@
 * {
   -webkit-tap-highlight-color: transparent;
 }
+
+.travel-marker {
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  background: #ef4444;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.25);
+}
+
+.travel-marker-active {
+  width: 18px;
+  height: 18px;
+  background: #f97316;
+  box-shadow: 0 0 0 5px rgba(249, 115, 22, 0.28);
+}

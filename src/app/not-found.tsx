@@ -13,8 +13,8 @@ export default function NotFound() {
           <Link href="/" className="rounded-md bg-slate-900 px-4 py-2 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900">
             トップへ
           </Link>
-          <Link href="/coding" className="rounded-md border px-4 py-2 hover:bg-slate-50 dark:border-white/10 dark:hover:bg-white/10">
-            Coding 一覧へ
+          <Link href="/." className="rounded-md border px-4 py-2 hover:bg-slate-50 dark:border-white/10 dark:hover:bg-white/10">
+            一つ前へ戻る
           </Link>
         </div>
       </div>

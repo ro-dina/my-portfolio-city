@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -17,6 +18,7 @@ type Destination = {
 const DESTINATIONS: Destination[] = [
   { href: '/school', title: '学校', description: '制作の流れ・制作記事', image: '/images/buildings/school.svg' },
   { href: '/coding', title: 'プログラミング', description: 'アプリ・Web開発の制作物', image: '/images/buildings/coding.svg' },
+  { href: '/travel', title: '旅行', description: '旅行', image: '/images/buildings/travel.svg' },
   { href: '/soldering', title: '半田付け', description: '電子工作・基板の制作', image: '/images/buildings/soldering.svg' },
   { href: '/print', title: '3Dプリント', description: '造形・試作プロジェクト', image: '/images/buildings/3dprint.svg' },
   { href: '/books', title: '本屋', description: '読書・学習メモ', image: '/images/buildings/bookstore.svg' },
@@ -326,6 +328,26 @@ function CityMapHome() {
                 aria-label="教会へ"
               />
 
+              {/* 旅行 */}
+              <Image
+                src="/images/buildings/travel.svg"
+                alt="旅行"
+                width={400}
+                height={400}
+                style={{ position: 'absolute', left: 30, top: 1020, pointerEvents: 'none', filter: 'drop-shadow(0 2px 2px rgba(0,0,0,.3))' }}
+              />
+              <div
+                onClick={() => router.push('/travel')}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') router.push('/travel')
+                }}
+                className="absolute"
+                style={{ left: 90, top: 1070, width: 280, height: 400, cursor: 'pointer', zIndex: 20 }}
+                aria-label="旅行へ"
+              />
+
               {/* 3dプリント */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -438,3 +460,19 @@ export default function Home() {
   if (mode === 'city') return <CityMapHome />
   return <StandardHome />
 }
+
+/*// ON: 当たり判定（クリック領域）を可視化
+(() => {
+  const id = "hitbox-debug-style";
+  if (document.getElementById(id)) return;
+  const style = document.createElement("style");
+  style.id = id;
+  style.textContent = `
+    div[role="button"][aria-label$="へ"]{
+      outline: 2px solid #ff2d55 !important;
+      background: rgba(255,45,85,.18) !important;
+    }
+  `;
+  document.head.appendChild(style);
+})();
+ */
