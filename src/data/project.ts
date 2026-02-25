@@ -25,7 +25,7 @@ export const projects: Project[] = [
     slug: "algorithm-visualizer",
     title: { ja: "Algorithm Visualizer", en: "Algorithm Visualizer" },
     image: {
-      src: "/images/projects/IMG_4714.jpg",
+      src: "/images/projects/Union-Find.png",
       alt: { ja: "アルゴリズム可視化のスクリーンショット", en: "Algorithm visualizer screenshot" },
       width: 600,
       height: 400,
@@ -65,12 +65,24 @@ export const projects: Project[] = [
   {
     slug: "make-portfolio-city",
     title: { ja: "ポートフォリオを兼ねた記録サイト", en: "Portfolio + Activity Log Site" },
+    image: {
+      src: "/images/projects/portfolio.png",
+      alt: { ja: "医療用画像のビューワー", en: "viewer of medical images" },
+      width: 600,
+      height: 400,
+    },
     summary: { ja: "自分のやったことなどの記録サイト。(このサイト)", en: "A site to record what I do (this site)." },
     tags: ["TypeScript", "Next.js", "React", "Tailwind CSS"],
   },
   {
     slug: "vtk-Viewer",
     title: { ja: "医療用画像のビューワー", en: "viewer of medical images" },
+    image: {
+      src: "/images/projects/VTKviewer2D.png",
+      alt: { ja: "医療用画像のビューワー", en: "viewer of medical images" },
+      width: 600,
+      height: 400,
+    },
     summary: { ja: "医療用画像を表示するビューワー。", en: "A viewer for medical images." },
     tags: ["Python", "VTK", "3D", "2D"],
     status: "done",
@@ -80,6 +92,12 @@ export const projects: Project[] = [
   {
     slug: "FX-predictor",
     title: { ja: "FX予測モデル", en: "FX Prediction Model" },
+    image: {
+      src: "/images/projects/predictEURJPY.png",
+      alt: { ja: "医療用画像のビューワー", en: "viewer of medical images" },
+      width: 600,
+      height: 400,
+    },
     summary: { ja: "外為の予測モデル。", en: "Prediction model for foreign exchange." },
     tags: ["Python", "AI", "machine learning"],
     status: "wip",
@@ -107,6 +125,12 @@ export const projects: Project[] = [
   {
     slug: "face-surcher",
     title: { ja: "顔検索アプリ", en: "Face Search App" },
+    image: {
+      src: "/images/projects/target_search.png",
+      alt: { ja: "顔検索アプリ", en: "Face Search App" },
+      width: 600,
+      height: 400,
+    },
     summary: { ja: "OpenCVとPythonで作成した顔検索アプリ。", en: "A face search app created with OpenCV and Python." },
     tags: ["Python", "OpenCV", "AI"],
     status: "done",
@@ -116,6 +140,12 @@ export const projects: Project[] = [
   {
     slug: "texture-generator",
     title: { ja: "テクスチャ生成ツール", en: "Texture Generator Tool" },
+    image: {
+      src: "/images/projects/texture.png",
+      alt: { ja: "テスクチャ生成ツール", en: "Texture Generator Tool" },
+      width: 600,
+      height: 400,
+    },
     summary: { ja: "地面や壁などに使えるProceduralテクスチャを生成するツール。", en: "A tool to generate procedural textures for ground and walls." },
     tags: ["Python", "PIL", "image processing"],
     status: "done",
@@ -134,6 +164,12 @@ export const projects: Project[] = [
   {
     slug: "auth-system",
     title: { ja: "認証システム", en: "Authentication System" },
+    image: {
+      src: "/images/projects/auth.png",
+      alt: { ja: "認証システム", en: "Authentication System" },
+      width: 600,
+      height: 400,
+    },
     summary: { ja: "ユーザー認証を行うシステム。", en: "A system for user authentication." },
     tags: ["React", "Next.js", "TypeScript", "Google"],
     status: "done",

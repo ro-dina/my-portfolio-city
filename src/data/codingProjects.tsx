@@ -5,7 +5,7 @@ import ProductionBackground from "@/components/article/ProductionBackground";
 import CodeBlock  from "@/components/article/CodeBlock";
 
 export const codingProjects: Project[] = [
-  {
+  /*{
     slug: "algorithm-visualizer",
     title: { ja: "アルゴリズム・ビジュアライザ", en: "Algorithm Visualizer" },
     summary: { ja: "ソート／探索を可視化して学べるブラウザアプリ。", en: "A browser app to learn sorting/searching through interactive visualizations." },
@@ -23,14 +23,13 @@ export const codingProjects: Project[] = [
         <>
           <Section title="概要">
             <p>
-              バブルソート／マージソート／二分探索などを、配列バーとアニメーションで視覚化。
-              学習用に速度変更・一時停止・ステップ実行・履歴戻しを実装。
+              
             </p>
           </Section>
 
           <ProductionBackground title="制作にあたって">
             <p>
-              （ここに制作動機・背景を書いていく想定です）
+              
             </p>
           </ProductionBackground>
 
@@ -107,7 +106,7 @@ print(Text)`}
         </Section>
       </>
     ) },
-  },
+  },*/
   {
     slug: "hotel-3d-viewer",
     title: { ja: "ホテルビューワー" },
@@ -147,7 +146,9 @@ print(Text)`}
     body: { ja: () => (
       <>
         <Section title="概要">
-          <p></p>
+          <p>医療現場で主にレントゲンなどの標準として使用されるDICOM画像を3つの断面から見ることができます。
+            各視点は表示のオンオフを切り替えることができ、
+          </p>
         </Section>
 
         <Section title="技術スタック">
