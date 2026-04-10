@@ -12,16 +12,28 @@ type FlipPdfViewerProps = {
   fileName: string;
 };
 
+const LARGE_PDF_PAGE_THRESHOLD = 30;
+const VERY_LARGE_PDF_PAGE_THRESHOLD = 80;
+const RENDER_YIELD_MS = 0;
+
+function isPdfFile(file: File): boolean {
+  const hasPdfMimeType = file.type === "application/pdf";
+  const hasPdfExtension = file.name.toLowerCase().endsWith(".pdf");
+  return hasPdfMimeType || hasPdfExtension;
+}
+
 function FlipPdfViewer({ fileUrl, fileName }: FlipPdfViewerProps) {
   const [pages, setPages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [loadingStatus, setLoadingStatus] = useState<string>("");
 
   useEffect(() => {
     if (!fileUrl) {
       setPages([]);
       setErrorMessage(null);
       setIsLoading(false);
+      setLoadingStatus("");
       return;
     }
 
@@ -32,6 +44,7 @@ function FlipPdfViewer({ fileUrl, fileName }: FlipPdfViewerProps) {
         setIsLoading(true);
         setErrorMessage(null);
         setPages([]);
+        setLoadingStatus("PDFを解析しています…");
 
         const pdfjs: PdfJsModule = await import("pdfjs-dist");
         const workerVersion = pdfjs.version;
@@ -41,9 +54,23 @@ function FlipPdfViewer({ fileUrl, fileName }: FlipPdfViewerProps) {
         const pdf = await loadingTask.promise;
         const rendered: string[] = [];
 
+        let scale = 1.3;
+        if (pdf.numPages > LARGE_PDF_PAGE_THRESHOLD) {
+          scale = 1.05;
+        }
+        if (pdf.numPages > VERY_LARGE_PDF_PAGE_THRESHOLD) {
+          scale = 0.9;
+        }
+
         for (let pageNum = 1; pageNum <= pdf.numPages; pageNum += 1) {
+          if (isCancelled) {
+            return;
+          }
+
+          setLoadingStatus(`${pageNum} / ${pdf.numPages} ページを読み込み中…`);
+
           const page = await pdf.getPage(pageNum);
-          const viewport = page.getViewport({ scale: 1.3 });
+          const viewport = page.getViewport({ scale });
 
           const canvas = document.createElement("canvas");
           const context = canvas.getContext("2d");
@@ -61,16 +88,25 @@ function FlipPdfViewer({ fileUrl, fileName }: FlipPdfViewerProps) {
             viewport,
           }).promise;
 
-          rendered.push(canvas.toDataURL("image/jpeg", 0.9));
+          rendered.push(canvas.toDataURL("image/jpeg", 0.85));
+
+          if (!isCancelled) {
+            setPages([...rendered]);
+          }
+
+          await new Promise<void>((resolve) => {
+            window.setTimeout(() => resolve(), RENDER_YIELD_MS);
+          });
         }
 
         if (!isCancelled) {
-          setPages(rendered);
+          setLoadingStatus("");
         }
       } catch (error) {
         if (!isCancelled) {
           const message = error instanceof Error ? error.message : "PDFの読み込みに失敗しました。";
           setErrorMessage(message);
+          setLoadingStatus("");
         }
       } finally {
         if (!isCancelled) {
@@ -115,10 +151,11 @@ function FlipPdfViewer({ fileUrl, fileName }: FlipPdfViewerProps) {
     []
   );
 
-  if (isLoading) {
+  if (isLoading && pages.length === 0) {
     return (
       <div className="rounded-xl border border-neutral-300 bg-white p-6 text-center shadow-sm">
-        PDFを読み込み中です…
+        <p>PDFを読み込み中です…</p>
+        {loadingStatus ? <p className="mt-2 text-sm text-neutral-500">{loadingStatus}</p> : null}
       </div>
     );
   }
@@ -141,21 +178,29 @@ function FlipPdfViewer({ fileUrl, fileName }: FlipPdfViewerProps) {
   }
 
   return (
-    <div className="rounded-2xl bg-neutral-200 p-4 shadow-inner">
-      <HTMLFlipBook {...flipBookProps}>
-        {pages.map((src, index) => (
-          <div key={`${fileName}-${index}`} className="relative h-full w-full overflow-hidden bg-white">
-            <Image
-              src={src}
-              alt={`${fileName} ${index + 1}ページ目`}
-              fill
-              unoptimized
-              sizes="(max-width: 768px) 100vw, 420px"
-              className="object-contain"
-            />
-          </div>
-        ))}
-      </HTMLFlipBook>
+    <div className="space-y-3">
+      {isLoading && loadingStatus ? (
+        <div className="rounded-lg border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-600 shadow-sm">
+          {loadingStatus}
+        </div>
+      ) : null}
+
+      <div className="rounded-2xl bg-neutral-200 p-4 shadow-inner">
+        <HTMLFlipBook {...flipBookProps}>
+          {pages.map((src, index) => (
+            <div key={`${fileName}-${index}`} className="relative h-full w-full overflow-hidden bg-white">
+              <Image
+                src={src}
+                alt={`${fileName} ${index + 1}ページ目`}
+                fill
+                unoptimized
+                sizes="(max-width: 768px) 100vw, 420px"
+                className="object-contain"
+              />
+            </div>
+          ))}
+        </HTMLFlipBook>
+      </div>
     </div>
   );
 }
@@ -163,19 +208,30 @@ function FlipPdfViewer({ fileUrl, fileName }: FlipPdfViewerProps) {
 export default function Page() {
   const [selectedFileName, setSelectedFileName] = useState<string>("");
   const [selectedFileUrl, setSelectedFileUrl] = useState<string>("");
+  const [fileValidationMessage, setFileValidationMessage] = useState<string | null>(null);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+    const input = event.target;
+    const file = input.files?.[0];
 
     if (!file) {
       return;
     }
 
-    if (file.type !== "application/pdf") {
+    if (!isPdfFile(file)) {
+      setFileValidationMessage("PDFファイルのみアップロードできます。拡張子 .pdf のファイルを選択してください。");
       setSelectedFileName("");
-      setSelectedFileUrl("");
+      setSelectedFileUrl((previousUrl) => {
+        if (previousUrl) {
+          URL.revokeObjectURL(previousUrl);
+        }
+        return "";
+      });
+      input.value = "";
       return;
     }
+
+    setFileValidationMessage(null);
 
     const objectUrl = URL.createObjectURL(file);
     setSelectedFileName(file.name);
@@ -210,7 +266,7 @@ export default function Page() {
           <input
             id="pdf-upload"
             type="file"
-            accept="application/pdf"
+            accept="application/pdf,.pdf"
             onChange={handleFileChange}
             className="block w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-700 file:mr-4 file:rounded-md file:border-0 file:bg-neutral-900 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-neutral-700"
           />
@@ -219,6 +275,12 @@ export default function Page() {
           ) : (
             <p className="text-sm text-neutral-400">まだPDFは選択されていません。</p>
           )}
+          {fileValidationMessage ? (
+            <p className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {fileValidationMessage}
+            </p>
+          ) : null}
+          <p className="text-xs text-neutral-400">対応形式: PDF</p>
         </div>
       </section>
 
