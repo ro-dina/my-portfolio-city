@@ -49,7 +49,7 @@ export const projects: Project[] = [
     },
     tags: ["Unity", "WebGL", "Next.js"],
     status: "done",
-    visibility: "hidden",
+    visibility: "public",
     detailPolicy: "page",
   },
   {
@@ -88,6 +88,7 @@ export const projects: Project[] = [
     status: "done",
     visibility: "public",
     detailPolicy: "page",
+    links: [{ label: "GitHub", href: "https://github.com/ro-dina/viewer" }],
   },
   {
     slug: "FX-predictor",

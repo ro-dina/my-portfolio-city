@@ -2,13 +2,76 @@
 @tailwind components;
 @tailwind utilities;
 
-@keyframes lampFlicker {
-  0%, 100% { opacity: .9; filter: blur(6px) brightness(1); }
-  50%      { opacity: 1;  filter: blur(8px) brightness(1.05); }
+:root {
+  --school-anchor-offset: 6rem;
 }
 
-:root {
-  --school-anchor-offset: 7rem;
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  font-family: Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgb(191 219 254);
+  color: rgb(15 23 42);
+}
+
+a,
+button,
+input,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid rgb(37 99 235);
+  outline-offset: 3px;
+}
+
+@layer components {
+  .page-shell {
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-8;
+  }
+
+  .page-intro {
+    @apply max-w-3xl py-16 sm:py-24;
+  }
+
+  .eyebrow {
+    @apply font-mono text-xs font-semibold uppercase tracking-[0.18em] text-blue-700 dark:text-blue-400;
+  }
+
+  .quiet-link {
+    @apply items-center gap-2 text-sm font-medium text-slate-700 transition hover:text-blue-700 dark:text-slate-300 dark:hover:text-blue-400;
+  }
+
+  .primary-link {
+    @apply inline-flex items-center justify-center gap-2 bg-slate-950 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 dark:bg-white dark:text-slate-950 dark:hover:bg-blue-400;
+  }
+
+  .secondary-link {
+    @apply inline-flex items-center justify-center gap-2 border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-950 hover:text-slate-950 dark:border-slate-700 dark:text-slate-300 dark:hover:border-white dark:hover:text-white;
+  }
+}
+
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: -5rem;
+  z-index: 100;
+  background: rgb(15 23 42);
+  color: white;
+  padding: 0.65rem 1rem;
+  font-size: 0.875rem;
+}
+
+.skip-link:focus {
+  top: 1rem;
 }
 
 .toc-target-highlight > .section-title {
@@ -23,16 +86,12 @@
   bottom: -0.15rem;
   height: 2px;
   width: 0;
-  background: rgb(14 165 233);
+  background: rgb(37 99 235);
   transition: width 200ms ease;
 }
 
 .toc-target-highlight:target > .section-title::after {
   width: min(14rem, 100%);
-}
-
-* {
-  -webkit-tap-highlight-color: transparent;
 }
 
 .travel-marker {
@@ -49,4 +108,14 @@
   height: 18px;
   background: #f97316;
   box-shadow: 0 0 0 5px rgba(249, 115, 22, 0.28);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

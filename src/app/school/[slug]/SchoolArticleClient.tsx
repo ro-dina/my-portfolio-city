@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useI18n } from "@/components/common/LanguageProvider";
 import type {
@@ -22,13 +23,18 @@ export default function SchoolArticleClient({ article }: { article: SchoolArticl
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900">
-      <div className="mx-auto max-w-4xl px-4 pt-24 pb-16">
+      <div className="mx-auto max-w-4xl px-5 pb-20 pt-10 sm:px-8 sm:pt-16">
+        <Link href="/notes" className="quiet-link mb-10 inline-flex">← Notes</Link>
         <h1 className="select-text inline-block max-w-full align-top text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
           {pickText(article.title, locale)}
         </h1>
         <p className="select-text inline-block max-w-full align-top mt-3 text-slate-600 dark:text-slate-300">
           {pickText(article.summary, locale)}
         </p>
+        <div className="mt-5 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+          {article.tags.map((tag) => <span key={tag} className="border border-slate-200 px-2 py-1 dark:border-slate-700">{tag}</span>)}
+          {article.updatedAt ? <time dateTime={article.updatedAt}>Updated {article.updatedAt}</time> : null}
+        </div>
 
         <div className="mt-10 space-y-6 select-none">
           {article.blocks.map((b, i) => (

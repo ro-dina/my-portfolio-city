@@ -1,8 +1,6 @@
 import type { Project } from "@/types/project";
 import Section from "@/components/article/Section";
 import FeatureList from "@/components/article/FeatureList";
-import ProductionBackground from "@/components/article/ProductionBackground";
-import CodeBlock  from "@/components/article/CodeBlock";
 
 export const codingProjects: Project[] = [
   /*{

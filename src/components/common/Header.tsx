@@ -1,184 +1,124 @@
-// src/components/common/Header.tsx
-'use client'
+"use client";
 
-import { useRouter, usePathname } from 'next/navigation'
-import Link from 'next/link'
-import { Menu, MenuButton, MenuItems, MenuItem, Transition } from '@headlessui/react'
-import { Bars3Icon } from '@heroicons/react/24/outline'
-import { useEffect, useState } from 'react'
-import { useI18n } from './LanguageProvider'
-import { useHomeMode } from './HomeModeProvider'
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useI18n } from "@/components/common/LanguageProvider";
+
+const navigation = [
+  { label: "Home", href: "/" },
+  { label: "Projects", href: "/projects" },
+  { label: "Notes", href: "/notes" },
+  { label: "Languages & Culture", href: "/languages" },
+  { label: "About", href: "/about" },
+];
 
 type Theme = "light" | "dark";
 
 export default function Header() {
-    const router = useRouter()
-    const pathname = usePathname()
-    const [canGoBack, setCanGoBack] = useState(false)
-    const [theme, setTheme] = useState<Theme>("light");
-    const { locale, setLocale, t } = useI18n();
-    const { mode, toggleMode } = useHomeMode()
+  const pathname = usePathname();
+  const { locale, setLocale } = useI18n();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
-    // Show back button only if there is history AND we are not on root.
-    if (typeof window !== 'undefined') {
-      setCanGoBack(window.history.length > 1 && pathname !== '/')
-    }
-  }, [pathname])
-
-  useEffect(() => {
-    const saved = (typeof window !== "undefined" && localStorage.getItem("theme")) as Theme | null;
-    const initial: Theme =
-      saved ?? (document.documentElement.classList.contains("dark") ? "dark" : "light");
-    applyTheme(initial);
+    const saved = window.localStorage.getItem("theme") as Theme | null;
+    const preferred = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    const initial = saved ?? preferred;
+    setTheme(initial);
+    document.documentElement.classList.toggle("dark", initial === "dark");
   }, []);
 
-  const applyTheme = (t: Theme) => {
-    setTheme(t);
-    const root = document.documentElement;
-    if (t === "dark") root.classList.add("dark");
-    else root.classList.remove("dark");
-    localStorage.setItem("theme", t);
-  }
+  useEffect(() => setMenuOpen(false), [pathname]);
 
-  const toggle = () => applyTheme(theme === "dark" ? "light" : "dark")
+  const toggleTheme = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    document.documentElement.classList.toggle("dark", next === "dark");
+    window.localStorage.setItem("theme", next);
+  };
+
+  const isCurrent = (href: string) => href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   return (
-    <header className="w-full fixed top-0 left-0 z-50 px-4 py-3 flex items-center justify-between bg-white/80 dark:bg-slate-900/80 backdrop-blur border-b border-gray-200/60 dark:border-white/10 shadow-sm">
-      {/* 左側: 戻る/トップへ */}
-      <div className="flex space-x-4">
-        {canGoBack && (
-          <button
-            onClick={() => router.back()}
-            className="inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-sky-700 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/50 transition dark:text-slate-100 dark:hover:text-white dark:hover:bg-white/10"
-            aria-label={t("common.back")}
-          >
-            ← {t("common.back")}
-          </button>
-        )}
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-semibold text-sky-700 hover:bg-sky-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/50 transition dark:text-sky-200 dark:hover:bg-white/10"
-          aria-label={t("common.top")}
-        >
-          ⌂ {t("common.top")}
+    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/90">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
+        <Link href="/" className="font-mono text-sm font-semibold tracking-tight text-slate-950 dark:text-white" aria-label="Isao — Home">
+          ISAO<span className="text-blue-600 dark:text-blue-400">/</span>LOG
         </Link>
+
+        <nav className="hidden items-center gap-6 lg:flex" aria-label="メインナビゲーション">
+          {navigation.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={isCurrent(item.href) ? "page" : undefined}
+              className={`text-sm transition ${isCurrent(item.href) ? "font-medium text-slate-950 dark:text-white" : "text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white"}`}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-1">
+          <label className="sr-only" htmlFor="site-locale">表示言語</label>
+          <select
+            id="site-locale"
+            value={locale}
+            onChange={(event) => setLocale(event.target.value as "ja" | "en" | "ru")}
+            className="hidden bg-transparent px-2 py-2 text-xs text-slate-500 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:block dark:text-slate-400"
+          >
+            <option value="ja">JA</option>
+            <option value="en">EN</option>
+            <option value="ru">RU</option>
+          </select>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="grid size-9 place-items-center text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white"
+            aria-label={theme === "dark" ? "ライトモードに切り替える" : "ダークモードに切り替える"}
+          >
+            <span aria-hidden>{theme === "dark" ? "☀" : "◐"}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((open) => !open)}
+            className="grid size-9 place-items-center text-slate-700 lg:hidden dark:text-slate-200"
+            aria-expanded={menuOpen}
+            aria-controls="mobile-navigation"
+            aria-label={menuOpen ? "メニューを閉じる" : "メニューを開く"}
+          >
+            <span className="text-xl" aria-hidden>{menuOpen ? "×" : "≡"}</span>
+          </button>
+        </div>
       </div>
 
-      {/* 右側: ハンバーガーメニュー */}
-      <Menu as="div" className="relative ml-auto">
-        <MenuButton
-          className="inline-flex items-center justify-center rounded-lg p-2 text-gray-700 hover:text-sky-700 hover:bg-gray-100 ring-1 ring-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/50 transition dark:text-slate-100 dark:hover:text-white dark:hover:bg-white/10 dark:ring-white/20"
-          aria-label={t("common.menu")}
-        >
-          <Bars3Icon className="w-6 h-6" />
-        </MenuButton>
-
-        <Transition
-          enter="transition ease-out duration-150"
-          enterFrom="opacity-0 translate-y-1"
-          enterTo="opacity-100 translate-y-0"
-          leave="transition ease-in duration-100"
-          leaveFrom="opacity-100 translate-y-0"
-          leaveTo="opacity-0 translate-y-1"
-        >
-          <MenuItems className="absolute right-0 mt-2 w-72 origin-top-right bg-white/90 dark:bg-slate-900/90 text-gray-800 dark:text-gray-100 backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-xl shadow-xl overflow-hidden focus:outline-none">
-            {/* 言語切り替え */}
-            <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
-              {t("common.language")}
-            </div>
-            <div className="py-1">
-              <MenuItem>
-                <button
-                  onClick={() => setLocale("ja")}
-                  className="group flex w-full items-center justify-between px-4 py-2 text-sm text-gray-700 dark:text-gray-100 data-[focus]:bg-sky-50 data-[focus]:text-sky-700 dark:data-[focus]:bg-slate-700/60 dark:data-[focus]:text-sky-200"
-                  aria-label={t("common.japanese")}
-                >
-                  <span>{t("common.japanese")}</span>
-                  {locale === "ja" && <span aria-hidden>✓</span>}
-                </button>
-              </MenuItem>
-              <MenuItem>
-                <button
-                  onClick={() => setLocale("en")}
-                  className="group flex w-full items-center justify-between px-4 py-2 text-sm text-gray-700 dark:text-gray-100 data-[focus]:bg-sky-50 data-[focus]:text-sky-700 dark:data-[focus]:bg-slate-700/60 dark:data-[focus]:text-sky-200"
-                  aria-label={t("common.english")}
-                >
-                  <span>{t("common.english")}</span>
-                  {locale === "en" && <span aria-hidden>✓</span>}
-                </button>
-              </MenuItem>
-              <MenuItem>
-                <button
-                  onClick={() => setLocale("ru")}
-                  className="group flex w-full items-center justify-between px-4 py-2 text-sm text-gray-700 dark:text-gray-100 data-[focus]:bg-sky-50 data-[focus]:text-sky-700 dark:data-[focus]:bg-slate-700/60 dark:data-[focus]:text-sky-200"
-                  aria-label={t("common.russian")}
-                >
-                  <span>{t("common.russian")}</span>
-                  {locale === "ru" && <span aria-hidden>✓</span>}
-                </button>
-              </MenuItem>
-            </div>
-
-            {/* 設定 */}
-            <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
-              {t("common.settings")}
-            </div>
-            <div className="py-1">
-              <MenuItem>
-                <button
-                  onClick={toggleMode}
-                  className="group flex w-full items-center justify-between px-4 py-2 text-sm text-gray-700 dark:text-gray-100 data-[focus]:bg-sky-50 data-[focus]:text-sky-700 dark:data-[focus]:bg-slate-700/60 dark:data-[focus]:text-sky-200"
-                  aria-label={t("common.homeMode")}
-                >
-                  <span>{t("common.homeMode")}</span>
-                  <span className="inline-flex items-center gap-2 text-xs">
-                    <span className="hidden sm:inline">
-                      {mode === "city" ? t("common.homeModeCity") : t("common.homeModeStandard")}
-                    </span>
-                    <span
-                      className={`relative inline-flex h-5 w-10 items-center rounded-full transition ${
-                        mode === "city" ? "bg-sky-500" : "bg-gray-300 dark:bg-slate-600"
-                      }`}
-                      aria-hidden
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-                          mode === "city" ? "translate-x-5" : "translate-x-1"
-                        }`}
-                      />
-                    </span>
-                  </span>
-                </button>
-              </MenuItem>
-            </div>
-
-            {/** ダークモード */}
-            <button
-              onClick={toggle}
-              className="block w-full text-left rounded-lg px-4 py-2 text-sm font-medium bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-white/10 dark:hover:bg-white/15 dark:text-gray-100"
-              aria-label={t("common.themeToggle")}
+      {menuOpen ? (
+        <nav id="mobile-navigation" className="border-t border-slate-200 px-5 py-4 lg:hidden dark:border-slate-800" aria-label="モバイルナビゲーション">
+          <div className="mx-auto grid max-w-7xl gap-1">
+            {navigation.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={isCurrent(item.href) ? "page" : undefined}
+                className={`px-2 py-3 text-sm ${isCurrent(item.href) ? "bg-slate-100 font-medium text-slate-950 dark:bg-slate-900 dark:text-white" : "text-slate-600 dark:text-slate-400"}`}
+              >
+                {item.label}
+              </Link>
+            ))}
+            <select
+              value={locale}
+              onChange={(event) => setLocale(event.target.value as "ja" | "en" | "ru")}
+              className="mt-2 border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-800 dark:text-white"
+              aria-label="表示言語"
             >
-              {theme === "dark" ? t("common.themeDark") : t("common.themeLight")}
-            </button>
-
-            {/* 商業施設 */}
-            <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
-              {t("common.commercial")}
-            </div>
-            <div className="py-1">
-              <MenuItem>
-                <Link
-                  href="/books"
-                  className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-100 data-[focus]:bg-sky-50 data-[focus]:text-sky-700 dark:data-[focus]:bg-slate-700/60 dark:data-[focus]:text-sky-200"
-                >
-                  {t("common.bookstore")}
-                </Link>
-              </MenuItem>
-            </div>
-          </MenuItems>
-        </Transition>
-      </Menu>
+              <option value="ja">日本語</option>
+              <option value="en">English</option>
+              <option value="ru">Русский</option>
+            </select>
+          </div>
+        </nav>
+      ) : null}
     </header>
-  )
+  );
 }
