@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import NotesExplorer from "@/components/notes/NotesExplorer";
-import { schoolArticleCards } from "@/data/schoolArticleCards";
+import { getAllArticles } from "@/lib/article-storage";
 
 export const metadata: Metadata = {
   title: "Notes",
   description: "コンピュータサイエンス、データベース、AI、研究過程などの学習ノート。",
 };
 
-export default function NotesPage() {
-  const notes = [...schoolArticleCards].sort((a, b) => {
+export default async function NotesPage() {
+  const notes = (await getAllArticles()).sort((a, b) => {
     if (!a.updatedAt) return 1;
     if (!b.updatedAt) return -1;
     return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
@@ -23,7 +23,7 @@ export default function NotesPage() {
           コンピュータサイエンス、データベース、AI、制作過程のメモ。結果だけでなく、試したことと判断の根拠を検索できる形で蓄積します。
         </p>
       </header>
-      <NotesExplorer notes={notes} />
+      <NotesExplorer notes={notes.map((note) => ({ slug: note.slug, title: note.title, summary: note.summary, category: note.category, tags: note.tags, updatedAt: note.updatedAt }))} />
     </div>
   );
 }

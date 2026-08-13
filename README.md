@@ -13,6 +13,9 @@ Next.js App Router + TypeScript + Tailwind CSSで作成した個人ポートフ�
 - `/languages/[slug]` — 言語ごとの現在地、目標、履歴、文化体験
 - `/about` — 短い自己紹介、技術、言語、外部リンク
 - `/travel` — 既存の国→都市→場所データを維持した旅行アーカイブ
+- `/admin/articles` — 記事一覧とファイルベースCMS
+- `/admin/articles/new` — 記事作成
+- `/admin/articles/[slug]/edit` — 既存記事の編集
 
 旧URLの `/coding` と `/school` は、それぞれ `/projects` と `/notes` へ308リダイレクトします。旧旅行URLと既存データは維持しています。
 
@@ -21,6 +24,8 @@ Next.js App Router + TypeScript + Tailwind CSSで作成した個人ポートフ�
 ```text
 src/
 ├── app/
+│   ├── admin/articles/       # CMS一覧・新規・編集
+│   ├── api/admin/            # 認証・記事保存API
 │   ├── projects/[slug]/     # 制作一覧・詳細
 │   ├── notes/[slug]/        # ノート一覧・詳細
 │   ├── languages/[slug]/    # 言語・文化一覧・詳細
@@ -28,11 +33,16 @@ src/
 │   ├── travel/              # 既存の旅行アーカイブ
 │   └── page.tsx             # Home
 ├── components/
+│   ├── admin/               # ArticleEditorとblock別フォーム
 │   ├── common/              # Header / Footer等
 │   ├── projects/            # ProjectCard / 検索・フィルタ
 │   ├── notes/               # NoteCard / 検索・フィルタ
 │   ├── languages/           # LanguageCard
 │   └── ui/                  # Tag / SectionHeader
+├── lib/
+│   ├── article-schema.ts    # Zod validation
+│   ├── article-storage.ts   # JSON統合・保存・export
+│   └── admin-auth.ts        # 簡易管理認証
 └── data/
     ├── profile.ts           # 名前、紹介、興味、扱った技術領域
     ├── project.ts           # 既存の制作物データ
@@ -41,6 +51,12 @@ src/
     ├── schoolArticleContents.ts
     ├── languages.ts         # 言語ごとの学習・文化データ
     └── travelContent.ts     # 国→都市→場所の独立した旅行データ
+```
+
+```text
+content/
+├── articles/[slug].json    # CMSで作成・上書きした記事
+└── .backups/articles/      # 保存前バックアップ（git管理外）
 ```
 
 ## コンテンツの追加方法
@@ -55,10 +71,46 @@ src/
 
 ### Note
 
-1. `src/data/schoolArticleCards.ts` にカード情報を追加します。
-2. `src/data/schoolArticleContents.ts` に同じ `slug` の本文ブロックを追加します。
+通常は開発サーバーを起動し、`/admin/articles` から作成・編集します。JavaScript / TypeScriptのオブジェクト構造を直接書く必要はありません。
+
+既存記事は引き続き以下から読み込まれます。
+
+1. `src/data/schoolArticleCards.ts` — タイトル、概要、タグ、更新日
+2. `src/data/schoolArticleContents.ts` — 同じ `slug` の本文ブロック
+
+CMSで保存した `content/articles/[slug].json` が存在する場合、そのslugだけJSON版が優先されます。元のTypeScript記事は変更・削除されません。
 
 既存記事のブロック形式はそのまま利用でき、100件以上になってもカードと長い本文を分けて管理できます。
+
+## File-based CMS
+
+### Local Edit Mode
+
+`npm run dev` ではLocal Edit Modeが既定です。保存時は以下を実行します。
+
+1. Zodで記事と全blockを検証
+2. 既存JSONがあれば `content/.backups/articles/` へバックアップ
+3. 一時ファイルへ書き込み
+4. atomic renameで `content/articles/[slug].json` を更新
+
+`CMS_LOCAL_EDIT=false` を設定するとローカルでもExport Modeを確認できます。
+
+### Export Mode / Vercel
+
+Vercelでは実行環境への書き込みが永続化されないため、自動的にExport Modeになります。検証済みのJSONまたはTypeScript snippetを管理画面からコピー／ダウンロードし、リポジトリへ追加してください。ストレージ処理は `article-storage.ts` に分離しているため、将来GitHub APIでcommitを作る実装へ差し替えられます。
+
+### 認証
+
+本番では必ず `ADMIN_PASSWORD` を設定してください。認証済み状態は8時間有効のHttpOnly / SameSite=Strict cookieで保持します。環境変数未設定時に認証を省略するのはローカルdevelopmentだけです。
+
+```bash
+cp .env.example .env.local
+npm run dev
+```
+
+### 対応ブロック
+
+`lead / section / list / toc / paragraph / image / table / code / exercise` に対応しています。すべて並び替え・複製・削除ができ、Exercise内部の補助ブロックも編集できます。Codeは複数ファイル、ImageとTableは複数タブ、Tableは日本語・英語セルを持つ行列GUIを利用できます。
 
 ### Language / Culture
 

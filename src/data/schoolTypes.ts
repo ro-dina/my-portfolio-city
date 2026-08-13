@@ -198,6 +198,7 @@ export type SchoolArticleCard = {
   slug: string;
   title: I18nText;
   summary: I18nText;
+  category?: string;
   tags: string[];
   updatedAt: string; // とりあえず string に固定（Date 混在事故を防ぐ）
 };

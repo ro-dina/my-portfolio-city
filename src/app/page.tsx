@@ -6,12 +6,12 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import Tag from "@/components/ui/Tag";
 import { profile, skillFields } from "@/data/profile";
 import { projects } from "@/data/projects";
-import { schoolArticleCards } from "@/data/schoolArticleCards";
 import { languages } from "@/data/languages";
+import { getAllArticles } from "@/lib/article-storage";
 
-export default function HomePage() {
+export default async function HomePage() {
   const featuredProjects = projects.filter((project) => project.featured).slice(0, 6);
-  const recentNotes = [...schoolArticleCards]
+  const recentNotes = (await getAllArticles())
     .filter((note) => note.updatedAt)
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
     .slice(0, 4);
@@ -94,7 +94,7 @@ export default function HomePage() {
         <div className="page-shell">
           <SectionHeader eyebrow="Learning in public" title="Recent Notes" description="技術メモ、実験、研究過程を、あとから再現できる形で残しています。" href="/notes" linkLabel="ノートを探す" />
           <div className="grid gap-x-7 sm:grid-cols-2 lg:grid-cols-4">
-            {recentNotes.map((note) => <NoteCard key={note.slug} note={note} />)}
+            {recentNotes.map((note) => <NoteCard key={note.slug} note={{ slug: note.slug, title: note.title, summary: note.summary, category: note.category, tags: note.tags, updatedAt: note.updatedAt }} />)}
           </div>
         </div>
       </section>

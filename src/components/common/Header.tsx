@@ -40,6 +40,8 @@ export default function Header() {
 
   const isCurrent = (href: string) => href === "/" ? pathname === "/" : pathname.startsWith(href);
 
+  if (pathname.startsWith("/admin")) return null;
+
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/90">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">

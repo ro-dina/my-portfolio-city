@@ -5,6 +5,7 @@ import { pickText, type SchoolArticleCard } from "@/data/schoolTypes";
 export default function NoteCard({ note }: { note: SchoolArticleCard }) {
   return (
     <article className="group flex h-full flex-col border-t border-slate-200 py-5 dark:border-slate-800">
+      {note.category ? <p className="mb-2 font-mono text-[11px] uppercase tracking-wider text-slate-500">{note.category}</p> : null}
       <Link href={`/notes/${note.slug}`} className="focus-visible:outline-offset-4">
         <div className="flex items-start justify-between gap-4">
           <h3 className="font-semibold tracking-tight text-slate-950 group-hover:text-blue-700 dark:text-white dark:group-hover:text-blue-400">
