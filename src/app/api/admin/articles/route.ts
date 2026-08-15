@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
-import { getStorageMode, saveArticle, serializeArticleJson, serializeArticleTypeScript } from "@/lib/article-storage";
+import { getStorageMode, saveArticle, serializeArticleJson } from "@/lib/article-storage";
 import { validateArticle } from "@/lib/article-schema";
 
 export async function POST(request: Request) {
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
 
     const exports = {
       json: serializeArticleJson(validation.article),
-      typescript: serializeArticleTypeScript(validation.article),
+      filename: `${validation.article.slug}.json`,
     };
     if (getStorageMode() === "export") {
       return NextResponse.json({ mode: "export", article: validation.article, exports });

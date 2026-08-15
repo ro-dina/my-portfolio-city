@@ -1,0 +1,67 @@
+{
+  "slug": "how-i-write-project-notes",
+  "title": {
+    "ja": "解説記事の書き方テンプレ",
+    "en": "How I write project notes"
+  },
+  "summary": {
+    "ja": "School 記事を高速に量産するための共通テンプレ。",
+    "en": "A reusable template to write technical notes fast."
+  },
+  "tags": [
+    "meta",
+    "writing",
+    "template"
+  ],
+  "updatedAt": "2025-12-25",
+  "category": "Research",
+  "blocks": [
+    {
+      "type": "lead",
+      "text": {
+        "ja": "School は『学んだことを再利用できる形で残す場所』。このテンプレに沿って書けば、後から自分も他人も追える記事になります。",
+        "en": "School is where I keep reusable learning notes. This template helps future-me and others follow along."
+      }
+    },
+    {
+      "type": "section",
+      "title": {
+        "ja": "構成",
+        "en": "Structure"
+      },
+      "body": {
+        "ja": "概要 → 目的 → 仕様 → 設計 → 実装の要点 → 詰まった点 → 改善案 → 参考リンク",
+        "en": "Overview → Motivation → Specs → Design → Key implementation points → Pitfalls → Improvements → Links"
+      }
+    },
+    {
+      "type": "list",
+      "title": {
+        "ja": "よく使う見出し",
+        "en": "Common headings"
+      },
+      "items": [
+        {
+          "ja": "制作動機",
+          "en": "Motivation"
+        },
+        {
+          "ja": "挙動（動画/スクショ）",
+          "en": "Behavior (demo)"
+        },
+        {
+          "ja": "特徴",
+          "en": "Highlights"
+        },
+        {
+          "ja": "設計メモ",
+          "en": "Design notes"
+        },
+        {
+          "ja": "トラブルシュート",
+          "en": "Troubleshooting"
+        }
+      ]
+    }
+  ]
+}

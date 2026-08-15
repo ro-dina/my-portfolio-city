@@ -1,0 +1,52 @@
+{
+  "slug": "algorithm-visualizer-notes",
+  "title": {
+    "ja": "Algorithm Visualizer 設計メモ",
+    "en": "Algorithm Visualizer design notes"
+  },
+  "summary": {
+    "ja": "可視化UIの設計・状態管理・ステップ実行の考え方。",
+    "en": "Notes on visualization UI, state, and step-by-step execution."
+  },
+  "tags": [
+    "algorithm",
+    "visualization",
+    "ui"
+  ],
+  "updatedAt": "2025-12-25",
+  "category": "Computer Science",
+  "blocks": [
+    {
+      "type": "section",
+      "title": {
+        "ja": "何を学べる？",
+        "en": "What you learn"
+      },
+      "body": {
+        "ja": "配列の状態をどう“説明できる形”で保存し、UIに反映するか。",
+        "en": "How to store array states in an explainable way and render them in UI."
+      }
+    },
+    {
+      "type": "list",
+      "title": {
+        "ja": "実装の要点",
+        "en": "Key points"
+      },
+      "items": [
+        {
+          "ja": "操作ログ（ステップ）を配列で持つ",
+          "en": "Keep steps as an array of operations"
+        },
+        {
+          "ja": "現在ステップindexで描画を決める",
+          "en": "Render based on current step index"
+        },
+        {
+          "ja": "速度変更はタイマー間隔だけ変える",
+          "en": "Speed control adjusts timer interval"
+        }
+      ]
+    }
+  ]
+}

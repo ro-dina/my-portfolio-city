@@ -3,8 +3,6 @@ import "server-only";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import type { SchoolArticle } from "@/data/schoolTypes";
-import { schoolArticleCards } from "@/data/schoolArticleCards";
-import { schoolArticleContents } from "@/data/schoolArticleContents";
 import { validateArticle } from "@/lib/article-schema";
 
 const ARTICLES_DIRECTORY = path.join(process.cwd(), "content", "articles");
@@ -20,27 +18,36 @@ export function getStorageMode(): StorageMode {
   return "export";
 }
 
-function getLegacyArticles(): SchoolArticle[] {
-  return schoolArticleCards.flatMap((card) => {
-    const content = schoolArticleContents.find((item) => item.slug === card.slug);
-    return content ? [{ ...card, blocks: content.blocks }] : [];
-  });
-}
-
 async function readJsonArticles(): Promise<SchoolArticle[]> {
   try {
-    const entries = await fs.readdir(ARTICLES_DIRECTORY, { withFileTypes: true });
-    const articles = await Promise.all(entries
+    const entries = (await fs.readdir(ARTICLES_DIRECTORY, { withFileTypes: true }))
       .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
-      .map(async (entry) => {
-        const raw = await fs.readFile(path.join(ARTICLES_DIRECTORY, entry.name), "utf8");
-        const parsed: unknown = JSON.parse(raw);
+      .sort((a, b) => a.name.localeCompare(b.name));
+    const articles: SchoolArticle[] = [];
+    const seenSlugs = new Map<string, string>();
+    for (const entry of entries) {
+      const filePath = path.join(ARTICLES_DIRECTORY, entry.name);
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(await fs.readFile(filePath, "utf8"));
+      } catch (error) {
+        throw new Error(`[articles] ${entry.name}: JSONを解析できません: ${error instanceof Error ? error.message : String(error)}`);
+      }
         const validation = validateArticle(parsed);
         if (!validation.success) {
-          throw new Error(`${entry.name}: ${validation.errors.map((error) => `${error.path} ${error.message}`).join(", ")}`);
+        throw new Error(`[articles] ${entry.name}: Zod検証に失敗しました\n${validation.errors.map((error) => `  - ${error.path || "article"}: ${error.message}`).join("\n")}`);
         }
-        return validation.article;
-      }));
+      const expectedFileName = `${validation.article.slug}.json`;
+      if (entry.name !== expectedFileName) {
+        throw new Error(`[articles] ${entry.name}: ファイル名はslugと一致させてください。期待値: ${expectedFileName}`);
+      }
+      const duplicate = seenSlugs.get(validation.article.slug);
+      if (duplicate) {
+        throw new Error(`[articles] slug "${validation.article.slug}" が重複しています: ${duplicate}, ${entry.name}`);
+      }
+      seenSlugs.set(validation.article.slug, entry.name);
+      articles.push(validation.article);
+    }
     return articles;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
@@ -49,9 +56,7 @@ async function readJsonArticles(): Promise<SchoolArticle[]> {
 }
 
 export async function getAllArticles(): Promise<SchoolArticle[]> {
-  const merged = new Map(getLegacyArticles().map((article) => [article.slug, article]));
-  for (const article of await readJsonArticles()) merged.set(article.slug, article);
-  return [...merged.values()];
+  return readJsonArticles();
 }
 
 export async function getArticle(slug: string): Promise<SchoolArticle | undefined> {
@@ -110,8 +115,4 @@ export async function saveArticle(article: SchoolArticle, previousSlug?: string)
 
 export function serializeArticleJson(article: SchoolArticle) {
   return `${JSON.stringify(article, null, 2)}\n`;
-}
-
-export function serializeArticleTypeScript(article: SchoolArticle) {
-  return `export const article = ${JSON.stringify(article, null, 2)} as const;\n`;
 }

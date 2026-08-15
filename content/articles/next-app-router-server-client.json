@@ -1,0 +1,41 @@
+{
+  "slug": "next-app-router-server-client",
+  "title": {
+    "ja": "Next.js: Server/Client分離の考え方",
+    "en": "Next.js: Server/Client boundary"
+  },
+  "summary": {
+    "ja": "paramsがPromiseなど、App Routerで詰まりやすい境界の整理。",
+    "en": "A practical guide to App Router boundaries (e.g., params as Promise)."
+  },
+  "tags": [
+    "nextjs",
+    "app-router",
+    "architecture"
+  ],
+  "updatedAt": "2025-12-25",
+  "category": "Computer Science",
+  "blocks": [
+    {
+      "type": "section",
+      "title": {
+        "ja": "結論",
+        "en": "Takeaway"
+      },
+      "body": {
+        "ja": "ページ（Server）でデータ取得・存在チェック → Clientに“シリアライズ可能なデータだけ”渡す。関数やJSXは渡さない。",
+        "en": "Fetch/check in Server page → pass only serializable data to Client. Never pass functions/JSX."
+      }
+    },
+    {
+      "type": "code",
+      "title": {
+        "ja": "例: Server page",
+        "en": "Example: Server page"
+      },
+      "lang": "ts",
+      "filename": "page.tsx",
+      "code": "import { notFound } from \"next/navigation\";\nimport { schoolArticles } from \"@/data/schoolArticles\";\nimport SchoolArticleClient from \"./SchoolArticleClient\";\n\nexport default async function Page({ params }: { params: Promise<{ slug: string }> }) {\n  const { slug } = await params;\n  const a = schoolArticles.find((x) => x.slug === slug);\n  if (!a) return notFound();\n  return <SchoolArticleClient article={a} />;\n}"
+    }
+  ]
+}

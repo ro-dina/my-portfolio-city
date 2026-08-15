@@ -11,7 +11,7 @@ import type { SchoolArticle, SchoolBlock } from "@/data/schoolTypes";
 import { validateArticle, type ArticleValidationError } from "@/lib/article-schema";
 
 type EditorArticle = SchoolArticle & { category: string };
-type SaveResult = { mode: "local" | "export"; article: EditorArticle; path?: string; exports: { json: string; typescript: string } };
+type SaveResult = { mode: "local" | "export"; article: EditorArticle; path?: string; exports: { json: string; filename: string } };
 
 export default function ArticleEditor({ initialArticle, knownTags, storageMode, isNew }: { initialArticle: EditorArticle; knownTags: string[]; storageMode: "local" | "export"; isNew: boolean }) {
   const router = useRouter();
@@ -96,10 +96,10 @@ export default function ArticleEditor({ initialArticle, knownTags, storageMode, 
 }
 
 function ExportPanel({ article, exports, onGenerate }: { article: EditorArticle; exports: SaveResult["exports"] | null; onGenerate: () => void }) {
-  const fallback = { json: `${JSON.stringify(article, null, 2)}\n`, typescript: `export const article = ${JSON.stringify(article, null, 2)} as const;\n` };
+  const fallback = { json: `${JSON.stringify(article, null, 2)}\n`, filename: `${article.slug || "article"}.json` };
   const data = exports ?? fallback;
-  const download = (content: string, extension: string) => { const url = URL.createObjectURL(new Blob([content], { type: "text/plain;charset=utf-8" })); const anchor = document.createElement("a"); anchor.href = url; anchor.download = `${article.slug || "article"}.${extension}`; anchor.click(); URL.revokeObjectURL(url); };
-  return <div className="mt-6 space-y-6"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-semibold dark:text-white">Export</h2><p className="mt-1 text-sm text-slate-500">本番環境では検証後、このデータをリポジトリへ追加してください。</p></div><button type="button" onClick={onGenerate} className="primary-link">Validate & generate</button></div>{(["json", "typescript"] as const).map((type) => <section key={type} className="border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"><header className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800"><h3 className="font-mono text-sm uppercase">{type}</h3><div className="flex gap-3"><button type="button" onClick={() => navigator.clipboard.writeText(data[type])} className="text-xs text-blue-700 dark:text-blue-400">Copy</button><button type="button" onClick={() => download(data[type], type === "json" ? "json" : "ts")} className="text-xs text-blue-700 dark:text-blue-400">Download</button></div></header><pre className="max-h-[32rem] overflow-auto p-4 text-xs"><code>{data[type]}</code></pre></section>)}</div>;
+  const download = () => { const url = URL.createObjectURL(new Blob([data.json], { type: "application/json;charset=utf-8" })); const anchor = document.createElement("a"); anchor.href = url; anchor.download = data.filename; anchor.click(); URL.revokeObjectURL(url); };
+  return <div className="mt-6 space-y-6"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-semibold dark:text-white">Export</h2><p className="mt-1 text-sm text-slate-500">検証済みの <code>{data.filename}</code> をそのまま <code>content/articles/</code> に配置すると公開されます。</p></div><button type="button" onClick={onGenerate} className="primary-link">Validate & generate</button></div><section className="border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"><header className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800"><h3 className="font-mono text-sm">{data.filename}</h3><div className="flex gap-3"><button type="button" onClick={() => navigator.clipboard.writeText(data.json)} className="text-xs text-blue-700 dark:text-blue-400">Copy JSON</button><button type="button" onClick={download} className="text-xs text-blue-700 dark:text-blue-400">Download</button></div></header><pre className="max-h-[32rem] overflow-auto p-4 text-xs"><code>{data.json}</code></pre></section></div>;
 }
 
 function humanizePath(path: string) {

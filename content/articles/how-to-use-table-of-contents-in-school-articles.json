@@ -1,0 +1,67 @@
+{
+  "slug": "how-to-use-table-of-contents-in-school-articles",
+  "title": {
+    "ja": "School記事で目次を使う方法",
+    "en": "How to use table of contents in School articles"
+  },
+  "summary": {
+    "ja": "目次を自動生成するためのメモ。",
+    "en": "Notes on automatically generating a table of contents."
+  },
+  "tags": [
+    "meta",
+    "writing",
+    "template"
+  ],
+  "updatedAt": "2025-12-25",
+  "category": "Research",
+  "blocks": [
+    {
+      "type": "toc",
+      "title": {
+        "ja": "目次",
+        "en": "Contents"
+      },
+      "items": [
+        {
+          "title": {
+            "ja": "概要",
+            "en": "Overview"
+          },
+          "anchor": "overview"
+        },
+        {
+          "title": {
+            "ja": "実装の要点",
+            "en": "Key Points"
+          },
+          "anchor": "key-points"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": {
+        "ja": "概要",
+        "en": "Overview"
+      },
+      "anchor": "overview",
+      "body": {
+        "ja": "この記事では、School記事に目次（TOC）を追加する方法を説明します。見出しに `anchor` を付けることで、目次クリック時に対応セクションへ移動できます。",
+        "en": "This article explains how to add a table of contents (TOC) to School articles. Add an `anchor` to each heading so clicking a TOC item jumps to the corresponding section."
+      }
+    },
+    {
+      "type": "section",
+      "title": {
+        "ja": "実装の要点",
+        "en": "Key Points"
+      },
+      "anchor": "key-points",
+      "body": {
+        "ja": "1) `type: \"toc\"` ブロックを先頭に置く\n2) 各項目の `anchor` を本文の見出しと一致させる\n3) 目次項目の順序は読み順に合わせる",
+        "en": "1) Place a `type: \"toc\"` block near the top.\n2) Match each item `anchor` with the target section heading.\n3) Keep TOC item order aligned with reading flow."
+      }
+    }
+  ]
+}

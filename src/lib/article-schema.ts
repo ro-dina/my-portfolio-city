@@ -37,16 +37,29 @@ const imageFileSchema = z.object({
   tabLabel: optionalLocalizedTextSchema,
 });
 
-const tableFileSchema = z.object({
+const tableFileBaseSchema = z.object({
   tabLabel: optionalLocalizedTextSchema,
-  headers: z.array(blockTextSchema).min(1, "ヘッダーを1列以上追加してください"),
-  rows: z.array(z.array(blockTextSchema)).min(1, "行を1行以上追加してください"),
+  headers: z.array(blockTextSchema).optional(),
+  rows: z.array(z.array(blockTextSchema)).optional(),
+  rawText: z.string().optional(),
   caption: optionalLocalizedTextSchema,
   showRowNumbers: z.boolean().optional(),
   rowNumberStart: z.number().int().optional(),
   preserveCellWhitespace: z.boolean().optional(),
   monospace: z.boolean().optional(),
 });
+const validateTableData = (
+  value: { headers?: unknown[]; rows?: unknown[][]; rawText?: string },
+  context: z.RefinementCtx,
+) => {
+  if (!value.headers?.length && !value.rawText?.trim()) {
+    context.addIssue({ code: "custom", message: "ヘッダーを1列以上追加してください", path: ["headers"] });
+  }
+  if (!value.rows?.length && !value.rawText?.trim()) {
+    context.addIssue({ code: "custom", message: "表の行を1行以上追加してください", path: ["rows"] });
+  }
+};
+const tableFileSchema = tableFileBaseSchema.superRefine(validateTableData);
 
 const leadBlockSchema = z.object({ type: z.literal("lead"), text: blockTextSchema });
 const sectionBlockSchema = z.object({
@@ -102,12 +115,7 @@ const tableBlockBaseSchema = z.object({
   files: z.array(tableFileSchema).optional(),
 });
 const validateTable = (value: z.infer<typeof tableBlockBaseSchema>, context: z.RefinementCtx) => {
-  if (!value.files?.length && !value.headers?.length) {
-    context.addIssue({ code: "custom", message: "ヘッダーを1列以上追加してください", path: ["headers"] });
-  }
-  if (!value.files?.length && !value.rows?.length && !value.rawText?.trim()) {
-    context.addIssue({ code: "custom", message: "表の行を1行以上追加してください", path: ["rows"] });
-  }
+  if (!value.files?.length) validateTableData(value, context);
 };
 const tableBlockSchema = tableBlockBaseSchema.superRefine(validateTable);
 const codeBlockBaseSchema = z.object({

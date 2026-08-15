@@ -1,0 +1,30 @@
+{
+  "slug": "exchange_rate_forecast",
+  "title": {
+    "ja": "為替レートの予測",
+    "en": "Exchange rate forecasting"
+  },
+  "summary": {
+    "ja": "旅行が好きなので、為替レートを予測するAIを作るメモ。",
+    "en": "Notes on building an AI model to forecast exchange rates for travel planning."
+  },
+  "tags": [
+    "AI",
+    "Python"
+  ],
+  "updatedAt": "2025-12-26",
+  "category": "AI",
+  "blocks": [
+    {
+      "type": "section",
+      "title": {
+        "ja": "概要",
+        "en": "Overview"
+      },
+      "body": {
+        "ja": "（ここに目的・データ・モデルの概要を追記）",
+        "en": "(Add motivation, data sources, and model overview here)"
+      }
+    }
+  ]
+}
