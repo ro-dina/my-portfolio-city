@@ -1,0 +1,30 @@
+{
+  "slug": "flying contest",
+  "title": {
+    "ja": "鳥人間コンテスト",
+    "en": ""
+  },
+  "summary": {
+    "ja": "VRで鳥人間コンテストゲームを作成した",
+    "en": ""
+  },
+  "category": "Computer Science",
+  "tags": [
+    "VR"
+  ],
+  "updatedAt": "2026-08-15",
+  "blocks": [
+    {
+      "type": "paragraph",
+      "body": {
+        "ja": "VRゲームのチーム開発を行った。",
+        "en": ""
+      },
+      "title": {
+        "ja": "鳥人間コンテスト",
+        "en": ""
+      },
+      "anchor": "title"
+    }
+  ]
+}
