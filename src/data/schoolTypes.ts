@@ -1,5 +1,8 @@
-export type Lang = "ja" | "en" | "ru";
-export type I18nText = string | { ja: string; en?: string; ru?: string };
+import type { Locale, LocalizedText } from "@/lib/localization";
+import { getLocalizedText } from "@/lib/localization";
+
+export type Lang = Locale;
+export type I18nText = LocalizedText;
 export type SchoolImageFile = {
   src: string;
   alt?: I18nText;
@@ -92,8 +95,7 @@ export type SchoolExerciseContentBlock =
 
 /** I18nText または string を受けて、言語に応じて取り出す（無ければ ja にフォールバック） */
 export function pickText(v: I18nText, lang: Lang) {
-  if (typeof v === "string") return v;
-  return v[lang] ?? v.ja;
+  return getLocalizedText(v, lang);
 }
 
 export type SchoolBlock =
@@ -209,3 +211,13 @@ export type SchoolArticleContent = {
 };
 
 export type SchoolArticle = SchoolArticleCard & SchoolArticleContent;
+
+export type SchoolArticleDraft = {
+  slug?: string;
+  title?: I18nText;
+  summary?: I18nText;
+  category?: string;
+  tags?: string[];
+  updatedAt?: string;
+  blocks?: unknown[];
+};

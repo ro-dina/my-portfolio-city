@@ -1,0 +1,14 @@
+{
+  "slug": "italian",
+  "name": { "ja": "イタリア語", "en": "Italian", "it": "Italiano" },
+  "nativeName": "Italiano",
+  "currentLevel": { "ja": "学習記録を整理中", "en": "Organizing learning records" },
+  "summary": { "ja": "旅行、映画、文化への関心から学んでいる言語。", "en": "A language I study through an interest in travel, film, and culture." },
+  "goals": [
+    { "ja": "基礎的な会話を身につける", "en": "Learn basic conversation" },
+    { "ja": "文化体験を原語と結びつける", "en": "Connect cultural experiences with the original language" }
+  ],
+  "learningHistory": [],
+  "resources": [],
+  "cultureLinks": [{ "label": { "ja": "旅行の記録", "en": "Travel records", "it": "Diario di viaggio" }, "href": "/travel", "type": "Travel" }]
+}

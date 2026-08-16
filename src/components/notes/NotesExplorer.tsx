@@ -2,9 +2,11 @@
 
 import { useMemo, useState } from "react";
 import NoteCard from "@/components/notes/NoteCard";
+import { useI18n } from "@/components/common/LanguageProvider";
 import { pickText, type SchoolArticleCard } from "@/data/schoolTypes";
 
 export default function NotesExplorer({ notes }: { notes: SchoolArticleCard[] }) {
+  const { locale } = useI18n();
   const [query, setQuery] = useState("");
   const [tag, setTag] = useState("All");
   const tags = useMemo(() => ["All", ...Array.from(new Set(notes.flatMap((note) => note.tags))).sort()], [notes]);
@@ -12,10 +14,10 @@ export default function NotesExplorer({ notes }: { notes: SchoolArticleCard[] })
     const normalized = query.trim().toLowerCase();
     return notes.filter((note) => {
       const matchesTag = tag === "All" || note.tags.includes(tag);
-      const text = `${pickText(note.title, "ja")} ${pickText(note.summary, "ja")} ${note.tags.join(" ")}`.toLowerCase();
+      const text = `${pickText(note.title, locale)} ${pickText(note.summary, locale)} ${note.tags.join(" ")}`.toLowerCase();
       return matchesTag && (!normalized || text.includes(normalized));
     });
-  }, [notes, query, tag]);
+  }, [locale, notes, query, tag]);
 
   return (
     <>

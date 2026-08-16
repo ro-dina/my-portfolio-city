@@ -1,0 +1,15 @@
+{
+  "slug": "german",
+  "name": { "ja": "ドイツ語", "en": "German", "de": "Deutsch" },
+  "nativeName": "Deutsch",
+  "currentLevel": { "ja": "学習記録を整理中", "en": "Organizing learning records", "de": "Lernnotizen werden geordnet" },
+  "summary": { "ja": "ドイツ語圏の文化や現地体験と結びつけて学ぶ言語。", "en": "Learning German through culture and real-world experiences." },
+  "goals": [
+    { "ja": "基礎語彙と文法を定着させる", "en": "Build a foundation in vocabulary and grammar" },
+    { "ja": "旅行中のやり取りに使う", "en": "Use German while traveling" },
+    { "ja": "本・映画・訪問記録と学習を結びつける", "en": "Connect study with books, films, and visits" }
+  ],
+  "learningHistory": [{ "ja": "文化・旅行の記録と合わせて学習内容を整理", "en": "Organizing study alongside culture and travel records" }],
+  "resources": [],
+  "cultureLinks": [{ "label": { "ja": "ドイツの記録", "en": "Germany records", "de": "Deutschland-Notizen" }, "href": "/travel/germany", "type": "Travel" }]
+}

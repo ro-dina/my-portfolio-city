@@ -1,0 +1,14 @@
+{
+  "slug": "russian",
+  "name": { "ja": "ロシア語", "en": "Russian", "ru": "Русский" },
+  "nativeName": "Русский",
+  "currentLevel": { "ja": "学習記録を整理中", "en": "Organizing learning records" },
+  "summary": { "ja": "文字、語彙、文化的背景を段階的に学んでいる言語。", "en": "Studying the alphabet, vocabulary, and cultural context step by step." },
+  "goals": [
+    { "ja": "キリル文字と基礎語彙を定着させる", "en": "Learn Cyrillic and basic vocabulary" },
+    { "ja": "短い文章を読み書きする", "en": "Read and write short texts" }
+  ],
+  "learningHistory": [{ "ja": "サイトUIのロシア語表示を試作", "en": "Prototyped a Russian-language site UI" }],
+  "resources": [],
+  "cultureLinks": [{ "label": { "ja": "映画の記録", "en": "Film records", "ru": "Заметки о фильмах" }, "href": "/cinema", "type": "Films" }]
+}

@@ -1,6 +1,10 @@
+"use client";
+
+import { useState } from "react";
 import type { I18nText, SchoolTableFile } from "@/data/schoolTypes";
 import { emptyText, toLocalized } from "@/components/admin/editor-utils";
 import LocalizedInput from "@/components/admin/LocalizedInput";
+import { CONTENT_LOCALES, localeLabels, type Locale } from "@/lib/localization";
 
 export type EditableTableBlock = {
   headers?: I18nText[];
@@ -17,15 +21,16 @@ export type EditableTableBlock = {
 const cellClass = "w-full min-w-32 border border-slate-300 bg-white px-2 py-1.5 text-xs outline-none focus:border-blue-600 dark:border-slate-700 dark:bg-slate-950 dark:text-white";
 
 function GridEditor({ value, onChange }: { value: SchoolTableFile; onChange: (value: SchoolTableFile) => void }) {
+  const [activeLocale, setActiveLocale] = useState<Locale>("ja");
   const headers = value.headers?.length ? value.headers : [emptyText()];
   const rows = value.rows?.length ? value.rows : [headers.map(() => emptyText())];
-  const updateCell = (rowIndex: number, columnIndex: number, locale: "ja" | "en", text: string) => {
-    const nextRows = rows.map((row) => row.map((cell) => typeof cell === "string" ? { ja: cell, en: cell } : { ...cell }));
+  const updateCell = (rowIndex: number, columnIndex: number, locale: Locale, text: string) => {
+    const nextRows = rows.map((row) => row.map((cell) => ({ ...toLocalized(cell) })));
     nextRows[rowIndex][columnIndex] = { ...toLocalized(nextRows[rowIndex][columnIndex]), [locale]: text };
     onChange({ ...value, headers, rows: nextRows });
   };
-  const updateHeader = (columnIndex: number, locale: "ja" | "en", text: string) => {
-    const next = headers.map((header) => typeof header === "string" ? { ja: header, en: header } : { ...header });
+  const updateHeader = (columnIndex: number, locale: Locale, text: string) => {
+    const next = headers.map((header) => ({ ...toLocalized(header) }));
     next[columnIndex] = { ...toLocalized(next[columnIndex]), [locale]: text };
     onChange({ ...value, headers: next, rows });
   };
@@ -36,9 +41,10 @@ function GridEditor({ value, onChange }: { value: SchoolTableFile; onChange: (va
   };
   return (
     <div className="space-y-3">
+      <div className="flex flex-wrap gap-1" role="tablist" aria-label="表の編集言語">{CONTENT_LOCALES.map((locale) => <button key={locale} type="button" role="tab" aria-selected={activeLocale === locale} onClick={() => setActiveLocale(locale)} className={`border px-2 py-1 text-xs ${activeLocale === locale ? "border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-300" : "border-slate-200 text-slate-500 dark:border-slate-800"}`}>{localeLabels[locale]}</button>)}</div>
       <div className="overflow-x-auto border border-slate-200 dark:border-slate-800">
-        <table className="min-w-full border-collapse"><thead><tr>{headers.map((header, columnIndex) => <th key={columnIndex} className="border-b border-r border-slate-200 bg-slate-50 p-2 align-top dark:border-slate-800 dark:bg-slate-900"><div className="space-y-1"><input aria-label={`列${columnIndex + 1} 日本語ヘッダー`} value={toLocalized(header).ja} onChange={(event) => updateHeader(columnIndex, "ja", event.target.value)} placeholder="JA header" className={cellClass} /><input aria-label={`列${columnIndex + 1} 英語ヘッダー`} value={toLocalized(header).en} onChange={(event) => updateHeader(columnIndex, "en", event.target.value)} placeholder="EN header" className={cellClass} /><button type="button" disabled={headers.length === 1} onClick={() => removeColumn(columnIndex)} className="text-[11px] font-normal text-red-600 disabled:opacity-30">列を削除</button></div></th>)}</tr></thead>
-          <tbody>{rows.map((row, rowIndex) => <tr key={rowIndex}>{headers.map((_, columnIndex) => { const cell = row[columnIndex] ?? emptyText(); return <td key={columnIndex} className="border-b border-r border-slate-200 p-2 align-top dark:border-slate-800"><div className="space-y-1"><input aria-label={`${rowIndex + 1}行${columnIndex + 1}列 日本語`} value={toLocalized(cell).ja} onChange={(event) => updateCell(rowIndex, columnIndex, "ja", event.target.value)} placeholder="JA" className={cellClass} /><input aria-label={`${rowIndex + 1}行${columnIndex + 1}列 英語`} value={toLocalized(cell).en} onChange={(event) => updateCell(rowIndex, columnIndex, "en", event.target.value)} placeholder="EN" className={cellClass} /></div></td>; })}<td className="p-2"><button type="button" disabled={rows.length === 1} onClick={() => onChange({ ...value, headers, rows: rows.filter((_, i) => i !== rowIndex) })} className="whitespace-nowrap text-xs text-red-600 disabled:opacity-30">行を削除</button></td></tr>)}</tbody></table>
+        <table className="min-w-full border-collapse"><thead><tr>{headers.map((header, columnIndex) => <th key={columnIndex} className="border-b border-r border-slate-200 bg-slate-50 p-2 align-top dark:border-slate-800 dark:bg-slate-900"><div className="space-y-1"><input aria-label={`列${columnIndex + 1} ${localeLabels[activeLocale]}ヘッダー`} value={toLocalized(header)[activeLocale]} onChange={(event) => updateHeader(columnIndex, activeLocale, event.target.value)} placeholder={`${activeLocale.toUpperCase()} header`} className={cellClass} /><button type="button" disabled={headers.length === 1} onClick={() => removeColumn(columnIndex)} className="text-[11px] font-normal text-red-600 disabled:opacity-30">列を削除</button></div></th>)}</tr></thead>
+          <tbody>{rows.map((row, rowIndex) => <tr key={rowIndex}>{headers.map((_, columnIndex) => { const cell = row[columnIndex] ?? emptyText(); return <td key={columnIndex} className="border-b border-r border-slate-200 p-2 align-top dark:border-slate-800"><input aria-label={`${rowIndex + 1}行${columnIndex + 1}列 ${localeLabels[activeLocale]}`} value={toLocalized(cell)[activeLocale]} onChange={(event) => updateCell(rowIndex, columnIndex, activeLocale, event.target.value)} placeholder={activeLocale.toUpperCase()} className={cellClass} /></td>; })}<td className="p-2"><button type="button" disabled={rows.length === 1} onClick={() => onChange({ ...value, headers, rows: rows.filter((_, i) => i !== rowIndex) })} className="whitespace-nowrap text-xs text-red-600 disabled:opacity-30">行を削除</button></td></tr>)}</tbody></table>
       </div>
       <div className="flex flex-wrap gap-2"><button type="button" onClick={() => onChange({ ...value, headers, rows: [...rows, headers.map(() => emptyText())] })} className="secondary-link">行を追加</button><button type="button" onClick={addColumn} className="secondary-link">列を追加</button></div>
     </div>

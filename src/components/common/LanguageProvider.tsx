@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { Locale, messages } from "@/i18n/messages";
+import { isLocale } from "@/lib/localization";
 
 type Ctx = {
   locale: Locale;
@@ -25,12 +26,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   // 初期化（localStorage → なければブラウザ言語）
   useEffect(() => {
-    const saved = window.localStorage.getItem("locale") as Locale | null;
-    if (saved === "ja" || saved === "en" || saved === "ru") {
+    const saved = window.localStorage.getItem("locale");
+    if (isLocale(saved)) {
       setLocaleState(saved);
       return;
     }
-    const guess: Locale = navigator.language.toLowerCase().startsWith("ja") ? "ja" : "en";
+    const browserLocale = navigator.language.toLowerCase().split("-")[0];
+    const guess: Locale = isLocale(browserLocale) ? browserLocale : "en";
     setLocaleState(guess);
   }, []);
 

@@ -15,7 +15,7 @@ Next.js App Router + TypeScript + Tailwind CSSで作成した個人ポートフ�
 - `/travel` — 既存の国→都市→場所データを維持した旅行アーカイブ
 - `/admin/articles` — 記事一覧とファイルベースCMS
 - `/admin/articles/new` — 記事作成
-- `/admin/articles/[slug]/edit` — 既存記事の編集
+- `/admin/articles/[id]/edit` — 公開記事・未完成draftの編集（idはJSONファイル名）
 
 旧URLの `/coding` と `/school` は、それぞれ `/projects` と `/notes` へ308リダイレクトします。旧旅行URLと既存データは維持しています。
 
@@ -41,20 +41,25 @@ src/
 │   └── ui/                  # Tag / SectionHeader
 ├── lib/
 │   ├── article-schema.ts    # Zod validation
-│   ├── article-storage.ts   # 全JSONの検証・読み込み・保存・export
+│   ├── article-storage.ts   # 記事JSONの診断・読み込み・保存・export
+│   ├── language-storage.ts  # 言語JSONの検証・読み込み
+│   ├── localization.ts      # 6言語型と共通fallback
 │   └── admin-auth.ts        # 簡易管理認証
 └── data/
     ├── profile.ts           # 名前、紹介、興味、扱った技術領域
     ├── project.ts           # 既存の制作物データ
     ├── projects.ts          # 分類、代表作、ケーススタディ、AI Usage
     ├── schoolTypes.ts       # 記事・blockのTypeScript型
-    ├── languages.ts         # 言語ごとの学習・文化データ
+    ├── languages.ts         # 言語レコードの型
     └── travelContent.ts     # 国→都市→場所の独立した旅行データ
 ```
 
 ```text
 content/
-├── articles/<slug>.json    # 1記事1ファイルの唯一の公開ソース
+├── articles/<slug>.json    # 1記事1JSON（CMS対象）
+├── languages/<slug>.json   # 1言語1JSON
+├── projects/               # 次段階のJSON移行先
+├── hardware/               # 次段階のJSON移行先
 └── .backups/articles/      # 保存前バックアップ（git管理外）
 ```
 
@@ -77,16 +82,44 @@ content/
 1. Local Edit ModeのCMSで保存する
 2. Export Modeでダウンロードした `<slug>.json` を `content/articles/` に配置する
 
-ファイル名は記事オブジェクトの `slug` と完全に一致する必要があります。例：`slug: "database-indexes"` の場合は `content/articles/database-indexes.json` です。
+公開する記事はファイル名と記事内 `slug` を一致させます。例：`slug: "database-indexes"` の場合は `content/articles/database-indexes.json` です。未完成draftは安全な仮ファイル名でも保存でき、CMS一覧から再編集できます。
 
-旧 `schoolArticleCards.ts / schoolArticleContents.ts / schoolArticles.ts` の内容は7個のJSONへ移行済みで、旧巨大配列への手動追加は不要です。
+旧 `schoolArticleCards.ts / schoolArticleContents.ts / schoolArticles.ts` の内容は記事別JSONへ移行済みで、旧巨大配列への手動追加は不要です。
 
-読み込み時にはすべてのJSONへZod schemaを適用します。以下は開発サーバーとproduction buildを、ファイル名とフィールド位置を含むエラーで停止させます。
+読み込みと公開の検証は意図的に分けています。
 
-- JSON構文エラー
-- schema違反または未知のblock type
-- `<slug>.json` と記事内slugの不一致
-- slugの重複
+- `Draft validation` — JSONとして解析でき、既知のblock typeと基本データ型を満たすかを確認します。翻訳、slug、概要などは未入力でも編集できます。
+- `Publish validation` — `slug`、タイトル1言語以上、本文block 1件以上だけを公開必須条件にします。
+- `Error` — 公開対象から除外しますが、ほかの記事・一覧・buildは継続します。例：slugなし、タイトルが全言語で空、blockなし、slug重複。
+- `Warning` — 公開を妨げません。例：英訳なし、概要・タグ・カテゴリ・更新日なし、旧形式のslug、ファイル名とslugの不一致。
+- JSON構文エラー、未知のblock type、基本型の破損は `Fatal` としてそのファイルだけを除外し、コンソールと管理一覧にファイル名・field pathを表示します。
+
+公開側の `getAllArticles()` は `publishable` な記事だけを返します。そのため1件の不正JSONがあってもサイト全体は落ちず、正常な記事の一覧・詳細・静的パスは生成されます。
+
+### 翻訳とfallback
+
+コンテンツは `ja / en / de / it / fr / ru` に対応し、各翻訳は任意です。文字列または `{ "ja": "...", "en": "..." }` という既存形式もそのまま読めます。表示時は次の順で最初の空でない文字列を使います。
+
+```text
+選択中のUI言語 → ja → en → その他の登録済み翻訳 → 空文字
+```
+
+UI言語とコンテンツ言語は分離され、ヘッダーの言語選択がCMSプレビュー、記事、言語カード、言語詳細の表示言語になります。
+
+最小の記事JSON例です。翻訳は1言語だけでも公開できます。
+
+```json
+{
+  "slug": "language-game",
+  "title": { "ja": "言語ゲーム", "de": "Sprachspiel" },
+  "blocks": [
+    {
+      "type": "paragraph",
+      "body": { "ja": "制作過程を記録します。" }
+    }
+  ]
+}
+```
 
 ## File-based CMS
 
@@ -94,7 +127,7 @@ content/
 
 `npm run dev` ではLocal Edit Modeが既定です。保存時は以下を実行します。
 
-1. Zodで記事と全blockを検証
+1. ZodでDraft構造を検証し、公開errorsとwarningsを計算
 2. 既存JSONがあれば `content/.backups/articles/` へバックアップ
 3. 一時ファイルへ書き込み
 4. atomic renameで `content/articles/[slug].json` を更新
@@ -103,7 +136,7 @@ content/
 
 ### Export Mode / Vercel
 
-Vercelでは実行環境への書き込みが永続化されないため、自動的にExport Modeになります。CMSは記事slugをファイル名にした `<slug>.json` だけを生成します。そのファイルを変更せず `content/articles/` へ配置してリポジトリへcommitしてください。ストレージ処理は `article-storage.ts` に分離しているため、将来GitHub APIでcommitを作る実装へ差し替えられます。
+Vercelでは実行環境への書き込みが永続化されないため、自動的にExport Modeになります。CMSは未完成でもJSONをCopy / Downloadでき、`Publishable: Yes/No` とerrors / warnings件数を併記します。slugが有効なら `<slug>.json`、未入力なら `article-draft.json` を生成します。公開条件を満たしたファイルを `content/articles/` へ配置してcommitしてください。ストレージ処理は `article-storage.ts` に分離しているため、将来GitHub API commitへ差し替えられます。
 
 ### 認証
 
@@ -116,11 +149,25 @@ npm run dev
 
 ### 対応ブロック
 
-`lead / section / list / toc / paragraph / image / table / code / exercise` に対応しています。すべて並び替え・複製・削除ができ、Exercise内部の補助ブロックも編集できます。Codeは複数ファイル、ImageとTableは複数タブ、Tableは日本語・英語セルを持つ行列GUIを利用できます。
+`lead / section / list / toc / paragraph / image / table / code / exercise` に対応しています。すべて並び替え・複製・削除ができ、Exercise内部の補助ブロックも編集できます。Codeは複数ファイル、ImageとTableは複数タブ、Tableは6言語対応の行列GUIを利用できます。タイトルから安全なslugを作る `Generate` ボタンもあります。
 
 ### Language / Culture
 
-`src/data/languages.ts` に現在地、目標、学習履歴、リソース、旅行・本・映画へのリンクを追加します。旅行は `src/data/travelContent.ts` の独立した階層データなので、将来Travelページを再分離しても移行しやすい構成です。
+`content/languages/<slug>.json` に1言語1ファイルで、現在地、目標、学習履歴、リソース、旅行・本・映画へのリンクを追加します。全ページはディレクトリから自動生成されます。旅行は `src/data/travelContent.ts` の独立した階層データなので、将来Travelページを再分離しても移行しやすい構成です。
+
+```json
+{
+  "slug": "german",
+  "name": { "ja": "ドイツ語", "en": "German", "de": "Deutsch" },
+  "nativeName": "Deutsch",
+  "currentLevel": { "ja": "学習中", "de": "Ich lerne Deutsch." },
+  "summary": { "ja": "文化・旅行と結びつけた学習記録。" },
+  "goals": [{ "ja": "基礎会話を身につける" }],
+  "learningHistory": [],
+  "resources": [],
+  "cultureLinks": []
+}
+```
 
 ## 開発
 
@@ -137,5 +184,7 @@ npm run build
 - 各プロジェクトのProblem / Role / Architecture / Validation / Resultを実測情報で補完
 - 語学レベル、Writing Samples、使用した教材を具体化
 - 代表作のスクリーンショット、OG画像、faviconの更新
-- 記事数が増えた段階でMDXまたはヘッドレスCMSへ移行
+- Projects / Hardwareを `content/projects` / `content/hardware` の1件1JSON loaderへ段階移行
+- Languages用CMSフォーム（現在はJSON loaderと公開ページまで対応）
+- GitHub APIを使うExport後のcommit作成
 - Playwright等によるキーボード操作と主要導線のE2Eテスト

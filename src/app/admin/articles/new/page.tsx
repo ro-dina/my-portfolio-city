@@ -8,5 +8,5 @@ export const dynamic = "force-dynamic";
 export default async function NewArticlePage() {
   await requireAdmin();
   const today = new Date().toISOString().slice(0, 10);
-  return <AdminShell><ArticleEditor isNew storageMode={getStorageMode()} knownTags={await getKnownTags()} initialArticle={{ slug: "", title: { ja: "", en: "" }, summary: { ja: "", en: "" }, category: "Computer Science", tags: [], updatedAt: today, blocks: [{ type: "paragraph", body: { ja: "", en: "" } }] }} /></AdminShell>;
+  return <AdminShell><ArticleEditor isNew storageMode={getStorageMode()} knownTags={await getKnownTags()} initialArticle={{ slug: "", title: {}, summary: {}, category: "", tags: [], updatedAt: today, blocks: [{ type: "paragraph", body: {} }] }} /></AdminShell>;
 }

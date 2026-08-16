@@ -1,0 +1,15 @@
+{
+  "slug": "english",
+  "name": { "ja": "英語", "en": "English" },
+  "nativeName": "English",
+  "currentLevel": { "ja": "継続学習中 — 実際に使った記録を追加予定", "en": "Ongoing study — adding real-world usage records" },
+  "summary": { "ja": "技術情報の読解と、制作内容を自分の言葉で説明するための英語。", "en": "English for reading technical material and explaining my work in my own words." },
+  "goals": [
+    { "ja": "技術文書を正確に読む", "en": "Read technical documents accurately" },
+    { "ja": "プロジェクトを英語で説明する", "en": "Explain projects in English" },
+    { "ja": "文章と会話の実践記録を残す", "en": "Keep records of writing and conversation practice" }
+  ],
+  "learningHistory": [{ "ja": "技術ドキュメントや開発資料を通じて継続的に学習", "en": "Continuous study through technical documentation and development material" }],
+  "resources": [],
+  "cultureLinks": [{ "label": { "ja": "旅行・文化の記録", "en": "Travel and culture records" }, "href": "/travel", "type": "Travel" }]
+}

@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Tag from "@/components/ui/Tag";
 import { profile, skillFields } from "@/data/profile";
-import { languages } from "@/data/languages";
+import { getAllLanguages } from "@/lib/language-storage";
+import { getLocalizedText } from "@/lib/localization";
 
 export const metadata: Metadata = { title: "About", description: "Isaoについて、興味分野、技術、言語。" };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const languages = await getAllLanguages();
   return (
     <article className="page-shell pb-24">
       <header className="page-intro">
@@ -28,7 +30,7 @@ export default function AboutPage() {
         </section>
         <section>
           <h2 className="text-xl font-semibold dark:text-white">Languages</h2>
-          <ul className="mt-4 space-y-3">{languages.map((language) => <li key={language.slug}><Link href={`/languages/${language.slug}`} className="quiet-link inline-flex">{language.name} / {language.nativeName} <span aria-hidden>→</span></Link></li>)}</ul>
+          <ul className="mt-4 space-y-3">{languages.map((language) => <li key={language.slug}><Link href={`/languages/${language.slug}`} className="quiet-link inline-flex">{getLocalizedText(language.name, "ja")} / {language.nativeName} <span aria-hidden>→</span></Link></li>)}</ul>
         </section>
         <section>
           <h2 className="text-xl font-semibold dark:text-white">Links</h2>

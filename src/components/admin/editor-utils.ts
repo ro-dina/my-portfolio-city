@@ -1,17 +1,19 @@
 import type { I18nText, SchoolBlock, SchoolExerciseContentBlock } from "@/data/schoolTypes";
+import { CONTENT_LOCALES, type Locale } from "@/lib/localization";
 
 export type BlockType = SchoolBlock["type"];
 export type NestedBlock = SchoolExerciseContentBlock;
-export type LocalizedValue = { ja: string; en: string };
+export type LocalizedValue = Record<Locale, string>;
 
 export function toLocalized(value: I18nText | undefined): LocalizedValue {
-  if (!value) return { ja: "", en: "" };
-  if (typeof value === "string") return { ja: value, en: value };
-  return { ja: value.ja ?? "", en: value.en ?? "" };
+  const empty = Object.fromEntries(CONTENT_LOCALES.map((locale) => [locale, ""])) as LocalizedValue;
+  if (!value) return empty;
+  if (typeof value === "string") return { ...empty, ja: value };
+  return Object.fromEntries(CONTENT_LOCALES.map((locale) => [locale, value[locale] ?? ""])) as LocalizedValue;
 }
 
 export function emptyText(): LocalizedValue {
-  return { ja: "", en: "" };
+  return toLocalized(undefined);
 }
 
 export function createBlock(type: BlockType): SchoolBlock {

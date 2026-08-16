@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useI18n } from "@/components/common/LanguageProvider";
 import type { PortfolioProject } from "@/data/projects";
 import { pickProjectText } from "@/data/projects";
 import Tag from "@/components/ui/Tag";
@@ -7,9 +10,10 @@ import Tag from "@/components/ui/Tag";
 const statusText = { done: "Completed", wip: "In progress", idea: "Exploring" } as const;
 
 export default function ProjectCard({ project, priority = false }: { project: PortfolioProject; priority?: boolean }) {
-  const title = pickProjectText(project.title);
-  const summary = pickProjectText(project.summary);
-  const imageAlt = project.image ? pickProjectText(project.image.alt) : title;
+  const { locale } = useI18n();
+  const title = pickProjectText(project.title, locale);
+  const summary = pickProjectText(project.summary, locale);
+  const imageAlt = project.image ? pickProjectText(project.image.alt, locale) : title;
 
   return (
     <article className="group flex h-full flex-col border-t border-slate-200 py-5 dark:border-slate-800">

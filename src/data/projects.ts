@@ -1,4 +1,5 @@
 import { projects as sourceProjects, type LocalizedString, type Project as SourceProject } from "@/data/project";
+import { getLocalizedText, type Locale } from "@/lib/localization";
 
 export type ProjectCategory =
   | "Software"
@@ -185,9 +186,8 @@ export const projectCategories: ProjectCategory[] = [
   "Research",
 ];
 
-export function pickProjectText(value: LocalizedString, locale: "ja" | "en" | "ru" = "ja") {
-  if (typeof value === "string") return value;
-  return value[locale] ?? value.en ?? value.ja;
+export function pickProjectText(value: LocalizedString, locale: Locale = "ja") {
+  return getLocalizedText(value, locale);
 }
 
 export function getPortfolioProject(slug: string) {

@@ -16,7 +16,7 @@ export default function TagSelector({ value, knownTags, onChange }: { value: str
   };
   return (
     <fieldset>
-      <legend className="text-sm font-medium text-slate-700 dark:text-slate-200">タグ <span className="text-red-600">*</span></legend>
+      <legend className="text-sm font-medium text-slate-700 dark:text-slate-200">タグ（任意）</legend>
       <div className="mt-2 flex flex-wrap gap-2">{value.map((tag) => <button key={tag} type="button" onClick={() => onChange(value.filter((item) => item !== tag))} className="border border-slate-300 bg-slate-50 px-2.5 py-1 text-xs hover:border-red-400 hover:text-red-700 dark:border-slate-700 dark:bg-slate-900">{tag} <span aria-hidden>×</span></button>)}</div>
       <div className="relative mt-3 max-w-xl">
         <input value={query} onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); add(query); } }} placeholder="既存タグを検索、または新しいタグを入力" className="w-full border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600 dark:border-slate-700 dark:bg-slate-950 dark:text-white" />

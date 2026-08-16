@@ -2,15 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import LanguageCard from "@/components/languages/LanguageCard";
 import SectionHeader from "@/components/ui/SectionHeader";
-import { languages } from "@/data/languages";
+import { getAllLanguages } from "@/lib/language-storage";
 import { travelCountries } from "@/data/travelContent";
+import { getLocalizedText } from "@/lib/localization";
 
 export const metadata: Metadata = {
   title: "Languages & Culture",
   description: "外国語の学習履歴と、本・映画・旅行を通した文化体験の記録。",
 };
 
-export default function LanguagesPage() {
+export default async function LanguagesPage() {
+  const languages = await getAllLanguages();
   return (
     <div className="pb-24">
       <header className="page-shell page-intro">
@@ -34,9 +36,9 @@ export default function LanguagesPage() {
           <div className="grid gap-x-7 sm:grid-cols-2 lg:grid-cols-3">
             {travelCountries.map((country) => (
               <article key={country.slug} className="border-t border-slate-300 py-5 dark:border-slate-700">
-                <p className="font-mono text-xs text-slate-500">{country.region.ja}</p>
-                <h3 className="mt-1 font-semibold dark:text-white"><Link href={`/travel/${country.slug}`} className="hover:text-blue-700 dark:hover:text-blue-400">{country.name.ja} →</Link></h3>
-                <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">{country.summary.ja || "訪問・文化記録を追加予定です。"}</p>
+                <p className="font-mono text-xs text-slate-500">{getLocalizedText(country.region, "ja")}</p>
+                <h3 className="mt-1 font-semibold dark:text-white"><Link href={`/travel/${country.slug}`} className="hover:text-blue-700 dark:hover:text-blue-400">{getLocalizedText(country.name, "ja")} →</Link></h3>
+                <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">{getLocalizedText(country.summary, "ja") || "訪問・文化記録を追加予定です。"}</p>
                 <p className="mt-4 text-xs text-slate-500">{country.cities.length} cities recorded</p>
               </article>
             ))}

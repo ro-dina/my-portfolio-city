@@ -6,10 +6,11 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import Tag from "@/components/ui/Tag";
 import { profile, skillFields } from "@/data/profile";
 import { projects } from "@/data/projects";
-import { languages } from "@/data/languages";
 import { getAllArticles } from "@/lib/article-storage";
+import { getAllLanguages } from "@/lib/language-storage";
 
 export default async function HomePage() {
+  const languages = await getAllLanguages();
   const featuredProjects = projects.filter((project) => project.featured).slice(0, 6);
   const recentNotes = (await getAllArticles())
     .filter((note) => note.updatedAt)

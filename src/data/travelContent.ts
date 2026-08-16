@@ -1,10 +1,5 @@
-import { Locale } from "@/i18n/messages"
-
-export type LocalizedText = {
-  ja: string
-  en: string
-  ru?: string
-}
+import { getLocalizedText, type Locale, type LocalizedText } from "@/lib/localization"
+export type { LocalizedText } from "@/lib/localization"
 
 export type TravelArticleSection = {
   id: string
@@ -402,7 +397,7 @@ export const travelCountries: TravelCountry[] = [
 ]
 
 export function pickLocalizedText(text: LocalizedText, locale: Locale) {
-  return text[locale] ?? text.en ?? text.ja
+  return getLocalizedText(text, locale)
 }
 
 export function getTravelCountry(countrySlug: string) {

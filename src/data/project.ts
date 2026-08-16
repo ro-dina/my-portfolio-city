@@ -1,4 +1,6 @@
-export type LocalizedString = string | { ja: string; en?: string; ru?: string };
+import type { LocalizedText } from "@/lib/localization";
+
+export type LocalizedString = LocalizedText;
 
 export type Project = {
   slug: string;

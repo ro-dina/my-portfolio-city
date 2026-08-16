@@ -8,6 +8,7 @@ import type {
   SchoolBlock,
   SchoolExerciseContentBlock,
   SchoolListItem,
+  Lang,
 } from "@/data/schoolTypes";
 import { pickText } from "@/data/schoolTypes";
 
@@ -57,7 +58,7 @@ function BlockRenderer({
   enableTargetUnderline,
 }: {
   block: SchoolBlock;
-  lang: "ja" | "en" | "ru";
+  lang: Lang;
   enableTargetUnderline: boolean;
 }) {
   const normalizeBodyText = (value: string) => {

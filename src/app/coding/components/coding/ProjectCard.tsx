@@ -9,12 +9,10 @@ import Tag from "./Tag";
 import { formatDate } from "@/data/utils/date";
 import type { LocalizedString, Project } from "@/data/project";
 import { useI18n } from "@/components/common/LanguageProvider";
+import { getLocalizedText, type Locale } from "@/lib/localization";
 
-function pick(locale: "ja" | "en" | "ru", v: LocalizedString | undefined): string {
-  if (!v) return "";
-  if (typeof v === "string") return v;
-  if (locale === "en") return v.en ?? v.ja;
-  return v.ja ?? v.en ?? "";
+function pick(locale: Locale, v: LocalizedString | undefined): string {
+  return getLocalizedText(v, locale);
 }
 
 export default function ProjectCard({ p }: { p: Project }) {

@@ -1,4 +1,6 @@
-export type Locale = "ja" | "en" | "ru";
+import type { Locale } from "@/lib/localization";
+
+export type { Locale } from "@/lib/localization";
 
 export const messages = {
   ja: {
@@ -86,5 +88,35 @@ export const messages = {
       cinema: "映画館",
       school: "学校",
     },
-  }
-} as const;
+  },
+  de: {
+    common: {
+      top: "Start", back: "Zurück", menu: "Menü", language: "Sprache",
+      japanese: "日本語", english: "English", russian: "Русский", close: "Schließen",
+      settings: "Einstellungen", settingsPage: "Einstellungen", homeMode: "Startansicht",
+      homeModeStandard: "Standard", homeModeCity: "Stadtkarte", themeToggle: "Darstellung",
+      themeLight: "☀️ Hell", themeDark: "🌙 Dunkel", commercial: "Bereiche", bookstore: "Bücher",
+    },
+    home: { title: "Portfolio", bookstore: "Bücher", cinema: "Film", school: "Notizen" },
+  },
+  it: {
+    common: {
+      top: "Home", back: "Indietro", menu: "Menu", language: "Lingua",
+      japanese: "日本語", english: "English", russian: "Русский", close: "Chiudi",
+      settings: "Impostazioni", settingsPage: "Impostazioni", homeMode: "Vista iniziale",
+      homeModeStandard: "Standard", homeModeCity: "Mappa", themeToggle: "Tema",
+      themeLight: "☀️ Chiaro", themeDark: "🌙 Scuro", commercial: "Sezioni", bookstore: "Libri",
+    },
+    home: { title: "Portfolio", bookstore: "Libri", cinema: "Cinema", school: "Note" },
+  },
+  fr: {
+    common: {
+      top: "Accueil", back: "Retour", menu: "Menu", language: "Langue",
+      japanese: "日本語", english: "English", russian: "Русский", close: "Fermer",
+      settings: "Réglages", settingsPage: "Réglages", homeMode: "Vue d’accueil",
+      homeModeStandard: "Standard", homeModeCity: "Carte", themeToggle: "Thème",
+      themeLight: "☀️ Clair", themeDark: "🌙 Sombre", commercial: "Sections", bookstore: "Livres",
+    },
+    home: { title: "Portfolio", bookstore: "Livres", cinema: "Cinéma", school: "Notes" },
+  },
+} satisfies Record<Locale, Record<string, unknown>>;

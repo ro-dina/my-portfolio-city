@@ -1,0 +1,14 @@
+{
+  "slug": "french",
+  "name": { "ja": "フランス語", "en": "French", "fr": "Français" },
+  "nativeName": "Français",
+  "currentLevel": { "ja": "学習記録を整理中", "en": "Organizing learning records" },
+  "summary": { "ja": "フランス語圏の旅行・文化体験とつなげて学ぶ言語。", "en": "Learning French through travel and cultural experiences." },
+  "goals": [
+    { "ja": "基礎表現を身につける", "en": "Learn basic expressions" },
+    { "ja": "訪問した場所や作品について原語で調べる", "en": "Research visited places and works in French" }
+  ],
+  "learningHistory": [],
+  "resources": [],
+  "cultureLinks": [{ "label": { "ja": "フランスの記録", "en": "France records", "fr": "Carnet de France" }, "href": "/travel/france", "type": "Travel" }]
+}

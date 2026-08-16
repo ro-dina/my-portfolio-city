@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/components/common/LanguageProvider";
+import { CONTENT_LOCALES, localeLabels, type Locale } from "@/lib/localization";
 
 const navigation = [
   { label: "Home", href: "/" },
@@ -67,12 +68,10 @@ export default function Header() {
           <select
             id="site-locale"
             value={locale}
-            onChange={(event) => setLocale(event.target.value as "ja" | "en" | "ru")}
+            onChange={(event) => setLocale(event.target.value as Locale)}
             className="hidden bg-transparent px-2 py-2 text-xs text-slate-500 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:block dark:text-slate-400"
           >
-            <option value="ja">JA</option>
-            <option value="en">EN</option>
-            <option value="ru">RU</option>
+            {CONTENT_LOCALES.map((item) => <option key={item} value={item}>{item.toUpperCase()}</option>)}
           </select>
           <button
             type="button"
@@ -110,13 +109,11 @@ export default function Header() {
             ))}
             <select
               value={locale}
-              onChange={(event) => setLocale(event.target.value as "ja" | "en" | "ru")}
+              onChange={(event) => setLocale(event.target.value as Locale)}
               className="mt-2 border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-800 dark:text-white"
               aria-label="表示言語"
             >
-              <option value="ja">日本語</option>
-              <option value="en">English</option>
-              <option value="ru">Русский</option>
+              {CONTENT_LOCALES.map((item) => <option key={item} value={item}>{localeLabels[item]}</option>)}
             </select>
           </div>
         </nav>
