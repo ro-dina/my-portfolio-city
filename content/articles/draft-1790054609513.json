@@ -1,0 +1,294 @@
+{
+  "slug": "Artificial Civilization",
+  "title": {
+    "ja": "言語発展シミュレーション"
+  },
+  "summary": {
+    "ja": "言語の発展方法をシミュレーションする"
+  },
+  "category": "AI",
+  "tags": [],
+  "updatedAt": "2026-09-19",
+  "blocks": [
+    {
+      "type": "paragraph",
+      "title": {
+        "ja": "言語発展シミュレーション",
+        "en": "Simulate of language evolution"
+      },
+      "anchor": "title",
+      "body": {
+        "ja": "言語間の語彙数や表現方法が何に起因するのか気になったので検証してみる。\n環境\n64GBメモリ + M4max のmac \npython 3.11\n\n",
+        "en": "I am interested in what influence language evolution so I make a simulation. \nenvironment\n64GB + M4max mac \npython 3.11"
+      }
+    },
+    {
+      "type": "section",
+      "title": {
+        "ja": "v0.1"
+      },
+      "anchor": "v0.1",
+      "body": {
+        "ja": "ひとまず世界と人間を作り出す。GPTとやりとりをしてある程度アイデアをまとめ、Codexに作成させる。プロンプトは\nArtificial Civilization Simulation — v0.1\n\nI want to build an artificial-life simulation that may eventually be used to study the spontaneous emergence of communication, language, culture, technology, agriculture, trade, writing, and other civilization-like phenomena.\n\nThe long-term goal is NOT to explicitly program concepts such as farming, money, religion, language, jobs, or social classes. Instead, I want to define relatively simple physical rules, agents, perception, survival, reproduction, learning, and interaction, then observe whether higher-level behaviors emerge.\n\nHowever, DO NOT implement those advanced systems yet.\n\nFor now, implement only a minimal v0.1 simulation framework.\n\nCore design principle\n\nKeep the simulation as general and emergent as reasonably possible.\n\nDo not hard-code concepts that should eventually emerge.\n\nFor example, do NOT add:\n\n* farmer / hunter jobs\n* money\n* religion\n* predefined language meanings\n* emotions\n* agriculture\n* civilization stages\n* technology trees\n* social classes\n* predefined crafting recipes\n* predefined cultures\n\nThe initial objective is simply to create a world in which agents can move, perceive basic resources, consume water and food, age, and die.\n\nThe architecture should make it easy to add reproduction, evolution, communication, learning, objects, environmental changes, and experiments later.\n\n⸻\n\nTechnology\n\nUse Python.\n\nPrioritize:\n\n1. correctness\n2. simplicity\n3. reproducibility\n4. performance\n5. extensibility\n\nAvoid unnecessary dependencies.\n\nDo not create a GUI yet.\n\nThe simulation should initially run headlessly from the command line because eventually I want to run many independent simulations for very large numbers of ticks.\n\n⸻\n\nSuggested project structure\n\nCreate approximately the following structure:\n\nartificial_civilization/\n├── main.py\n├── config.py\n│\n├── world/\n│   ├── __init__.py\n│   ├── world.py\n│   └── tile.py\n│\n├── agents/\n│   ├── __init__.py\n│   ├── human.py\n│   └── brain.py\n│\n├── simulation/\n│   ├── __init__.py\n│   ├── simulation.py\n│   └── statistics.py\n│\n├── systems/\n│   ├── __init__.py\n│   └── communication.py\n│\n├── data/\n│   └── .gitkeep\n│\n├── tests/\n│   └── test_basic.py\n│\n└── README.md\n\nYou may make small changes if there is a clear architectural reason, but keep the project simple.\n\n⸻\n\nWorld\n\nImplement a simple 2D grid world.\n\nEach tile should initially support at least:\n\n* food\n* water\n\nExample conceptual representation:\n\n. . F . . W\n. . . . . W\nF . . . . .\n\nDo not over-engineer terrain yet.\n\nThe world should support:\n\n* configurable width and height\n* random initial resource placement\n* deterministic generation from a random seed\n* querying nearby tiles\n* checking whether coordinates are valid\n* executing basic agent movement\n* consuming food\n* consuming water\n\nWorld generation must be reproducible when the same seed is used.\n\n⸻\n\nHuman agent\n\nCreate a minimal Human agent.\n\nIt should contain at least:\n\n* unique ID\n* x position\n* y position\n* age\n* hunger\n* thirst\n* energy\n* alive/dead state\n* sex or reproductive type, even if reproduction is not implemented yet\n\nKeep the data model extensible.\n\nDo NOT implement emotions yet.\n\nDo NOT implement jobs, wealth, religion, culture, etc.\n\n⸻\n\nPerception\n\nAgents should not automatically know the entire world.\n\nGive them a configurable perception radius.\n\nTheir observation should contain only information they can perceive.\n\nKeep the observation format explicit and structured because later it may become the input to a neural network or evolving controller.\n\n⸻\n\nBrain architecture\n\nSeparate the agent’s body/state from its decision-making system.\n\nFor example:\n\nclass Brain:\n    def choose_action(self, human, observation):\n        ...\n\nFor v0.1, implement a simple RandomBrain.\n\nPossible actions:\n\n* move north\n* move south\n* move east\n* move west\n* eat\n* drink\n* wait\n\nCommunication may be stubbed or implemented minimally as described below.\n\nThe Human class should not itself contain complicated decision logic.\n\nThe purpose of this separation is to allow RandomBrain to later be replaced with learned/evolving brains without rewriting the world simulation.\n\n⸻\n\nBasic survival\n\nAt every simulation tick:\n\n1. agent perceives its surroundings\n2. brain chooses an action\n3. action is executed\n4. hunger increases\n5. thirst increases\n6. age increases\n7. death conditions are evaluated\n\nAgents should die when hunger or thirst reaches configurable limits.\n\nOptionally include a configurable maximum age.\n\nKeep all constants in config.py rather than scattering magic numbers throughout the code.\n\n⸻\n\nCommunication foundation\n\nCommunication is a central future research target, so create a minimal foundation for it now, but DO NOT assign meanings to signals.\n\nAn agent should eventually be capable of emitting an integer signal.\n\nFor now use a configurable vocabulary size, for example:\n\nSIGNAL_VOCAB_SIZE = 16\n\nSignals should have no predefined semantic meaning.\n\nThere must never be code such as:\n\nsignal_1 = \"water\"\nsignal_2 = \"food\"\n\nIf communication is implemented in v0.1, nearby agents within a configurable hearing radius should be able to perceive:\n\n* signal ID\n* approximate sender position/direction or distance\n* sender ID if useful for analysis\n\nIt is acceptable if RandomBrain emits random signals initially.\n\nDesign this so that SIGNAL_VOCAB_SIZE can later be changed to values such as 4, 16, 256, or 4000 without architectural changes.\n\n⸻\n\nRandomness and reproducibility\n\nThis is extremely important.\n\nAll randomness must ultimately derive from a controllable simulation seed.\n\nThe same:\n\n* configuration\n* initial seed\n\nshould produce the same simulation result.\n\nAvoid uncontrolled global random state where practical.\n\nLater I want to run 100+ independent cases and compare them statistically.\n\n⸻\n\nStatistics and logging\n\nImplement basic statistics from the beginning.\n\nTrack at least:\n\n* tick\n* current population\n* deaths\n* food consumed\n* water consumed\n* signals emitted, if communication exists\n\nProvide a simple way to export simulation statistics to CSV.\n\nKeep detailed event logging separate from aggregate statistics so that large simulations do not automatically generate enormous files.\n\nDesign the event system so that detailed events could later record things such as:\n\n* agent\n* tick\n* position\n* observation\n* signal emitted\n* signal received\n* action taken\n* resource nearby\n\nThis will eventually be important for determining whether an apparently meaningless signal has acquired a consistent meaning.\n\n⸻\n\nConfiguration\n\nPut simulation parameters in config.py.\n\nInclude values such as:\n\nWORLD_WIDTH\nWORLD_HEIGHT\nINITIAL_POPULATION\nINITIAL_FOOD\nINITIAL_WATER\nPERCEPTION_RADIUS\nMAX_HUNGER\nMAX_THIRST\nMAX_AGE\nHUNGER_PER_TICK\nTHIRST_PER_TICK\nSIGNAL_VOCAB_SIZE\nSIGNAL_RANGE\nRANDOM_SEED\nMAX_TICKS\n\nChoose reasonable initial values.\n\n⸻\n\nSimulation controller\n\nCreate a Simulation class responsible for the main loop.\n\nConceptually:\n\nobserve\n    ↓\nchoose action\n    ↓\nexecute action\n    ↓\nupdate physiology\n    ↓\ndeath check\n    ↓\nstatistics\n    ↓\nnext tick\n\nmain.py should remain simple.\n\nSomething approximately like:\n\nsim = Simulation.create_default(seed=42)\nfor _ in range(MAX_TICKS):\n    sim.step()\n    if sim.tick % 1000 == 0:\n        sim.print_status()\n    if sim.population == 0:\n        break\n\nExact implementation may differ if you have a better clean design.\n\n⸻\n\nTests\n\nAdd basic automated tests.\n\nAt minimum test:\n\n* deterministic world generation with the same seed\n* movement cannot leave world bounds\n* eating reduces hunger when food exists\n* drinking reduces thirst when water exists\n* starvation/dehydration causes death\n* simulation with identical seeds produces identical results for a reasonable short run\n\nIf communication is implemented, test signal range as well.\n\n⸻\n\nPerformance considerations\n\nDo not prematurely optimize, but avoid obviously inefficient architecture.\n\nThe long-term target may involve:\n\n* thousands of agents\n* millions of ticks\n* 100+ independent simulation runs\n\nTherefore:\n\n* avoid unnecessary deep copies\n* avoid storing every state of every agent by default\n* make detailed logging optional\n* keep rendering completely separate from simulation logic\n\nDo not add multiprocessing yet unless it is genuinely trivial and does not complicate the design.\n\n⸻\n\nREADME\n\nWrite a README explaining:\n\n* purpose of the project\n* current v0.1 scope\n* how to run it\n* how to run tests\n* project architecture\n* current limitations\n* intended future development\n\nExplicitly state that concepts such as language, agriculture, economics, writing, religion, and civilization are NOT currently implemented and should ideally emerge from more primitive mechanisms rather than being directly scripted.\n\n⸻\n\nFuture direction — architecture only, DO NOT implement now\n\nKeep future compatibility in mind for:\n\n* reproduction\n* genetic inheritance\n* mutation\n* learning\n* memory\n* evolving/neural brains\n* communication evolution\n* multiple sensory systems\n* objects\n* generic object interactions\n* material properties\n* tools\n* plants and biological growth\n* weather\n* seasons\n* day/night cycles\n* persistent symbols/marks\n* intergenerational teaching\n* many independent experimental runs\n\nEventually I want to investigate questions such as:\n\n* Does communication emerge when communication improves survival?\n* Does vocabulary size affect emergent communication?\n* Can compositional signals emerge?\n* How do different sensory abilities change communication?\n* How does geography affect cultures/languages?\n* Can persistent symbols acquire meaning?\n* Can knowledge survive across generations?\n* Can agriculture, property, trade, capital, or institutions emerge without explicitly programming those concepts?\n\nDo not attempt to solve these questions in v0.1.\n\n⸻\n\nImplementation task\n\nPlease:\n\n1. Inspect the current repository before modifying anything.\n2. Create the minimal architecture described above.\n3. Implement a working v0.1.\n4. Add automated tests.\n5. Run the tests.\n6. Run a short simulation as a smoke test.\n7. Fix any problems you encounter.\n8. Update README.md.\n9. Give me a concise summary of:\n    * files created/modified\n    * architecture\n    * tests performed\n    * smoke-test result\n    * known limitations\n    * sensible next step\n\nDo not stop after merely generating code. Run and verify the implementation.\n\nMost importantly: keep v0.1 small. I would rather have a clean, reproducible artificial-life foundation than a large amount of speculative civilization code.\nを用いた。",
+        "en": "I need the world and human before observing language evolution, so I use codex and making simple world.\nthis is the prompt that I used.\n\nArtificial Civilization Simulation — v0.1\n\nI want to build an artificial-life simulation that may eventually be used to study the spontaneous emergence of communication, language, culture, technology, agriculture, trade, writing, and other civilization-like phenomena.\n\nThe long-term goal is NOT to explicitly program concepts such as farming, money, religion, language, jobs, or social classes. Instead, I want to define relatively simple physical rules, agents, perception, survival, reproduction, learning, and interaction, then observe whether higher-level behaviors emerge.\n\nHowever, DO NOT implement those advanced systems yet.\n\nFor now, implement only a minimal v0.1 simulation framework.\n\nCore design principle\n\nKeep the simulation as general and emergent as reasonably possible.\n\nDo not hard-code concepts that should eventually emerge.\n\nFor example, do NOT add:\n\n* farmer / hunter jobs\n* money\n* religion\n* predefined language meanings\n* emotions\n* agriculture\n* civilization stages\n* technology trees\n* social classes\n* predefined crafting recipes\n* predefined cultures\n\nThe initial objective is simply to create a world in which agents can move, perceive basic resources, consume water and food, age, and die.\n\nThe architecture should make it easy to add reproduction, evolution, communication, learning, objects, environmental changes, and experiments later.\n\n⸻\n\nTechnology\n\nUse Python.\n\nPrioritize:\n\n1. correctness\n2. simplicity\n3. reproducibility\n4. performance\n5. extensibility\n\nAvoid unnecessary dependencies.\n\nDo not create a GUI yet.\n\nThe simulation should initially run headlessly from the command line because eventually I want to run many independent simulations for very large numbers of ticks.\n\n⸻\n\nSuggested project structure\n\nCreate approximately the following structure:\n\nartificial_civilization/\n├── main.py\n├── config.py\n│\n├── world/\n│   ├── __init__.py\n│   ├── world.py\n│   └── tile.py\n│\n├── agents/\n│   ├── __init__.py\n│   ├── human.py\n│   └── brain.py\n│\n├── simulation/\n│   ├── __init__.py\n│   ├── simulation.py\n│   └── statistics.py\n│\n├── systems/\n│   ├── __init__.py\n│   └── communication.py\n│\n├── data/\n│   └── .gitkeep\n│\n├── tests/\n│   └── test_basic.py\n│\n└── README.md\n\nYou may make small changes if there is a clear architectural reason, but keep the project simple.\n\n⸻\n\nWorld\n\nImplement a simple 2D grid world.\n\nEach tile should initially support at least:\n\n* food\n* water\n\nExample conceptual representation:\n\n. . F . . W\n. . . . . W\nF . . . . .\n\nDo not over-engineer terrain yet.\n\nThe world should support:\n\n* configurable width and height\n* random initial resource placement\n* deterministic generation from a random seed\n* querying nearby tiles\n* checking whether coordinates are valid\n* executing basic agent movement\n* consuming food\n* consuming water\n\nWorld generation must be reproducible when the same seed is used.\n\n⸻\n\nHuman agent\n\nCreate a minimal Human agent.\n\nIt should contain at least:\n\n* unique ID\n* x position\n* y position\n* age\n* hunger\n* thirst\n* energy\n* alive/dead state\n* sex or reproductive type, even if reproduction is not implemented yet\n\nKeep the data model extensible.\n\nDo NOT implement emotions yet.\n\nDo NOT implement jobs, wealth, religion, culture, etc.\n\n⸻\n\nPerception\n\nAgents should not automatically know the entire world.\n\nGive them a configurable perception radius.\n\nTheir observation should contain only information they can perceive.\n\nKeep the observation format explicit and structured because later it may become the input to a neural network or evolving controller.\n\n⸻\n\nBrain architecture\n\nSeparate the agent’s body/state from its decision-making system.\n\nFor example:\n\nclass Brain:\n    def choose_action(self, human, observation):\n        ...\n\nFor v0.1, implement a simple RandomBrain.\n\nPossible actions:\n\n* move north\n* move south\n* move east\n* move west\n* eat\n* drink\n* wait\n\nCommunication may be stubbed or implemented minimally as described below.\n\nThe Human class should not itself contain complicated decision logic.\n\nThe purpose of this separation is to allow RandomBrain to later be replaced with learned/evolving brains without rewriting the world simulation.\n\n⸻\n\nBasic survival\n\nAt every simulation tick:\n\n1. agent perceives its surroundings\n2. brain chooses an action\n3. action is executed\n4. hunger increases\n5. thirst increases\n6. age increases\n7. death conditions are evaluated\n\nAgents should die when hunger or thirst reaches configurable limits.\n\nOptionally include a configurable maximum age.\n\nKeep all constants in config.py rather than scattering magic numbers throughout the code.\n\n⸻\n\nCommunication foundation\n\nCommunication is a central future research target, so create a minimal foundation for it now, but DO NOT assign meanings to signals.\n\nAn agent should eventually be capable of emitting an integer signal.\n\nFor now use a configurable vocabulary size, for example:\n\nSIGNAL_VOCAB_SIZE = 16\n\nSignals should have no predefined semantic meaning.\n\nThere must never be code such as:\n\nsignal_1 = \"water\"\nsignal_2 = \"food\"\n\nIf communication is implemented in v0.1, nearby agents within a configurable hearing radius should be able to perceive:\n\n* signal ID\n* approximate sender position/direction or distance\n* sender ID if useful for analysis\n\nIt is acceptable if RandomBrain emits random signals initially.\n\nDesign this so that SIGNAL_VOCAB_SIZE can later be changed to values such as 4, 16, 256, or 4000 without architectural changes.\n\n⸻\n\nRandomness and reproducibility\n\nThis is extremely important.\n\nAll randomness must ultimately derive from a controllable simulation seed.\n\nThe same:\n\n* configuration\n* initial seed\n\nshould produce the same simulation result.\n\nAvoid uncontrolled global random state where practical.\n\nLater I want to run 100+ independent cases and compare them statistically.\n\n⸻\n\nStatistics and logging\n\nImplement basic statistics from the beginning.\n\nTrack at least:\n\n* tick\n* current population\n* deaths\n* food consumed\n* water consumed\n* signals emitted, if communication exists\n\nProvide a simple way to export simulation statistics to CSV.\n\nKeep detailed event logging separate from aggregate statistics so that large simulations do not automatically generate enormous files.\n\nDesign the event system so that detailed events could later record things such as:\n\n* agent\n* tick\n* position\n* observation\n* signal emitted\n* signal received\n* action taken\n* resource nearby\n\nThis will eventually be important for determining whether an apparently meaningless signal has acquired a consistent meaning.\n\n⸻\n\nConfiguration\n\nPut simulation parameters in config.py.\n\nInclude values such as:\n\nWORLD_WIDTH\nWORLD_HEIGHT\nINITIAL_POPULATION\nINITIAL_FOOD\nINITIAL_WATER\nPERCEPTION_RADIUS\nMAX_HUNGER\nMAX_THIRST\nMAX_AGE\nHUNGER_PER_TICK\nTHIRST_PER_TICK\nSIGNAL_VOCAB_SIZE\nSIGNAL_RANGE\nRANDOM_SEED\nMAX_TICKS\n\nChoose reasonable initial values.\n\n⸻\n\nSimulation controller\n\nCreate a Simulation class responsible for the main loop.\n\nConceptually:\n\nobserve\n    ↓\nchoose action\n    ↓\nexecute action\n    ↓\nupdate physiology\n    ↓\ndeath check\n    ↓\nstatistics\n    ↓\nnext tick\n\nmain.py should remain simple.\n\nSomething approximately like:\n\nsim = Simulation.create_default(seed=42)\nfor _ in range(MAX_TICKS):\n    sim.step()\n    if sim.tick % 1000 == 0:\n        sim.print_status()\n    if sim.population == 0:\n        break\n\nExact implementation may differ if you have a better clean design.\n\n⸻\n\nTests\n\nAdd basic automated tests.\n\nAt minimum test:\n\n* deterministic world generation with the same seed\n* movement cannot leave world bounds\n* eating reduces hunger when food exists\n* drinking reduces thirst when water exists\n* starvation/dehydration causes death\n* simulation with identical seeds produces identical results for a reasonable short run\n\nIf communication is implemented, test signal range as well.\n\n⸻\n\nPerformance considerations\n\nDo not prematurely optimize, but avoid obviously inefficient architecture.\n\nThe long-term target may involve:\n\n* thousands of agents\n* millions of ticks\n* 100+ independent simulation runs\n\nTherefore:\n\n* avoid unnecessary deep copies\n* avoid storing every state of every agent by default\n* make detailed logging optional\n* keep rendering completely separate from simulation logic\n\nDo not add multiprocessing yet unless it is genuinely trivial and does not complicate the design.\n\n⸻\n\nREADME\n\nWrite a README explaining:\n\n* purpose of the project\n* current v0.1 scope\n* how to run it\n* how to run tests\n* project architecture\n* current limitations\n* intended future development\n\nExplicitly state that concepts such as language, agriculture, economics, writing, religion, and civilization are NOT currently implemented and should ideally emerge from more primitive mechanisms rather than being directly scripted.\n\n⸻\n\nFuture direction — architecture only, DO NOT implement now\n\nKeep future compatibility in mind for:\n\n* reproduction\n* genetic inheritance\n* mutation\n* learning\n* memory\n* evolving/neural brains\n* communication evolution\n* multiple sensory systems\n* objects\n* generic object interactions\n* material properties\n* tools\n* plants and biological growth\n* weather\n* seasons\n* day/night cycles\n* persistent symbols/marks\n* intergenerational teaching\n* many independent experimental runs\n\nEventually I want to investigate questions such as:\n\n* Does communication emerge when communication improves survival?\n* Does vocabulary size affect emergent communication?\n* Can compositional signals emerge?\n* How do different sensory abilities change communication?\n* How does geography affect cultures/languages?\n* Can persistent symbols acquire meaning?\n* Can knowledge survive across generations?\n* Can agriculture, property, trade, capital, or institutions emerge without explicitly programming those concepts?\n\nDo not attempt to solve these questions in v0.1.\n\n⸻\n\nImplementation task\n\nPlease:\n\n1. Inspect the current repository before modifying anything.\n2. Create the minimal architecture described above.\n3. Implement a working v0.1.\n4. Add automated tests.\n5. Run the tests.\n6. Run a short simulation as a smoke test.\n7. Fix any problems you encounter.\n8. Update README.md.\n9. Give me a concise summary of:\n    * files created/modified\n    * architecture\n    * tests performed\n    * smoke-test result\n    * known limitations\n    * sensible next step\n\nDo not stop after merely generating code. Run and verify the implementation.\n\nMost importantly: keep v0.1 small. I would rather have a clean, reproducible artificial-life foundation than a large amount of speculative civilization code."
+      }
+    },
+    {
+      "type": "section",
+      "title": {
+        "ja": "ファイル構成"
+      },
+      "body": {
+        "ja": "artificial_civilization/\n\n├── main.py\n\n├── config.py\n\n├──.gitignore\n\n│\n\n├── world/\n\n│   ├── __init__.py\n\n│   ├── world.py\n\n│   └── tile.py\n\n│\n\n├── agents/\n\n│   ├── __init__.py\n\n│   ├── human.py\n\n│   ├── observation.py\n\n│   └── brain.py\n\n│\n\n├── simulation/\n\n│   ├── __init__.py\n\n│   ├── simulation.py\n\n│   ├── events.py\n\n│   └── statistics.py\n\n│\n\n├── systems/\n\n│   ├── __init__.py\n\n│   └── communication.py\n\n│\n\n├── data/\n\n│   ├── smoke.csv\n\n│   └── .gitkeep\n\n│\n\n├── tests/\n\n│   └── test_basic.py\n\n│\n\n└── README.md"
+      }
+    },
+    {
+      "type": "section",
+      "title": {
+        "ja": "実行"
+      },
+      "body": {
+        "ja": "python3 main.py --seed 42 --ticks 50を実行し50tick動かす。\n\nseed=42\ntick=50 population=100 deaths=0 food_consumed=184 water_consumed=190 signals_emitted=471\n成功\n\npython3 -m unittest discover -s tests -v を実行しテストも確認する。\ntest_agents_hear_signals_only_on_next_tick (test_basic.CommunicationTests.test_agents_hear_signals_only_on_next_tick) ... ok\ntest_signal_origin_is_position_after_movement (test_basic.CommunicationTests.test_signal_origin_is_position_after_movement) ... ok\ntest_signal_range_inclusive_boundary_self_exclusion_and_expiry (test_basic.CommunicationTests.test_signal_range_inclusive_boundary_self_exclusion_and_expiry) ... ok\ntest_spatial_buckets_match_distance_rule (test_basic.CommunicationTests.test_spatial_buckets_match_distance_rule) ... ok\ntest_vocabulary_sizes_and_invalid_signals (test_basic.CommunicationTests.test_vocabulary_sizes_and_invalid_signals) ... ok\ntest_csv_and_optional_jsonl_events (test_basic.SimulationTests.test_csv_and_optional_jsonl_events) ... ok\ntest_empty_simulation_is_noop (test_basic.SimulationTests.test_empty_simulation_is_noop) ... ok\ntest_global_random_state_is_untouched_and_logging_does_not_change_run (test_basic.SimulationTests.test_global_random_state_is_untouched_and_logging_does_not_change_run) ... ok\ntest_identical_seeds_replay_full_state_and_events (test_basic.SimulationTests.test_identical_seeds_replay_full_state_and_events) ... ok\ntest_invalid_configuration_is_rejected (test_basic.SimulationTests.test_invalid_configuration_is_rejected) ... ok\ntest_consumption_can_prevent_death_on_threshold_tick (test_basic.SurvivalTests.test_consumption_can_prevent_death_on_threshold_tick) ... ok\ntest_drinking_reduces_thirst_and_consumes_one_unit_before_tick_cost (test_basic.SurvivalTests.test_drinking_reduces_thirst_and_consumes_one_unit_before_tick_cost) ... ok\ntest_eating_reduces_hunger_and_consumes_one_unit_before_tick_cost (test_basic.SurvivalTests.test_eating_reduces_hunger_and_consumes_one_unit_before_tick_cost) ... ok\ntest_empty_resources_do_not_reduce_needs_or_count_consumption (test_basic.SurvivalTests.test_empty_resources_do_not_reduce_needs_or_count_consumption) ... ok\ntest_maximum_age_and_disabled_age_limit (test_basic.SurvivalTests.test_maximum_age_and_disabled_age_limit) ... ok\ntest_needs_are_clamped_at_zero (test_basic.SurvivalTests.test_needs_are_clamped_at_zero) ... ok\ntest_shared_resource_is_consumed_only_once (test_basic.SurvivalTests.test_shared_resource_is_consumed_only_once) ... ok\ntest_starvation_and_dehydration_at_exact_threshold (test_basic.SurvivalTests.test_starvation_and_dehydration_at_exact_threshold) ... ok\ntest_movement_cannot_leave_any_world_edge (test_basic.WorldTests.test_movement_cannot_leave_any_world_edge) ... ok\ntest_observation_is_local_relative_and_immutable (test_basic.WorldTests.test_observation_is_local_relative_and_immutable) ... ok\ntest_one_tile_world_blocks_all_moves (test_basic.WorldTests.test_one_tile_world_blocks_all_moves) ... ok\ntest_world_generation_is_deterministic_and_preserves_resource_totals (test_basic.WorldTests.test_world_generation_is_deterministic_and_preserves_resource_totals) ... ok\ntest_zero_perception_radius_sees_only_current_tile (test_basic.WorldTests.test_zero_perception_radius_sees_only_current_tile) ... ok\n\n----------------------------------------------------------------------\nRan 23 tests in 0.107s\n\nOK\n\n成功\n\n"
+      }
+    },
+    {
+      "type": "section",
+      "title": {
+        "ja": "v0.2"
+      },
+      "anchor": "v0.2",
+      "body": {
+        "ja": "世代交代の実装\nプロンプト\nArtificial Civilization Simulation — v0.2\n\nThe repository currently contains a tested and working v0.1 artificial-life simulation.\n\nBefore modifying anything:\n\n1. Inspect the entire current repository.\n2. Read README.md.\n3. Read the existing tests.\n4. Understand the current deterministic random-stream architecture.\n5. Preserve existing v0.1 behavior and compatibility wherever practical.\n\nDo NOT rewrite the project from scratch.\n\nThe goal of v0.2 is to add the minimum biological mechanisms required for persistent generations and evolutionary experiments:\n\n* reproduction\n* offspring\n* inheritance\n* mutation\n* renewable food/water\n* generation/lineage tracking\n* statistics for births and reproduction\n\nDo NOT add learning, intelligent communication, civilization, agriculture, economics, emotions, religion, technology, crafting, combat, or neural networks yet.\n\nThe central goal is:\n\nMake it possible for populations to reproduce and persist across many generations while preserving deterministic seeded replay.\n\n⸻\n\n1. Preserve v0.1\n\nAll existing v0.1 tests should continue to pass unless an existing behavior must intentionally change.\n\nIf an existing test must change, document exactly why.\n\nPreserve:\n\n* seeded deterministic replay\n* local immutable perception\n* bounded movement\n* finite per-tile resource units\n* survival physiology\n* meaningless integer signals\n* optional event logging\n* streaming statistics\n* no global random-state dependency\n* replaceable Brain architecture\n\nThe simulation must remain headless and standard-library-only.\n\n⸻\n\n2. Reproduction model\n\nImplement a simple sexual reproduction system using the existing reproductive types 0 and 1.\n\nDo NOT attempt to model realistic human sexuality, pregnancy, family structures, social relationships, or gender.\n\nThis is only a minimal biological mechanism.\n\nAn agent should become eligible to reproduce only if:\n\n* alive\n* age >= configurable minimum reproductive age\n* age <= configurable maximum reproductive age, if enabled\n* sufficient energy / physiological condition\n* not within a configurable reproduction cooldown\n\nTwo compatible reproductive types must be sufficiently close to one another.\n\nUse a configurable reproduction radius.\n\nAdd a reproduction action such as:\n\nAction.REPRODUCE\n\nor another clean equivalent consistent with the existing architecture.\n\nA reproduction attempt should fail safely if no compatible eligible partner exists.\n\nDo not allow self-reproduction.\n\n⸻\n\n3. Offspring\n\nA successful reproduction event creates one new Human.\n\nThe offspring should receive:\n\n* a new unique ID\n* age = 0\n* initial hunger/thirst according to configurable defaults\n* configurable initial energy\n* a reproductive type selected using the simulation’s seeded RNG\n* a position derived from the parents’ location, preferably on or near a parent while respecting world bounds\n* references/IDs for both parents\n* a generation number\n\nDefine:\n\nfounder generation = 0\nchild generation =\nmax(parent_a.generation, parent_b.generation) + 1\n\nDo not reuse IDs of dead agents.\n\n⸻\n\n4. Reproductive cost\n\nReproduction must have a biological cost so that unlimited exponential reproduction is not free.\n\nUse a simple configurable model.\n\nFor example:\n\n* reproduction consumes energy from both parents\n* parents enter a reproduction cooldown\n* reproduction fails if either parent lacks sufficient energy\n\nDo not overcomplicate pregnancy or gestation in v0.2.\n\nA successful birth may occur immediately after a successful reproduction action.\n\nThe important requirement is that reproduction has a measurable survival tradeoff.\n\n⸻\n\n5. Energy\n\nEnergy exists in v0.1 but is currently unchanged.\n\nIn v0.2, give energy a minimal meaningful role.\n\nKeep the model simple.\n\nPossible rules:\n\n* eating restores some energy\n* reproduction consumes energy\n* optionally each tick consumes a small amount of energy\n\nIf zero energy should cause death, make this configurable and document it.\n\nAvoid introducing a complicated metabolism system.\n\nHunger, thirst, and energy should remain conceptually distinct.\n\n⸻\n\n6. Heritable traits\n\nIntroduce a small explicit genome / heritable-trait model.\n\nDo NOT inherit arbitrary Python object state.\n\nCreate a clean structure such as:\n\n@dataclass(frozen=True)\nclass Genome:\n    ...\n\nInitially include only a small number of biologically/behaviorally meaningful traits.\n\nGood candidates include:\n\n* perception radius\n* signal probability\n* movement tendency or action-bias parameters\n* hunger rate\n* thirst rate\n* maximum age\n* reproduction threshold / reproduction tendency\n\nHowever:\n\nDO NOT make the genome unnecessarily large.\n\nPrefer approximately 3–6 heritable traits for v0.2.\n\nThe current RandomBrain should remain fundamentally random.\n\nIf behavioral traits are inherited, they may only bias probabilities; do not introduce learning or goal-directed intelligence yet.\n\nKeep environmental/configuration limits separate from inherited traits.\n\nFor example, a genome should not mutate to an impossible negative perception radius.\n\n⸻\n\n7. Inheritance\n\nAn offspring’s genome should be derived from both parents.\n\nUse a simple mechanism such as:\n\nFor each trait:\n\n1. select one parent’s value, or\n2. interpolate / average parental values where appropriate\n3. apply mutation afterward\n\nChoose one consistent, documented strategy appropriate to each trait type.\n\nDo not implement Mendelian genetics, chromosomes, dominance, recombination maps, etc. yet.\n\nThe objective is evolutionary variation, not biological realism.\n\n⸻\n\n8. Mutation\n\nImplement configurable mutation.\n\nAt minimum provide:\n\nmutation_rate\nmutation_strength\n\nMutation must use a dedicated seeded random stream derived from the simulation seed.\n\nMutations must respect valid trait bounds.\n\nFor example:\n\nperception_radius >= 0\n0 <= signal_probability <= 1\npositive metabolic rates\n\nMutation should be small by default.\n\nIt must be possible to set:\n\nmutation_rate = 0\n\nand obtain inheritance without mutation.\n\nThe same seed/configuration must produce exactly the same mutations and offspring.\n\n⸻\n\n9. Founder genomes\n\nInitial agents should receive genomes generated deterministically.\n\nFor the default experiment, founders may all start with identical baseline traits, or with small seeded initial variation.\n\nPrefer identical founder traits by default because this makes later evolutionary divergence easier to interpret.\n\nIf initial variation is supported, make it explicitly configurable.\n\n⸻\n\n10. Renewable resources\n\nThe current world contains finite resources and therefore guarantees eventual depletion.\n\nAdd simple renewable resource dynamics.\n\nDo NOT implement agriculture.\n\nFood and water should replenish through environmental rules independent of agent intent.\n\nExamples:\n\nFood:\n\n* each eligible tile has a configurable probability per tick of gaining one food unit\n* enforce configurable per-tile maximum food\n\nWater:\n\n* either regenerate similarly\n* or use a simple configurable regeneration rule\n\nKeep this abstract.\n\nDo not add plants, rainfall, rivers, farming, seasons, or weather yet.\n\nAll regeneration randomness must use its own deterministic seeded random stream.\n\nIt must be possible to disable regeneration completely and reproduce v0.1-style finite-resource behavior.\n\n⸻\n\n11. Population control must emerge from resources\n\nDo NOT implement an arbitrary hard population cap as the main ecological control.\n\nPopulation should primarily be constrained by:\n\n* food availability\n* water availability\n* reproduction cost\n* mortality\n* resource regeneration\n\nA configurable emergency max_population safety limit is acceptable to prevent accidental memory explosions during development, but:\n\n* it should be clearly documented as a computational safeguard\n* it should not be presented as a biological rule\n* reproduction blocked by this safeguard should be measurable in statistics\n\n⸻\n\n12. Partner selection\n\nKeep partner selection simple and deterministic under a seed.\n\nIf multiple compatible partners are in range, choose using a clearly documented rule.\n\nA seeded random choice among eligible nearby partners is acceptable.\n\nAvoid hidden bias based permanently on agent ID.\n\nPartner selection must not depend on unordered set/dict iteration.\n\n⸻\n\n13. Tick semantics\n\nCarefully define reproduction timing.\n\nPrefer a rule such as:\n\n1. existing living agents act during the tick\n2. successful reproduction queues births\n3. newborns are added after the current acting phase\n4. newborns do NOT act until the next tick\n\nThis avoids update-order problems.\n\nEnsure a parent cannot participate in unlimited successful reproduction events in one tick.\n\nDocument the rule clearly.\n\n⸻\n\n14. Lineage tracking\n\nEach Human should contain lightweight lineage metadata:\n\nid\nparent_a_id\nparent_b_id\ngeneration\nbirth_tick\n\nFounders should have:\n\nparent_a_id = None\nparent_b_id = None\ngeneration = 0\nbirth_tick = 0\n\nDo NOT retain entire dead Human objects merely for genealogy.\n\nDetailed genealogy can be reconstructed from birth events if event logging is enabled.\n\n⸻\n\n15. Statistics\n\nExtend aggregate statistics with at least:\n\nbirths\npopulation\ndeaths\nhighest_generation\nreproduction_attempts\nsuccessful_reproductions\npopulation_limit_blocks\n\nKeep these cumulative where appropriate and document semantics.\n\nAlso consider useful lightweight evolutionary statistics such as mean values of heritable traits among the current living population.\n\nDo not make statistics so expensive that they dominate runtime.\n\n⸻\n\n16. Events\n\nExtend optional detailed event logging with events sufficient to reconstruct reproduction.\n\nA successful birth event should contain at least:\n\ntick\nchild_id\nparent_a_id\nparent_b_id\ngeneration\nchild_genome\nposition\n\nMutation information may also be logged if practical.\n\nDo not create detailed event payloads when event logging is disabled.\n\n⸻\n\n17. Death causes\n\nContinue tracking death causes.\n\nIf energy depletion becomes lethal, add a clear cause such as:\n\nenergy\n\nPreserve deterministic priority if multiple death conditions occur simultaneously.\n\nDocument the priority.\n\n⸻\n\n18. Experimental modes\n\nIt should be easy to run at least these two modes:\n\nLegacy finite-resource mode\n\nreproduction disabled\nresource regeneration disabled\n\nThis should behave as closely as practical to v0.1.\n\nEvolution mode\n\nreproduction enabled\nresource regeneration enabled\nmutation enabled\n\nThis mode should permit multiple generations if ecological conditions allow it.\n\nDo not guarantee survival artificially.\n\nExtinction must remain a legitimate outcome.\n\n⸻\n\n19. CLI\n\nExtend the CLI only where useful.\n\nPossible options:\n\npython3 main.py --seed 42 --ticks 10000\npython3 main.py --seed 42 --ticks 10000 --csv data/evolution.csv\npython3 main.py --seed 42 --ticks 1000 --events data/evolution.jsonl\n\nIt is not necessary to expose every config value as a CLI argument.\n\nAvoid an enormous CLI.\n\nConfiguration can still be constructed programmatically for experiments.\n\n⸻\n\n20. Tests\n\nPreserve the existing 23 tests and add comprehensive v0.2 tests.\n\nAt minimum test:\n\nReproduction\n\n* incompatible reproductive types cannot reproduce\n* compatible eligible agents can reproduce\n* reproduction outside radius fails\n* underage agents cannot reproduce\n* cooldown prevents immediate repeated reproduction\n* insufficient energy prevents reproduction\n* successful reproduction charges the configured cost\n* newborn does not act during its birth tick\n* IDs remain unique\n* newborn receives correct parent IDs\n* generation number is correct\n\nInheritance\n\n* child genome derives from parents\n* mutation disabled gives deterministic inheritance\n* mutation enabled respects trait bounds\n* same seed reproduces the same offspring genome\n* different seeds are capable of producing different mutations\n\nResources\n\n* food regeneration follows configured limits\n* water regeneration follows configured limits\n* regeneration can be disabled\n* resources never exceed per-tile caps\n* identical seeds reproduce identical regeneration\n\nPopulation\n\n* births increase population\n* deaths still reduce population\n* extinction remains possible\n* optional safety population limit works correctly\n\nDeterminism\n\n* identical seeds/configs reproduce the complete multi-generation simulation\n* logging does not alter evolutionary outcomes\n* global random state remains untouched\n\nRun all tests before finishing.\n\n⸻\n\n21. Smoke tests / baseline experiments\n\nAfter implementation, run at least:\n\nA. Legacy regression\n\nA short configuration approximating v0.1:\n\n100 initial agents\nno reproduction\nno resource regeneration\nseed 42\n\nConfirm expected finite-resource decline/extinction behavior.\n\nExact tick-for-tick equality with the previous implementation is desirable if architecture permits it, but do not fake compatibility if intentional v0.2 physiology changes make exact equality inappropriate.\n\nDocument differences.\n\nB. Evolution smoke test\n\nRun a seeded simulation long enough to demonstrate that:\n\n* at least one birth can occur\n* generation >= 1 can occur\n* mutation/inheritance code executes\n* renewable resources execute\n* population accounting remains internally consistent\n\nDo NOT tune parameters merely to guarantee indefinite survival.\n\nIf the default ecology goes extinct, report that honestly.\n\nC. Deterministic replay\n\nRun the same evolution configuration twice and verify identical results.\n\n⸻\n\n22. Invariants\n\nAdd assertions/tests where appropriate for important invariants:\n\npopulation >= 0\nunique living IDs\nbirths - deaths + initial_population == current population\n\nwhen applicable.\n\nAlso ensure:\n\nfood >= 0\nwater >= 0\nenergy >= 0 where appropriate\n0 <= signal_probability <= 1\nvalid reproductive type\nvalid genome bounds\n\nDo not rely only on assertions for user-facing configuration validation.\n\n⸻\n\n23. Performance\n\nKeep future scale in mind:\n\n* potentially thousands of agents\n* millions of ticks\n* many independent runs\n* many generations\n\nDo not retain every dead agent.\n\nDo not retain every genome ever created unless event logging requests it.\n\nAvoid O(population²) partner search if the existing spatial structures can reasonably be reused.\n\nReuse or generalize spatial lookup infrastructure where sensible, but do not over-engineer.\n\nDo not add multiprocessing yet.\n\n⸻\n\n24. README\n\nUpdate README.md thoroughly.\n\nExplain:\n\n* what changed in v0.2\n* reproduction rules\n* birth timing\n* energy semantics\n* genome structure\n* inheritance\n* mutation\n* resource regeneration\n* generation tracking\n* deterministic RNG streams\n* new statistics\n* new event records\n* ecological limitations\n\nClearly state that:\n\n* agents still do not learn\n* signals still have no meaning\n* RandomBrain does not intentionally communicate\n* agriculture does not exist\n* renewable food is an environmental process, not farming\n* there is no culture or civilization yet\n\n⸻\n\n25. Important scientific-design constraint\n\nAvoid adding mechanisms simply because humans have them.\n\nEvery mechanism added should be one of:\n\n1. a primitive physical/environmental rule,\n2. a primitive biological capability,\n3. a generic information-processing capability.\n\nDo not encode desired civilization outcomes directly.\n\nFor example:\n\nBAD:\n\nif generation > 100:\n    discover_agriculture()\n\nBAD:\n\nif population > 500:\n    create_government()\n\nBAD:\n\nif hungry:\n    speak(WATER_SIGNAL)\n\nGOOD:\n\nagents can perceive\nagents can act\nagents can reproduce\ntraits can be inherited and mutate\nresources regenerate according to environmental rules\nsignals exist but have no predefined meanings\n\nThe long-term research question is what emerges from these primitive mechanisms.\n\n⸻\n\n26. Implementation task\n\nPlease now:\n\n1. Inspect the current repository and existing v0.1 implementation.\n2. Plan the smallest clean extension to v0.2.\n3. Implement reproduction.\n4. Implement offspring and generation tracking.\n5. Implement a small explicit genome.\n6. Implement inheritance.\n7. Implement mutation.\n8. Give energy a minimal reproductive role.\n9. Implement configurable food/water regeneration.\n10. Extend statistics/events.\n11. Preserve deterministic seeded replay.\n12. Add tests.\n13. Run the complete test suite.\n14. Run the legacy regression smoke test.\n15. Run an evolution smoke test.\n16. Run a deterministic replay check.\n17. Fix any issues discovered.\n18. Update README.md.\n19. Report:\n    * files created/modified\n    * design decisions\n    * genome traits chosen\n    * inheritance/mutation rules\n    * reproduction rules\n    * resource-regeneration rules\n    * test results\n    * smoke-test results\n    * whether multiple generations occurred\n    * performance observations\n    * known limitations\n    * recommended v0.3 direction\n\nDo not stop after generating code.\n\nActually run and verify the implementation.\n\nMost importantly:\n\nv0.2 is about making evolution possible, not about making agents intelligent."
+      }
+    },
+    {
+      "type": "list",
+      "title": {
+        "ja": "改善点"
+      },
+      "items": [
+        {
+          "ja": "Lower metabolic traits currently lack balancing costs. 突然変異に対するデメリットがなく、徐々にhunger_multiplier → 最小値 thirst_multiplier → 最小値に移行するという自明な結果"
+        },
+        {
+          "ja": "現状は人口の平衡がわからないため10万tickを保留"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": {
+        "ja": "v0.21"
+      },
+      "anchor": "v0.21",
+      "body": {
+        "ja": "for seed in {0..9}; do\n    python3 main.py --mode evolution --seed $seed --ticks 1000 --csv \"data/evolution_seed_${seed}.csv\"\ndone\nを実行\n\ndata内部にevolution_seed_0.csv ~ evolution_seed_9.csvに保存 \n\n観測機能を強化する\nhunger_multiplier\nthirst_multiplier\nperception_radius\nsignal_probability\nの値の変化を観測するために次の内容をcodexに投げる\n\nPlease make a small observational extension to the current v0.2 implementation.\n\nDo not change the biological rules, reproduction rules, mutation rules, resource rules, RandomBrain behavior, or seeded simulation behavior.\n\nThe purpose of this change is only to make evolutionary change measurable.\n\nAdd living-population genome statistics\n\nThe current aggregate CSV contains ecological statistics such as population, births, deaths, reproduction, resources, and death causes, but it does not show how inherited traits change over time.\n\nFor each statistics snapshot, calculate statistics over the currently living population for these genome traits:\n\n* perception_radius\n* signal_probability\n* hunger_multiplier\n* thirst_multiplier\n\nAt minimum add the mean for each:\n\nmean_perception_radius\nmean_signal_probability\nmean_hunger_multiplier\nmean_thirst_multiplier\n\nAlso add minimum and maximum values if inexpensive:\n\nmin_perception_radius\nmax_perception_radius\nmin_signal_probability\nmax_signal_probability\nmin_hunger_multiplier\nmax_hunger_multiplier\nmin_thirst_multiplier\nmax_thirst_multiplier\n\nIf population == 0, use a consistent documented representation such as empty/None rather than producing an exception.\n\nImportant constraints\n\nThis is an observational change only.\n\nLogging/statistics must NOT:\n\n* consume RNG\n* modify agents\n* modify genomes\n* change update ordering\n* change reproduction\n* change survival\n* change mutation\n* change resource regeneration\n\nFor the same seed and configuration, the actual simulation trajectory must remain exactly identical before and after this change.\n\nOnly the additional statistics/output columns should differ.\n\nTests\n\nAdd tests verifying:\n\n1. founder trait means are correct at tick 0\n2. means/min/max are correctly calculated\n3. trait statistics change correctly when the living population changes\n4. extinct populations are handled safely\n5. enabling/writing these statistics does not alter simulation state or RNG outcomes\n6. all existing tests continue to pass\n\nRun the complete test suite.\n\nVerification\n\nAfter implementation, run:\n\npython3 main.py --mode evolution --seed 0 --ticks 1000 --csv data/evolution_seed_0.csv\n\nThen show:\n\nhead -5 data/evolution_seed_0.csv\ntail -5 data/evolution_seed_0.csv\n\nConfirm that the genome-statistics columns are present.\n\nAlso confirm that the final simulation state for a known seed is unchanged from before this observational modification.\n\nDo not add learning, intelligence, fitness scores, trait costs, or new evolutionary mechanisms yet."
+      }
+    },
+    {
+      "type": "table",
+      "headers": [
+        {
+          "ja": "形質",
+          "en": "",
+          "de": "",
+          "it": "",
+          "fr": "",
+          "ru": ""
+        },
+        {
+          "ja": "初期",
+          "en": "",
+          "de": "",
+          "it": "",
+          "fr": "",
+          "ru": ""
+        },
+        {
+          "ja": "    tick 1000 平均",
+          "en": "",
+          "de": "",
+          "it": "",
+          "fr": "",
+          "ru": ""
+        },
+        {
+          "ja": "      tick 1000 範囲",
+          "en": "",
+          "de": "",
+          "it": "",
+          "fr": "",
+          "ru": ""
+        }
+      ],
+      "rows": [
+        [
+          {
+            "ja": "perception radius",
+            "en": "",
+            "de": "",
+            "it": "",
+            "fr": "",
+            "ru": ""
+          },
+          {
+            "ja": "2.000",
+            "en": "",
+            "de": "",
+            "it": "",
+            "fr": "",
+            "ru": ""
+          },
+          {
+            "ja": "2.099",
+            "en": "",
+            "de": "",
+            "it": "",
+            "fr": "",
+            "ru": ""
+          },
+          {
+            "ja": "0–4",
+            "en": "",
+            "de": "",
+            "it": "",
+            "fr": "",
+            "ru": ""
+          }
+        ],
+        [
+          {
+            "ja": "signal probability",
+            "en": "",
+            "de": "",
+            "it": "",
+            "fr": "",
+            "ru": ""
+          },
+          {
+            "ja": "0.1000",
+            "en": "",
+            "de": "",
+            "it": "",
+            "fr": "",
+            "ru": ""
+          },
+          {
+            "ja": "0.10065",
+            "en": "",
+            "de": "",
+            "it": "",
+            "fr": "",
+            "ru": ""
+          },
+          {
+            "ja": "0.0334–0.1909",
+            "en": "",
+            "de": "",
+            "it": "",
+            "fr": "",
+            "ru": ""
+          }
+        ],
+        [
+          {
+            "ja": "hunger multiplier",
+            "en": "",
+            "de": "",
+            "it": "",
+            "fr": "",
+            "ru": ""
+          },
+          {
+            "ja": "1.0000",
+            "en": "",
+            "de": "",
+            "it": "",
+            "fr": "",
+            "ru": ""
+          },
+          {
+            "ja": "0.99900",
+            "en": "",
+            "de": "",
+            "it": "",
+            "fr": "",
+            "ru": ""
+          },
+          {
+            "ja": "0.9345–1.1039",
+            "en": "",
+            "de": "",
+            "it": "",
+            "fr": "",
+            "ru": ""
+          }
+        ],
+        [
+          {
+            "ja": "thirst multiplier",
+            "en": "",
+            "de": "",
+            "it": "",
+            "fr": "",
+            "ru": ""
+          },
+          {
+            "ja": "1.0000",
+            "en": "",
+            "de": "",
+            "it": "",
+            "fr": "",
+            "ru": ""
+          },
+          {
+            "ja": "0.99668",
+            "en": "",
+            "de": "",
+            "it": "",
+            "fr": "",
+            "ru": ""
+          },
+          {
+            "ja": "0.9093–1.0495",
+            "en": "",
+            "de": "",
+            "it": "",
+            "fr": "",
+            "ru": ""
+          }
+        ]
+      ],
+      "showRowNumbers": false,
+      "rowNumberStart": 1
+    },
+    {
+      "type": "section",
+      "title": {
+        "ja": "結果から"
+      },
+      "body": {
+        "ja": "死亡原因では脱水死がかなり多い。近く範囲が2→2.10となっている、視界の広さは、現状生存に対して影響しないため他のデータでも検証する(コード変更後はケース0のみ検証)。\n1000ティック10ケース検証したところ視野、空腹、発声はほとんど初期値だったのに対し喉の渇きは減っている傾向が見られる、脱水死が多いのと関連していると考えられる。\n\n続いて5000tickで検証を行う\n\npython3 main.py --mode evolution --seed 0 --ticks 5000 --csv data/evolution_seed_0_5000.csv\n水と食の値はより少なくても問題ない方向に向かっており、その他の値は基礎値とほぼ同じである。"
+      }
+    },
+    {
+      "type": "section",
+      "title": {
+        "ja": "v0.3"
+      },
+      "anchor": "v0.3",
+      "body": {
+        "ja": "経験則から行動を変える能力の実装"
+      }
+    },
+    {
+      "type": "section",
+      "title": {
+        "ja": "実行結果"
+      },
+      "body": {
+        "ja": "視野が2→0.0675まで下がっている。\nDrinkを323/400回選ぶようになっているため学習機構は動作している。\n\nsignal_probability\n0.100 → 0.100\n意味なし・ほぼ中立\nperception_radius\n2.000 → 0.061\nLearningBrain導入後に強烈な方向性\nhunger\n1.000 → 0.967\n代謝効率化\nthirst\n1.000 → 0.923\nさらに強い代謝効率化\nmemory size\n約48 → 40 → 22 → 15 → 15\n\n1000tickでは視野は退化しない\n1000        2.04\n              \\\n2000          1.57\n                \\\n3000            0.51\n                   \\\n4000               0.11\n                     \\\n5000                 0.06\n\n「世界を詳しく見る能力」より「世界を単純化して学習する能力」の方が適応的\n\n次は視野の値を固定して検証する。現在の生存率は人口平均819.8, 最高世代143.0である\n\n固定 perception\n\ntick 5000 平均人口\n\nSD\n\n平均 births\n\n平均最高世代\n\n平均 memory\n\n0\n\n801.6\n\n25.5\n\n27,096\n\n138.6\n\n13.0\n\n1\n\n908.9\n\n34.7\n\n29,883\n\n149.7\n\n52.2\n\n2\n\n908.3\n\n23.9\n\n29,735\n\n148.5\n\n51.6\n\n4\n\n886.1\n\n22.1\n\n29,572\n\n147.5\n\n50.1\n\nほとんど変わらなかったためcase 0が特殊である可能性が高い、\n周囲1マスを見る能力には価値がある。しかし、それ以上遠くを見ることにはほとんど価値がない。一方、水を必要としにくい身体になることにはかなり強い価値がある。"
+      }
+    }
+  ]
+}
